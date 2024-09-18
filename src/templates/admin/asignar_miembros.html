@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}
+Asignar Miembros a Proyecto
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="text-center">Administrar Miembros del Proyecto: {{ proyecto.nombre }}</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Miembros Asignados:</h3>
+                <form method="POST">
+                    {% for miembro in proyecto.miembros %}
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="eliminar_miembro" value="{{ miembro._id }}" id="miembro{{ miembro._id }}">
+                            <label class="form-check-label" for="miembro{{ miembro._id }}">{{ miembro.nombre }} {{ miembro.apellido }}</label>
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-danger mt-3">Eliminar Miembros Seleccionados</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Miembros Disponibles para Agregar:</h3>
+                <form method="POST">
+                    {% for usuario in usuarios %}
+                        {% if usuario not in proyecto.miembros %}
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="agregar_miembro" value="{{ usuario._id }}" id="usuario{{ usuario._id }}">
+                                <label class="form-check-label" for="usuario{{ usuario._id }}">{{ usuario.nombre }} {{ usuario.apellido }}</label>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary mt-3">Agregar Miembros</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/static/img/Ima1.png">
+    <title>{% block title %}{% endblock %}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/estilos_base.css') }}" rel="stylesheet">
+</head>
+<body>
+    <!-- Barra superior -->
+    <div class="navbar-custom">
+        <h2 class="mb-0">Centro Digital de Desarrollo Tecnológico</h2>
+        <div>
+            <a class="btn-top" href="{{ url_for('perfil') }}">Perfil</a>
+            <a class="btn-top" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+        </div>
+    </div>
+
+    <!-- Barra lateral -->
+    <div class="sidebar">
+        {% if session.get('role') == 'admin' %}
+            <a href="{{ url_for('admin_proyectos') }}">Administrar Proyectos</a>
+            <a href="{{ url_for('admin_usuarios') }}">Administrar Usuarios</a>
+            <a href="{{ url_for('registro') }}">Agregar nuevo miembro</a>
+            <a href="{{ url_for('seleccionar_proyecto') }}">Agregar Tarea</a>
+            <a href="{{ url_for('ver_todas_las_tareas') }}">Ver Tareas</a>
+            <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
+        {% elif session.get('role') == 'miembro' %}
+            <a href="{{ url_for('mis_tareas') }}">Mis Tareas</a>
+            <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
+        {% endif %}
+    </div>
+
+    <!-- Área de contenido -->
+    <div class="content">
+        {% block content %}
+        <!-- Contenido dinámico aquí -->
+        {% endblock %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

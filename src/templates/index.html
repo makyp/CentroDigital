@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/estilos.css')}}">
+    <link rel="shortcut icon" href="/static/img/Ima1.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro Digital de Desarrollo Tecnologico</title>
+    
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{{ url_for('login') }}">Iniciar Sesión</a>
+        </nav>
+        <section class="textos-header">
+            <h1>Centro Digital de Desarrollo Tecnologico
+                Universidad de Cundinamarca Seccional Ubaté
+            </h1>
+            <h2></h2>
+        </section>
+        <div class="wave" style="height: 150px; overflow: hidden;" ><svg viewBox="0 0 500 150" preserveAspectRatio="none" style="height: 100%; width: 100%;"><path d="M0.00,50.10 C187.36,208.58 349.20,-50.10 500.00,50.10 L500.00,150.33 L0.00,150.33 Z" style="stroke: none; fill: #fff;"></path></svg></div>
+    
+    </header>
+    <main>
+        <section class="contenedor sobre-nosotros">
+            <h2 class="titulo">Quienes somos...</h2>
+            <div class="contenedor-sobre-nosotros">
+                <img src="static/img/Ima1.png" alt="" class="imagen-about-us">
+                <div class="contenido-textos">
+                    <h3><span>1</span>Misión</h3>
+                    <p>El Centro de Desarrollo Tecnológico de la Universidad de Cundinamarca realiza procesos de consultoría, asesoría, formula y ejecuta proyectos de investigación, 
+                        innovación, desarrollo y de servicios en el ámbito de las tecnologías de la información y las comunicaciones para mejorar la productividad, la competitividad 
+                        y favorecer el desarrollo sostenible de las actividades económicas del departamento de Cundinamarca</p>
+                    <h3><span>2</span>Visión</h3>
+                    <p>En el año 2027 el Centro de Desarrollo Tecnológico de la Universidad de Cundinamarca será reconocido, a nivel local y translocal,  por  el impacto social de sus proyectos de 
+                        investigación, innovación, desarrollo y de servicios de consultoría e infraestructura  en el ámbito de las Tecnologías de la Información y las Comunicaciones, y como aliado 
+                        estratégico de las empresas públicas y privadas del departamento de Cundinamarca para mejorar su productividad y competitividad, por medio de 
+                        utilización  de tecnologías de vanguardia en sus proyectos y la implementación de estándares internacionales de calidad en sus procesos.  </p>
+                </div>
+            </div>
+        </section>
+        <section class="contenedor sobre-nosotros">
+            <h2 class="titulo">Eres Empresa...</h2>
+            <div class="contenedor-sobre-nosotros">
+                <img src="static/img/Ima2.png" alt="" class="imagen-about-us">
+                <div class="contenido-textos">
+                    <h3><span>1</span>Haz click en el siguiente boton...</h3>
+                    <button class="btn btn-primary w-100 py-2" type="submit">Click Aqui</button>
+                </div>
+            </div>
+        </section>
+        <section class="clientes contenedor">
+            <h2 class="titulo">Desarrolladores</h2>
+            <div class="cards">
+                <div class="card">
+                    <img src="static/img/imgB.jpg" alt="">
+                    <div class="contenido-texto-card">
+                        <h4>Brandon Bustos</h4>
+                        <br>
+                        <p>Ingeniero de sistemas de 9 semestre de la Universidad De Cundinamarca.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="static/img/imgT.jpg" alt="">
+                    <div class="contenido-texto-card">
+                        <h4>Maira Quiroga</h4>
+                        <br>
+                        <p>Ingeniera de sistemas de 9 semestre de la Universidad De Cundinamarca.</p>
+                    </div>
+                </div>
+            </div> 
+        </section>
+    </main>
+    <footer>
+        <div class="contenedor-footer">
+            <div class="content-foo">
+                <h4>Correo de contacto</h4>
+                <p></p>
+            </div>
+            <div class="content-foo">
+                <h4>Ubicación</h4>
+                <p>Villa De San Diego De Ubaté</p>
+            </div>
+            <div class="content-foo">
+                <h4>Equipo</h4>
+                <p><label>Brandon Enrique Bustos Veloza</label></p>
+                <p><label>Maira Tatiana Quiroga Peralta</label></p>
+            </div>
+        </div>
+        <h2 class="titulo-final">&copy; CDDT | Centro Digital de Desarrollo Tecnologico</h2>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Tareas{% endblock %}
+
+{% block content %}
+    <h1 class="mt-4">Mis Tareas</h1>
+
+    <table class="table table-bordered kanban-table">
+        <thead>
+            <tr>
+                <th>Por Hacer</th>
+                <th>En Progreso</th>
+                <th>Completada</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="kanban-column">
+                <td class="kanban-list">
+                    {% for tarea in tareas %}
+                        {% if tarea.estado == "Por iniciar" %}
+                            <div class="kanban-taskpi">
+                                <strong>Proyecto: {{ tarea.proyecto }}</strong><br>
+                                <strong>Nombre:</strong>{{ tarea.nombre }}<br>
+                                <strong>Descripción: </strong>{{ tarea.descripcion }}<br>
+                                <strong>Fecha Vencimiento: </strong>{{ tarea.fechavencimiento }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td class="kanban-list">
+                    {% for tarea in tareas %}
+                        {% if tarea.estado == "En progreso" %}
+                            <div class="kanban-taskep">
+                                <strong>Proyecto: {{ tarea.proyecto }}</strong><br>
+                                <strong>Nombre:</strong>{{ tarea.nombre }}<br>
+                                <strong>Descripción: </strong>{{ tarea.descripcion }}<br>
+                                <strong>Fecha Vencimiento: </strong>{{ tarea.fechavencimiento }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td class="kanban-list">
+                    {% for tarea in tareas %}
+                        {% if tarea.estado == "Completado" %}
+                            <div class="kanban-taskc">
+                                <strong>Proyecto: {{ tarea.proyecto }}</strong><br>
+                                <strong>Nombre:</strong>{{ tarea.nombre }}<br>
+                                <strong>Descripción: </strong>{{ tarea.descripcion }}<br>
+                                <strong>Fecha Vencimiento: </strong>{{ tarea.fechavencimiento }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    {% if not tareas %}
+        <p>No tienes ninguna tarea asignada.</p>
+    {% endif %}
+
+{% endblock %}

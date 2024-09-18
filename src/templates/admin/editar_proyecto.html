@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}
+Editar Proyecto
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h2>Editar Proyecto</h2>
+        <form method="POST">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" value="{{ proyecto.nombre }}" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="descripcion">Descripción:</label>
+                <input type="text" id="descripcion" name="descripcion" value="{{ proyecto.descripcion }}" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="fechainicio">Fecha de Inicio:</label>
+                <input type="date" id="fechainicio" name="fechainicio" value="{{ proyecto.fechainicio }}" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="fechafinal">Fecha de Finalización:</label>
+                <input type="date" id="fechafinal" name="fechafinal" value="{{ proyecto.fechafinal }}" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="estado">Estado:</label>
+                <select id="estado" name="estado" class="form-control" required>
+                    <option value="Por iniciar" {% if proyecto.estado == 'Por iniciar' %} selected {% endif %}>Por iniciar</option>
+                    <option value="En proceso" {% if proyecto.estado == 'En proceso' %} selected {% endif %}>En proceso</option>
+                    <option value="Completado" {% if proyecto.estado == 'Completado' %} selected {% endif %}>Completado</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

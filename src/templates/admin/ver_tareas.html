@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}
+Ver Todas las Tareas
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <h2 class="text-center">Todas las Tareas</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info" role="alert">
+                    <ul>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endwith %}
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Proyecto</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Fecha de Vencimiento</th>
+                    <th>Responsable</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tarea in tareas %}
+                <tr>
+                    <td>{{ tarea.proyecto_nombre }}</td>
+                    <td>{{ tarea.nombre }}</td>
+                    <td>{{ tarea.descripcion }}</td>
+                    <td>{{ tarea.fechavencimiento }}</td>
+                    <td>{{ tarea.miembro_nombre }}</td>
+                    <td>{{ tarea.estado }}</td> 
+                    <td>
+                        <a href="{{ url_for('editar_tarea', id=tarea._id) }}" class="btn btn-primary btn-sm">Editar</a>
+                        <form action="{{ url_for('eliminar_tarea', id=tarea._id) }}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+        <a href="{{ url_for('admin_proyectos') }}" class="btn btn-secondary">Volver a Proyectos</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil de Usuario{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <div class="text-center">
+            <h1>Perfil</h1>
+            <img src="{{ url_for('static', filename='images/perfil.png') }}" alt="Imagen de Perfil" class="rounded-circle mt-3 mb-3" style="width: 150px; height: 150px;">
+        </div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <p><strong>Nombre completo:</strong> {{ usuario.nombre }} {{ usuario.apellido }}</p>
+                <p><strong>Correo:</strong> {{ usuario.correo }}</p>
+                <p><strong>Cargo:</strong> {{ usuario.cargo }}</p>
+                <p><strong>Habilidades:</strong> {{ ', '.join(usuario.habilidades) }}</p>
+            </div>
+        </div>
+
+        <h2>Proyectos</h2>
+        <ul class="list-group mb-4">
+            {% if proyectos %}
+                {% for proyecto in proyectos %}
+                    <li class="list-group-item">{{ proyecto.nombre }} - {{ proyecto.descripcion }}</li>
+                {% endfor %}
+            {% else %}
+                <li class="list-group-item">No estás asignado a ningún proyecto.</li>
+            {% endif %}
+        </ul>
+
+        <h2>Tareas Asignadas</h2>
+        <ul class="list-group mb-4">
+            {% if tareas %}
+                {% for tarea in tareas %}
+                    <li class="list-group-item">{{ tarea.nombre }} - {{ tarea.descripcion }} (Estado: {{ tarea.estado }})</li>
+                {% endfor %}
+            {% else %}
+                <li class="list-group-item">No tienes ninguna tarea asignada.</li>
+            {% endif %}
+        </ul>
+    </div>
+{% endblock %}

@@ -1,0 +1,98 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Estilos para la barra superior */
+.navbar-custom {
+    background-color: #027333; /* Color gris de la barra superior */
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Estilos para la barra lateral */
+.sidebar {
+    height: 90vh; /* Altura casi completa */
+    width: 180px; /* Ancho fijo más delgado */
+    background-color: #84BF04; /* Color gris oscuro para la barra lateral */
+    padding-top: 20px;
+    position: absolute; /* Hacer que sea flotante */
+    top: 70px; /* Desplazarla ligeramente desde la parte superior (bajo la barra superior) */
+    left: 20px; /* Margen flotante desde el borde izquierdo */
+    border-radius: 5px; /* Esquinas redondeadas */
+}
+
+.sidebar a {
+    padding: 15px;
+    text-align: center;
+    display: block;
+    color: white;
+    margin: 10px 0;
+    text-decoration: none;
+    background-color: #027333; /* Color gris similar */
+    border-radius: 3px;
+}
+
+.sidebar a:hover {
+    background-color: #D9A404; /* Cambio de color al pasar el ratón */
+}
+
+/* Estilo para el área de contenido */
+.content {
+    margin-left: 220px; /* Dejar espacio para la barra lateral */
+    padding: 20px;
+    height: calc(100vh - 70px); /* Ajustar la altura para el contenido debajo de la barra superior */
+}
+
+.btn-top {
+    background-color: #D9A404;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    text-decoration: none; /* Remover subrayado */
+}
+
+.btn-top:hover {
+    background-color: #5c5c5c;
+}
+
+.kanban-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.kanban-column {
+    width: 33%;
+}
+
+.kanban-list {
+    border: 1px solid #ccc;
+    padding: 10px;
+    min-height: 150px;
+}
+
+.kanban-taskpi {
+    background-color: #F55A4B;
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin-bottom: 5px;
+}
+
+.kanban-taskep {
+    background-color: #F29F05;
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin-bottom: 5px;
+}
+
+.kanban-taskc {
+    background-color: #C0D904;
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin-bottom: 5px;
+}

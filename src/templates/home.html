@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+        
+    <h2>Bienvenido, {{ usuario.nombre }} {{ usuario.apellido }}</h2>
+    <p>Rol: {{ usuario.role }}</p>
+    <p>Cargo: {{ usuario.cargo }}</p>
+    <p>Habilidades: {{ usuario.habilidades | join(', ') }}</p>
+</div>
+{% endblock %}

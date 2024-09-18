@@ -1,0 +1,82 @@
+body {
+    background-color: white;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    display: block;
+    flex-direction: column;
+}
+.background-radial-gradient {
+    background-size: 100%;
+    background-color: #014023; 
+    background-image: radial-gradient(650px circle at 0% 0%,
+        #014023 15%,
+        #027333 35%, 
+        #84BF04 55%, 
+        transparent 100%),
+    radial-gradient(1250px circle at 100% 100%,
+        #014023 15%, 
+        #027333 35%, 
+        #84BF04 55%, 
+        transparent 100%);
+    margin: 0;
+    padding: 0; 
+}
+
+.bg-glass {
+    background-color: hsla(0, 0%, 100%, 0.9) !important;
+    backdrop-filter: saturate(200%) blur(25px);
+}
+
+.h3 {
+    font-size: 25px;
+    text-align: center;
+}
+
+footer{
+    background: #414141;
+    padding: 60px 0 30px 0;
+    margin: auto;
+    overflow: hidden;
+}
+
+.contenedor-footer{
+    display: flex;
+    width: 90%;
+    justify-content: space-evenly;
+    margin: auto;
+    padding-bottom: 50px;
+    border-bottom: 1px solid #ccc;
+}
+
+.content-foo{
+    text-align: center;
+}
+
+.content-foo a:hover{
+    text-decoration: underline;
+}
+.content-foo a{
+    color: #fff;
+    font-weight: 300;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+.content-foo h4{
+    color: #fff;
+    border-bottom: 3px solid #84BF04;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+.content-foo p{
+    color: #ccc;
+}
+
+.titulo-final{
+    text-align: center;
+    font-size: 24px;
+    margin: 20px 0 0 0;
+    color: #9e9797;
+}

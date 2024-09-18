@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}
+Lista de Proyectos
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-success" role="alert">
+                    {% for message in messages %}
+                        {{ message }}<br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <h2>Lista de Proyectos</h2>
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Fecha de Inicio</th>
+                    <th>Fecha de Finalización</th>
+                    <th>Miembros</th>
+                    <th>Tareas</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proyecto in proyectos %}
+                <tr>
+                    <td>{{ proyecto.nombre }}</td>
+                    <td>{{ proyecto.descripcion }}</td>
+                    <td>{{ proyecto.fechainicio }}</td>
+                    <td>{{ proyecto.fechafinal }}</td>
+                    <td>
+                        {% for miembro in proyecto.miembros %}
+                            {{ miembro.nombre }} {{ miembro.apellido }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <ul>
+                            {% for tarea in proyecto.tareas %}
+                                <li>Nombre: {{ tarea.nombre }} <br> Descripción: {{ tarea.descripcion }} <br> Responsable: 
+                                    {% if tarea.miembroasignado %}
+                                        {{ tarea.miembroasignado }}
+                                    {% else %}
+                                        Sin asignar
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>{{ proyecto.estado }}</td>
+                    <td>
+                        <a href="{{ url_for('editar_proyecto', id=proyecto._id) }}" class="btn btn-primary">Editar</a>
+                        <a href="{{ url_for('eliminar_proyecto', id=proyecto._id) }}" class="btn btn-danger">Eliminar</a>
+                        <a href="{{ url_for('asignar_miembros', id=proyecto._id) }}" class="btn btn-success">Administrar Integrantes</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Agregar Nuevo Proyecto</h2>
+        <form method="POST">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="descripcion">Descripción:</label>
+                <input type="text" id="descripcion" name="descripcion" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="fechainicio">Fecha de Inicio:</label>
+                <input type="date" id="fechainicio" name="fechainicio" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="fechafinal">Fecha de Finalización:</label>
+                <input type="date" id="fechafinal" name="fechafinal" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="estado">Estado:</label>
+                <select id="estado" name="estado" class="form-control" required>
+                    <option value="Por iniciar">Por iniciar</option>
+                    <option value="En proceso">En proceso</option>
+                    <option value="Completado">Completado</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Agregar Proyecto</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
