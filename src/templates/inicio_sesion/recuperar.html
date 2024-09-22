@@ -1,41 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="/static/img/Ima1.png">
     <link rel="stylesheet" type="text/css" href="static/css/estilos_login.css">
-    <title>Iniciar Sesión - CDDT</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <title>Recuperar contraseña - CDDT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 </head>
+
 <body>
     <section class="background-radial-gradient overflow-hidden">
         <div class="container px-4 py-5 px-md-5 text-center text-lg-start my-5">
             <div class="row gx-lg-5 align-items-center mb-5">
                 <div class="col-lg-6 mb-5 mb-lg-0" style="z-index: 10">
-                    <h1 class="my-5 display-5 fw-bold ls-tight" style="color: hsl(120, 81%, 95%)"> Centro Digital de Desarrollo Tecnologico <br/>
+                    <h1 class="my-5 display-5 fw-bold ls-tight" style="color: hsl(120, 81%, 95%)"> Centro Digital de
+                        Desarrollo Tecnologico <br />
                     </h1>
-                    <p class="mb-4 opacity-70" style="color: white; text-shadow: 2px 2px 5px rgba(0, 255, 0, 0.5);">
-                        Mensaje del cddt..............................
-                    </p>                
                 </div>
-        
                 <div class="col-lg-6 mb-5 mb-lg-0 position-relative">
                     <div class="card bg-glass">
                         <div class="card-body px-4 py-5 px-md-5">
-                            <h1 class="h3 mb-3" style="color: black;">Iniciar Sesión</h1>
+                            <h1 class="h3 mb-3" style="color: black;">Recuperar Contraseña</h1>
                             <form method="POST">
-                                <label for="exampleFormControlInput1" class="form-label">Correo Electrónico</label>
+                                <label for="exampleFormControlInput1" class="form-label">Ingresa tu correo electrónico
                                 <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="correo@ejemplo.com" name="correo" required>
                                 <br>
-                                <label for="inputPassword5" class="form-label">Contraseña</label>
-                                <input type="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock" name="password" required>
-                                <div id="passwordHelpBlock" class="form-text">
-                                </div>
+                                <button class="btn btn-primary w-100 py-2" type="submit">Enviar</button>
                                 <br>
-                                <button class="btn btn-primary w-100 py-2" type="submit">Iniciar Sesión</button>
-                                <br><br>
-                                <p>Olvidaste tu contraseña? Haz click aqui <a href="{{ url_for('recuperar_contraseña') }}">Recuperar contraseña</a></p>
                             </form>
                         </div>
                     </div>
@@ -49,6 +43,7 @@
             <div class="content-foo">
                 <h4>Funciones</h4>
                 <p><a href="/">Inicio</a></p>
+                <p><a href="/login">Inicio de Sesion</a></p>
             </div>
             <div class="content-foo">
                 <h4>Correo de contacto</h4>
@@ -70,4 +65,5 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
+
 </html>

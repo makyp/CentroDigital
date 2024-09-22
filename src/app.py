@@ -468,5 +468,9 @@ def mis_tareas():
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
+@app.route('/recuperacion')
+def recuperar_contraseña():
+    return render_template('inicio_sesion/recuperar.html')
+
 if __name__ == '__main__':
     app.run(debug=True)
