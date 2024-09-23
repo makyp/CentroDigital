@@ -472,5 +472,9 @@ def mis_tareas():
 def recuperar_contraseña():
     return render_template('inicio_sesion/recuperar.html')
 
+@app.route('/registro_empresa')
+def registro_empresa():
+    return render_template('empresa.html')
+
 if __name__ == '__main__':
     app.run(debug=True)
