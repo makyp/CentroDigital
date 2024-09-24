@@ -90,20 +90,3 @@ class Comentario:
             'fecha': self.fecha
         }
 
-
-class Mensaje:
-    def __init__(self, remitente, destinatario, contenido, fecha=None, _id=None):
-        self._id = _id if _id else ObjectId()
-        self.remitente = remitente
-        self.destinatario = destinatario
-        self.contenido = contenido
-        self.fecha = fecha if fecha else datetime.now()
-
-    def formato_doc(self):
-        return {
-            '_id': self._id,
-            'remitente': self.remitente,
-            'destinatario': self.destinatario,
-            'contenido': self.contenido,
-            'fecha': self.fecha.isoformat()
-        }

@@ -26,7 +26,7 @@ def home():
     if 'correo' in session:
         usuario = usuarios_collection.find_one({'correo': session['correo']})
         if usuario:
-            return render_template('home.html', usuario=usuario)
+            return render_template('home.html', usuario = usuario)
     return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -472,9 +472,13 @@ def mis_tareas():
 def recuperar_contraseña():
     return render_template('inicio_sesion/recuperar.html')
 
+@app.route('/formulario_empresa')
+def formulario_empresa():
+    return render_template('empresa.html')
+
 @app.route('/registro_empresa')
 def registro_empresa():
-    return render_template('empresa.html')
+    return render_template('inicio_sesion/registro_empresa.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
