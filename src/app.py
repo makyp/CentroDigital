@@ -26,7 +26,7 @@ def home():
     if 'correo' in session:
         usuario = usuarios_collection.find_one({'correo': session['correo']})
         if usuario:
-            return render_template('home.html', usuario=usuario)
+            return render_template('home.html', usuario = usuario)
     return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -322,15 +322,27 @@ def agregar_tarea(id):
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
+from flask import request, session, flash, redirect, url_for, render_template
+from bson.objectid import ObjectId
+
 @app.route('/tareas', methods=['GET'])
 def ver_todas_las_tareas():
     if 'correo' in session and session.get('role') == 'admin':
+        # Obtener los filtros de la URL
+        filtro_proyecto = request.args.get('proyecto')
+        filtro_miembro = request.args.get('miembro')
+        
         proyectos = proyectos_collection.find()
         tareas = []
         for proyecto in proyectos:
+            # Si hay filtro por nombre de proyecto, aplicar el filtro
+            if filtro_proyecto and filtro_proyecto.lower() not in proyecto['nombre'].lower():
+                continue  # Saltar este proyecto si no coincide con el filtro
+
             for tarea in proyecto.get('tareas', []):
                 miembro_id = tarea.get('miembroasignado')
                 miembro_nombre = "Sin asignar"
+                
                 if miembro_id:
                     if isinstance(miembro_id, dict):  # Verificar si es un diccionario
                         miembro_id = miembro_id.get('_id')  # Obtener el ID del diccionario
@@ -338,14 +350,22 @@ def ver_todas_las_tareas():
                         miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)}, {'nombre': 1, 'apellido': 1})
                         if miembro:
                             miembro_nombre = f"{miembro['nombre']} {miembro['apellido']}"
+                
                 tarea['miembro_nombre'] = miembro_nombre
                 tarea['proyecto_nombre'] = proyecto['nombre']
                 tarea['proyecto_id'] = proyecto['_id']
+
+                # Si hay filtro por miembro, aplicar el filtro
+                if filtro_miembro and filtro_miembro.lower() not in miembro_nombre.lower():
+                    continue  # Saltar esta tarea si no coincide con el filtro
+
                 tareas.append(tarea)
-                     
+
         return render_template('admin/ver_tareas.html', tareas=tareas)
+
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
+
 
 # Ruta para ver todas las tareas
 @app.route('/tareas_general')
@@ -457,6 +477,7 @@ def mis_tareas():
                 for tarea in proyecto['tareas']:
                     if tarea['miembroasignado'] == str(usuario['_id']):
                         tarea_info = {
+                            '_id': tarea['_id'],  # Incluimos el ID de la tarea
                             'nombre': tarea['nombre'],
                             'descripcion': tarea['descripcion'],
                             'estado': tarea['estado'],
@@ -468,9 +489,37 @@ def mis_tareas():
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
+
 @app.route('/recuperacion')
 def recuperar_contraseña():
     return render_template('inicio_sesion/recuperar.html')
+
+@app.route('/registro_empresa')
+def registro_empresa():
+    return render_template('empresa.html')
+
+@app.route('/cambiar_estado_tarea/<id>', methods=['POST'])
+def cambiar_estado_tarea(id):
+    nuevo_estado = request.form['estado']  # Obtiene el nuevo estado del formulario
+    usuario = usuarios_collection.find_one({'correo': session['correo']})
+
+    if usuario:
+        # Buscar el proyecto que contiene la tarea y actualizar el estado de la tarea
+        proyectos = list(proyectos_collection.find({'tareas._id': ObjectId(id)}))
+        for proyecto in proyectos:
+            for tarea in proyecto['tareas']:
+                if str(tarea['_id']) == id:
+                    tarea['estado'] = nuevo_estado  # Actualiza el estado de la tarea
+                    proyectos_collection.update_one(
+                        {'_id': proyecto['_id'], 'tareas._id': ObjectId(id)},
+                        {'$set': {'tareas.$.estado': nuevo_estado}}
+                    )
+                    flash('El estado de la tarea ha sido actualizado.')
+                    return redirect(url_for('mis_tareas'))
+    
+    flash('No se pudo actualizar el estado de la tarea.')
+    return redirect(url_for('mis_tareas'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -16,10 +16,10 @@
             <a href="{{ url_for('login') }}">Iniciar Sesión</a>
         </nav>
         <section class="textos-header">
-            <h1>Centro Digital de Desarrollo Tecnologico
-                Universidad de Cundinamarca Seccional Ubaté
+            <h1>Centro Digital de Desarrollo Tecnologico <br>
+                Universidad de Cundinamarca 
+                <br>Seccional Ubaté
             </h1>
-            <h2></h2>
         </section>
         <div class="wave" style="height: 150px; overflow: hidden;" ><svg viewBox="0 0 500 150" preserveAspectRatio="none" style="height: 100%; width: 100%;"><path d="M0.00,50.10 C187.36,208.58 349.20,-50.10 500.00,50.10 L500.00,150.33 L0.00,150.33 Z" style="stroke: none; fill: #fff;"></path></svg></div>
     
@@ -48,7 +48,7 @@
                 <img src="static/img/Ima2.png" alt="" class="imagen-about-us">
                 <div class="contenido-textos">
                     <h3><span>1</span>Haz click en el siguiente boton...</h3>
-                    <button class="btn btn-primary w-100 py-2" type="submit">Click Aqui</button>
+                    <a href="{{ url_for('registro_empresa') }}" >Click Aqui</a>
                 </div>
             </div>
         </section>
@@ -60,7 +60,7 @@
                     <div class="contenido-texto-card">
                         <h4>Brandon Bustos</h4>
                         <br>
-                        <p>Ingeniero de sistemas de 9 semestre de la Universidad De Cundinamarca.</p>
+                        <p>Aspirante a ingeniero de sistemas de la Universidad De Cundinamarca.</p>
                     </div>
                 </div>
                 <div class="card">
@@ -68,7 +68,15 @@
                     <div class="contenido-texto-card">
                         <h4>Maira Quiroga</h4>
                         <br>
-                        <p>Ingeniera de sistemas de 9 semestre de la Universidad De Cundinamarca.</p>
+                        <p>Aspirante a ingeniera de sistemas de la Universidad De Cundinamarca.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="static/img/imgT.jpg" alt="">
+                    <div class="contenido-texto-card">
+                        <h4>Segundo Cortes</h4>
+                        <br>
+                        <p>Director CDDT</p>
                     </div>
                 </div>
             </div> 
@@ -88,6 +96,7 @@
                 <h4>Equipo</h4>
                 <p><label>Brandon Enrique Bustos Veloza</label></p>
                 <p><label>Maira Tatiana Quiroga Peralta</label></p>
+                <p><label>Segundo Leonardo Cortes Lopez</label></p>
             </div>
         </div>
         <h2 class="titulo-final">&copy; CDDT | Centro Digital de Desarrollo Tecnologico</h2>

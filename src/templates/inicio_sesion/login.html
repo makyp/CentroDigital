@@ -28,15 +28,26 @@
                                 <label for="exampleFormControlInput1" class="form-label">Correo Electrónico</label>
                                 <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="correo@ejemplo.com" name="correo" required>
                                 <br>
+                                
                                 <label for="inputPassword5" class="form-label">Contraseña</label>
                                 <input type="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock" name="password" required>
-                                <div id="passwordHelpBlock" class="form-text">
+                                
+                                <!-- Checkbox para mostrar/ocultar la contraseña -->
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="showPassword" onclick="togglePassword()">
+                                    <label class="form-check-label" for="showPassword">
+                                        Mostrar contraseña
+                                    </label>
                                 </div>
+                                
+                                <div id="passwordHelpBlock" class="form-text"></div>
                                 <br>
+                                
                                 <button class="btn btn-primary w-100 py-2" type="submit">Iniciar Sesión</button>
                                 <br><br>
-                                <p>Olvidaste tu contraseña? Haz click aqui <a href="{{ url_for('recuperar_contraseña') }}">Recuperar contraseña</a></p>
+                                <p>¿Olvidaste tu contraseña? Haz clic aquí <a href="{{ url_for('recuperar_contraseña') }}">Recuperar contraseña</a></p>
                             </form>
+                            
                         </div>
                     </div>
                 </div>
@@ -62,6 +73,7 @@
                 <h4>Equipo</h4>
                 <p><label>Brandon Enrique Bustos Veloza</label></p>
                 <p><label>Maira Tatiana Quiroga Peralta</label></p>
+                <p><label>Segundo Leonardo Cortes Lopez</label></p>
             </div>
         </div>
         <h2 class="titulo-final">&copy; CDDT | Centro Digital de Desarrollo Tecnologico</h2>
@@ -69,5 +81,15 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function togglePassword() {
+            var passwordField = document.getElementById("inputPassword5");
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+            } else {
+                passwordField.type = "password";
+            }
+        }
+    </script>
 </body>
 </html>

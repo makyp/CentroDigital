@@ -4,10 +4,31 @@
 
 {% block content %}
 <div class="container mt-4">
-        
-    <h2>Bienvenido, {{ usuario.nombre }} {{ usuario.apellido }}</h2>
-    <p>Rol: {{ usuario.role }}</p>
-    <p>Cargo: {{ usuario.cargo }}</p>
-    <p>Habilidades: {{ usuario.habilidades | join(', ') }}</p>
+    <!-- Card principal con información del usuario -->
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title">Bienvenido, {{ usuario.nombre }} {{ usuario.apellido }}</h2>
+            <h5 class="card-subtitle mb-3 text-muted">Información Personal</h5>
+            
+            <!-- Información detallada del usuario -->
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Rol:</strong> <span class="badge badge-info">{{ usuario.role }}</span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Cargo:</strong> {{ usuario.cargo }}</p>
+                </div>
+                <div class="col-md-12">
+                    <p><strong>Habilidades:</strong> 
+                        {% if usuario.habilidades %}
+                            {{ usuario.habilidades | join(', ') }}
+                        {% else %}
+                            No hay habilidades registradas.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
