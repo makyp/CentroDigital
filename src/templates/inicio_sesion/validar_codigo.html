@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/static/img/Ima1.png">
+    <link rel="stylesheet" type="text/css" href="/static/css/estilos_login.css">
+    <title>Validar código - CDDT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+
+<body>
+    <section class="background-radial-gradient overflow-hidden">
+        <div class="container px-4 py-5 px-md-5 text-center text-lg-start my-5">
+            <div class="row gx-lg-5 align-items-center mb-5">
+                <div class="col-lg-6 mb-5 mb-lg-0" style="z-index: 10">
+                    <h1 class="my-5 display-5 fw-bold ls-tight" style="color: hsl(120, 81%, 95%)"> Centro Digital de
+                        Desarrollo Tecnologico <br />
+                    </h1>
+                </div>
+                <div class="col-lg-6 mb-5 mb-lg-0 position-relative">
+                    <div class="card bg-glass">
+                        <div class="card-body px-4 py-5 px-md-5">
+                            <h1 class="h3 mb-3" style="color: black;">Validar Código</h1>
+                            <form method="POST">
+                                {% if not codigo_valido %}
+                                    <!-- Mostrar campo para ingresar el código si el código aún no es válido -->
+                                    <label for="codigo" class="form-label">Ingresa el código de validación:</label>
+                                    <input type="text" class="form-control" id="codigo" name="codigo" placeholder="Código de validación" required>
+                                    <br>
+                                    <button class="btn btn-primary w-100 py-2" type="submit">Validar código</button>
+                                {% else %}
+                                    <!-- Mostrar campos de nueva contraseña si el código es válido -->
+                                    <label for="nueva_password" class="form-label">Nueva Contraseña:</label>
+                                    <input type="password" class="form-control" id="nueva_password" name="nueva_password" placeholder="Nueva contraseña" required>
+                                    <br>
+
+                                    <label for="confirmar_password" class="form-label">Confirmar Nueva Contraseña:</label>
+                                    <input type="password" class="form-control" id="confirmar_password" name="confirmar_password" placeholder="Confirmar nueva contraseña" required>
+                                    <br>
+
+                                    <button class="btn btn-primary w-100 py-2" type="submit">Cambiar Contraseña</button>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="contenedor-footer">
+            <div class="content-foo">
+                <h4>Funciones</h4>
+                <p><a href="/">Inicio</a></p>
+                <p><a href="/login">Inicio de Sesion</a></p>
+            </div>
+            <div class="content-foo">
+                <h4>Correo de contacto</h4>
+                <p></p>
+            </div>
+            <div class="content-foo">
+                <h4>Ubicación</h4>
+                <p>Villa De San Diego De Ubaté</p>
+            </div>
+            <div class="content-foo">
+                <h4>Equipo</h4>
+                <p><label>Brandon Enrique Bustos Veloza</label></p>
+                <p><label>Maira Tatiana Quiroga Peralta</label></p>
+            </div>
+        </div>
+        <h2 class="titulo-final">&copy; CDDT | Centro Digital de Desarrollo Tecnologico</h2>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
