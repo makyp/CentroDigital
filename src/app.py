@@ -477,6 +477,7 @@ def mis_tareas():
                 for tarea in proyecto['tareas']:
                     if tarea['miembroasignado'] == str(usuario['_id']):
                         tarea_info = {
+                            '_id': tarea['_id'],  # Incluimos el ID de la tarea
                             'nombre': tarea['nombre'],
                             'descripcion': tarea['descripcion'],
                             'estado': tarea['estado'],
@@ -488,6 +489,7 @@ def mis_tareas():
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
+
 @app.route('/recuperacion')
 def recuperar_contraseña():
     return render_template('inicio_sesion/recuperar.html')
@@ -495,6 +497,29 @@ def recuperar_contraseña():
 @app.route('/registro_empresa')
 def registro_empresa():
     return render_template('empresa.html')
+
+@app.route('/cambiar_estado_tarea/<id>', methods=['POST'])
+def cambiar_estado_tarea(id):
+    nuevo_estado = request.form['estado']  # Obtiene el nuevo estado del formulario
+    usuario = usuarios_collection.find_one({'correo': session['correo']})
+
+    if usuario:
+        # Buscar el proyecto que contiene la tarea y actualizar el estado de la tarea
+        proyectos = list(proyectos_collection.find({'tareas._id': ObjectId(id)}))
+        for proyecto in proyectos:
+            for tarea in proyecto['tareas']:
+                if str(tarea['_id']) == id:
+                    tarea['estado'] = nuevo_estado  # Actualiza el estado de la tarea
+                    proyectos_collection.update_one(
+                        {'_id': proyecto['_id'], 'tareas._id': ObjectId(id)},
+                        {'$set': {'tareas.$.estado': nuevo_estado}}
+                    )
+                    flash('El estado de la tarea ha sido actualizado.')
+                    return redirect(url_for('mis_tareas'))
+    
+    flash('No se pudo actualizar el estado de la tarea.')
+    return redirect(url_for('mis_tareas'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

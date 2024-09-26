@@ -3,60 +3,104 @@
 {% block title %}Mis Tareas{% endblock %}
 
 {% block content %}
-    <h1 class="mt-4">Mis Tareas</h1>
+<h1 class="mt-4">Mis Tareas</h1>
 
-    <table class="table table-bordered kanban-table">
-        <thead>
-            <tr>
-                <th>Por Hacer</th>
-                <th>En Progreso</th>
-                <th>Completada</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr class="kanban-column">
-                <td class="kanban-list">
-                    {% for tarea in tareas %}
-                        {% if tarea.estado == "Por iniciar" %}
-                            <div class="kanban-taskpi">
-                                <strong>Proyecto: {{ tarea.proyecto }}</strong><br>
-                                <strong>Nombre:</strong>{{ tarea.nombre }}<br>
-                                <strong>Descripción: </strong>{{ tarea.descripcion }}<br>
-                                <strong>Fecha Vencimiento: </strong>{{ tarea.fechavencimiento }}
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </td>
-                <td class="kanban-list">
-                    {% for tarea in tareas %}
-                        {% if tarea.estado == "En progreso" %}
-                            <div class="kanban-taskep">
-                                <strong>Proyecto: {{ tarea.proyecto }}</strong><br>
-                                <strong>Nombre:</strong>{{ tarea.nombre }}<br>
-                                <strong>Descripción: </strong>{{ tarea.descripcion }}<br>
-                                <strong>Fecha Vencimiento: </strong>{{ tarea.fechavencimiento }}
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </td>
-                <td class="kanban-list">
-                    {% for tarea in tareas %}
-                        {% if tarea.estado == "Completado" %}
-                            <div class="kanban-taskc">
-                                <strong>Proyecto: {{ tarea.proyecto }}</strong><br>
-                                <strong>Nombre:</strong>{{ tarea.nombre }}<br>
-                                <strong>Descripción: </strong>{{ tarea.descripcion }}<br>
-                                <strong>Fecha Vencimiento: </strong>{{ tarea.fechavencimiento }}
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </td>
-            </tr>
-        </tbody>
-    </table>
+<table class="table table-bordered kanban-table">
+    <thead>
+        <tr>
+            <th>Por Hacer</th>
+            <th>En Progreso</th>
+            <th>Completada</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr class="kanban-column">
+            <!-- Columna "Por Hacer" -->
+            <td class="kanban-list">
+                {% for tarea in tareas %}
+                    {% if tarea.estado == "Por iniciar" %}
+                        <div class="kanban-taskpi mb-3 p-2 border">
+                            <strong>Proyecto: {{ tarea.proyecto }}</strong><br>
+                            <strong>Nombre:</strong> {{ tarea.nombre }}<br>
+                            <strong>Descripción: </strong> {{ tarea.descripcion }}<br>
+                            <strong>Fecha Vencimiento: </strong> {{ tarea.fechavencimiento }}<br>
+                            
+                            <!-- Formulario para cambiar el estado -->
+                            <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
+                                <div class="form-group mt-2">
+                                    <label for="estado">Cambiar estado:</label>
+                                    <select name="estado" class="form-control">
+                                        <option value="Por iniciar" {% if tarea.estado == "Por iniciar" %}selected{% endif %}>Por Hacer</option>
+                                        <option value="En progreso" {% if tarea.estado == "En progreso" %}selected{% endif %}>En Progreso</option>
+                                        <option value="Completado" {% if tarea.estado == "Completado" %}selected{% endif %}>Completada</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-primary">Actualizar Estado</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </td>
 
-    {% if not tareas %}
-        <p>No tienes ninguna tarea asignada.</p>
-    {% endif %}
+            <!-- Columna "En Progreso" -->
+            <td class="kanban-list">
+                {% for tarea in tareas %}
+                    {% if tarea.estado == "En progreso" %}
+                        <div class="kanban-taskep mb-3 p-2 border">
+                            <strong>Proyecto: {{ tarea.proyecto }}</strong><br>
+                            <strong>Nombre:</strong> {{ tarea.nombre }}<br>
+                            <strong>Descripción: </strong> {{ tarea.descripcion }}<br>
+                            <strong>Fecha Vencimiento: </strong> {{ tarea.fechavencimiento }}<br>
+                            
+                            <!-- Formulario para cambiar el estado -->
+                            <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
+                                <div class="form-group mt-2">
+                                    <label for="estado">Cambiar estado:</label>
+                                    <select name="estado" class="form-control">
+                                        <option value="Por iniciar" {% if tarea.estado == "Por iniciar" %}selected{% endif %}>Por Hacer</option>
+                                        <option value="En progreso" {% if tarea.estado == "En progreso" %}selected{% endif %}>En Progreso</option>
+                                        <option value="Completado" {% if tarea.estado == "Completado" %}selected{% endif %}>Completada</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-primary">Actualizar Estado</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </td>
+
+            <!-- Columna "Completada" -->
+            <td class="kanban-list">
+                {% for tarea in tareas %}
+                    {% if tarea.estado == "Completado" %}
+                        <div class="kanban-taskc mb-3 p-2 border">
+                            <strong>Proyecto: {{ tarea.proyecto }}</strong><br>
+                            <strong>Nombre:</strong> {{ tarea.nombre }}<br>
+                            <strong>Descripción: </strong> {{ tarea.descripcion }}<br>
+                            <strong>Fecha Vencimiento: </strong> {{ tarea.fechavencimiento }}<br>
+                            
+                            <!-- Formulario para cambiar el estado -->
+                            <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
+                                <div class="form-group mt-2">
+                                    <label for="estado">Cambiar estado:</label>
+                                    <select name="estado" class="form-control">
+                                        <option value="Por iniciar" {% if tarea.estado == "Por iniciar" %}selected{% endif %}>Por Hacer</option>
+                                        <option value="En progreso" {% if tarea.estado == "En progreso" %}selected{% endif %}>En Progreso</option>
+                                        <option value="Completado" {% if tarea.estado == "Completado" %}selected{% endif %}>Completada</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-primary">Actualizar Estado</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+{% if not tareas %}
+    <p>No tienes ninguna tarea asignada.</p>
+{% endif %}
 
 {% endblock %}
