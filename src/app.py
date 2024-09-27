@@ -55,12 +55,15 @@ def login():
         if usuario and check_password_hash(usuario['password'], password):
             session['correo'] = usuario['correo']
             session['role'] = usuario['role']
-            session['CambioDeContraseña']= usuario['CambioDeContraseña']
-            if usuario['CambioDeContraseña']:
-             flash('Por favor, cambia tu contraseña predeterminada.')
-             return render_template('inicio_sesion/recuperar.html')
+            if usuario['role'] == 'empresa':
+                return redirect(url_for('home'))
             else:
-             return redirect(url_for('home'))
+                session['CambioDeContraseña']= usuario['CambioDeContraseña']
+                if usuario['CambioDeContraseña']:
+                 flash('Por favor, cambia tu contraseña predeterminada.')
+                 return render_template('inicio_sesion/recuperar.html')
+                else:
+                 return redirect(url_for('home'))
         else:
          flash('Correo o contraseña incorrectos.')
     return render_template('inicio_sesion/login.html')
@@ -548,9 +551,36 @@ def recuperacion():
 
      return render_template('inicio_sesion/recuperar.html')
 
-@app.route('/registro_empresa')
+@app.route('/registro_empresa', methods=['GET', 'POST'])
 def registro_empresa():
+    if request.method == 'POST':
+        nombre_empresa = request.form['empresa']
+        correo_empresa = request.form['correo_empresa']
+        nit = request.form['NIT']
+        password = request.form['password']
+        ConfirmPassword = request.form['Confirm_password']
+
+        if usuarios_collection.find_one({'correo': correo_empresa}):
+            flash('El correo ya está registrado.')
+        else:
+            try:
+                if nombre_empresa and correo_empresa and nit and password and ConfirmPassword:
+                    if ConfirmPassword == password:
+                        passwordHashed = generate_password_hash(password)
+                        nuevo_usuario = Empresa(nombre_empresa, correo_empresa, nit, passwordHashed)
+                        usuarios_collection.insert_one(nuevo_usuario.formato_doc())
+                        flash('Empresa registrada exitosamente.')
+                        return redirect(url_for('home'))
+                    else:
+                        flash('Las contraseñas no coinciden')
+                else:
+                    flash('Por favor, completa todos los campos.')
+            except Exception as e:
+                flash(f'Error al registrar la empresa: {str(e)}')
+                return redirect(url_for('home'))
+
     return render_template('empresa.html')
+
 
 @app.route('/cambiar_estado_tarea/<id>', methods=['POST'])
 def cambiar_estado_tarea(id):
@@ -584,7 +614,7 @@ def validar_codigo(correo):
         nueva_password = request.form.get('nueva_password')
         confirmar_password = request.form.get('confirmar_password')
 
-        # Paso 1: Validar el código de recuperación (si aún no se ha ingresado la nueva contraseña)
+        # Validar el código de recuperación 
         if not nueva_password and not confirmar_password:
             if usuario.get('codigo_validacion') == codigo_ingresado:
                 flash('Código de validación correcto. Ahora puedes cambiar tu contraseña.')
@@ -593,13 +623,13 @@ def validar_codigo(correo):
                 flash('El código de validación es incorrecto.')
                 return redirect(url_for('validar_codigo', correo=correo))
 
-        # Paso 2: Validar las contraseñas ingresadas (una vez el código ya fue validado)
+        # Validar las contraseñas ingresadas 
         if nueva_password and confirmar_password:
             if nueva_password != confirmar_password:
                 flash('Las contraseñas no coinciden.')
                 return redirect(url_for('validar_codigo', correo=correo) + '?validado=true')
             
-            # Actualizamos la contraseña en la base de datos
+
             nueva_password_hashed = generate_password_hash(nueva_password)
             usuarios_collection.update_one(
                 {'correo': correo},
@@ -611,7 +641,7 @@ def validar_codigo(correo):
     # Aquí verificamos si el código fue validado y cambiamos la vista en base a esa variable
     codigo_valido = request.args.get('validado') == 'true'
 
-    # Renderizar la plantilla con el estado del código validado
+    # Renderizar la plantilla con el estado del código valido
     return render_template('inicio_sesion/validar_codigo.html', correo=correo, codigo_valido=codigo_valido)
 
 if __name__ == '__main__':

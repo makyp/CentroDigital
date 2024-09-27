@@ -20,7 +20,23 @@ class Usuario:
             'cargo': self.cargo,
             'habilidades': self.habilidades,
         }
+    
+class Empresa:
+    def __init__(self, nombre_empresa , correo_empresa, NIT, password):
+        self.nombre_empresa = nombre_empresa
+        self.correo_empresa = correo_empresa
+        self.NIT = NIT
+        self.password = password
 
+    def formato_doc(self):
+        return {
+            'nombre': self.nombre_empresa,
+            'correo': self.correo_empresa,
+            'role':'empresa',
+            'NIT': self.NIT,
+            'password': self.password,
+        }
+    
 class Proyecto:
     def __init__(self, nombre, descripcion, fechainicio, fechafinal, estado):
         self.nombre = nombre

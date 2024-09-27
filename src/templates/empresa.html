@@ -23,7 +23,7 @@
                     <div class="card bg-glass">
                         <div class="card-body px-4 py-5 px-md-5">
                             <h1 class="h3 mb-3" style="color: black;">Registro empresa</h1>
-                            <form method="POST">
+                            <form method="POST" action="{{ url_for('registro_empresa') }}">
                                 <div class="form-group">
                                     <label for="nombre">Nombre empresa</label>
                                     <input type="text" name="empresa" class="form-control" required>
@@ -39,6 +39,10 @@
                                 <div class="form-group">
                                     <label for="password">Contraseña:</label>
                                     <input type="password" name="password" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">Confirmar Contraseña:</label>
+                                    <input type="password" name="Confirm_password" class="form-control" required>
                                 </div>
                                 <br>
                                 <button type="submit" class="btn btn-primary">Registrar</button>
