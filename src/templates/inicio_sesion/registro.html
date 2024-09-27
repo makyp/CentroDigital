@@ -19,22 +19,14 @@ Registro
                 </div>
             {% endif %}
         {% endwith %}
-        <form method="POST">
+        <form method="POST" action="{{ url_for('registro') }}"  >
             <div class="form-group">
-                <label for="nombre">Nombre:</label>
+                <label for="nombre">Nombre Completo :</label>
                 <input type="text" name="nombre" class="form-control" required>
             </div>
             <div class="form-group">
-                <label for="apellido">Apellido:</label>
-                <input type="text" name="apellido" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="correo">Correo:</label>
+                <label for="correo">E-mail:</label>
                 <input type="email" name="correo" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Contraseña:</label>
-                <input type="password" name="password" class="form-control" required>
             </div>
             <div class="form-group">
                 <label for="role">Rol:</label>
@@ -42,15 +34,6 @@ Registro
                     <option value="admin">Administrador</option>
                     <option value="miembro">Miembro</option>
                 </select>
-            </div>
-            <div class="form-group">
-                <label for="cargo">Cargo:</label>
-                <input type="text" name="cargo" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="habilidades">Habilidades (separadas por comas):</label>
-                <input type="text" name="habilidades" class="form-control" required>
-            </div>
             <button type="submit" class="btn btn-primary">Registrar</button>
         </form>
         <!-- <a href="{{ url_for('login') }}">Iniciar sesión</a> -->

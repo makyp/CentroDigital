@@ -37,6 +37,23 @@ class Empresa:
             'password': self.password,
         }
     
+class UserWithoutRegister:
+     def __init__(self, nombre, correo, password, role):
+        self.nombre = nombre
+        self.correo = correo
+        self.password = password
+        self.role = role
+      
+    
+     def formato_doc(self):
+        return {
+            'nombre': self.nombre,
+            'correo': self.correo,
+            'password': self.password,
+            'role': self.role,
+            'registroCompletado': False
+        }
+
 class Proyecto:
     def __init__(self, nombre, descripcion, fechainicio, fechafinal, estado):
         self.nombre = nombre

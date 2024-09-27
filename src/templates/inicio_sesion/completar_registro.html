@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/static/img/Ima1.png">
+    <link rel="stylesheet" type="text/css" href="/static/css/estilos_login.css">
+    <title>Completar registro usuario - CDDT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+
+<body>
+    <section class="background-radial-gradient overflow-hidden">
+        <div class="container px-4 py-5 px-md-5 text-center text-lg-start my-5">
+            <div class="row gx-lg-5 align-items-center mb-5">
+                <div class="col-lg-6 mb-5 mb-lg-0" style="z-index: 10">
+                    <h1 class="my-5 display-5 fw-bold ls-tight" style="color: hsl(120, 81%, 95%)"> Centro Digital de
+                        Desarrollo Tecnologico <br />
+                    </h1>
+                </div>
+                <div class="col-lg-6 mb-5 mb-lg-0 position-relative">
+                    <div class="card bg-glass">
+                        <div class="card-body px-4 py-5 px-md-5">
+                            <h1 class="h3 mb-3" style="color: black;">Completar Registro Usuario</h1>
+                            <form method="POST" action="{{ url_for('completar_registro', token=token) }}" onsubmit="return validarContraseñas();">
+                                <div class="form-group">
+                                    <label for="nombre_completo">Nombre Completo:</label>
+                                    <input type="text" name="nombre_completo" class="form-control" value="{{ nombre_completo }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="correo">Correo:</label>
+                                    <input type="email" name="correo" class="form-control" value="{{ correo }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="telefono">Teléfono:</label>
+                                    <input type="text" name="telefono" class="form-control" required maxlength="10">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profesion">Profesión:</label>
+                                    <input type="text" name="profesion" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label for="estudios">Estudios:</label>
+                                    <input type="text" name="estudios" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label for="habilidades">Habilidades:</label>
+                                    <textarea name="habilidades" class="form-control" rows="3"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="experiencia">Experiencia:</label>
+                                    <textarea name="experiencia" class="form-control" rows="4"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="programa">Programa al que pertenece:</label>
+                                    <input type="text" name="programa" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">Contraseña Temporal :</label>
+                                    <input type="password" name="temp_password" id="temp_password" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirm_password">Nueva Contraseña:</label>
+                                    <input type="password" id="new_password" name="new_password" class="form-control" required>
+                                </div>
+                                <br>
+                                <button type="submit" class="btn btn-primary">Completar Registro</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="contenedor-footer">
+            <div class="content-foo">
+                <h4>Funciones</h4>
+                <p><a href="/">Inicio</a></p>
+                <p><a href="/login">Inicio de Sesion</a></p>
+            </div>
+            <div class="content-foo">
+                <h4>Correo de contacto</h4>
+                <p></p>
+            </div>
+            <div class="content-foo">
+                <h4>Ubicación</h4>
+                <p>Villa De San Diego De Ubaté</p>
+            </div>
+            <div class="content-foo">
+                <h4>Equipo</h4>
+                <p><label>Brandon Enrique Bustos Veloza</label></p>
+                <p><label>Maira Tatiana Quiroga Peralta</label></p>
+            </div>
+        </div>
+        <h2 class="titulo-final">&copy; CDDT | Centro Digital de Desarrollo Tecnologico</h2>
+    </footer>
+    <script>
+        function validarContraseñas() {
+            var password = document.getElementById("password").value;
+            var confirmPassword = document.getElementById("confirm_password").value;
+            
+            if (password !== confirmPassword) {
+                alert("Las contraseñas no coinciden.");
+                return false;
+            }
+            return true;
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>

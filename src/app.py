@@ -1,6 +1,7 @@
 import datetime
 import secrets
 import random
+from itsdangerous import URLSafeTimedSerializer
 import string
 from flask_mail import Mail, Message 
 from bson import ObjectId, errors as bson_errors
@@ -9,6 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from bson import ObjectId
 from config import Conexion
 from datos import *
+from functions import *
 from datetime import datetime
 from operator import itemgetter
 
@@ -55,15 +57,7 @@ def login():
         if usuario and check_password_hash(usuario['password'], password):
             session['correo'] = usuario['correo']
             session['role'] = usuario['role']
-            if usuario['role'] == 'empresa':
-                return redirect(url_for('home'))
-            else:
-                session['CambioDeContraseña']= usuario['CambioDeContraseña']
-                if usuario['CambioDeContraseña']:
-                 flash('Por favor, cambia tu contraseña predeterminada.')
-                 return render_template('inicio_sesion/recuperar.html')
-                else:
-                 return redirect(url_for('home'))
+            return redirect(url_for('home'))
         else:
          flash('Correo o contraseña incorrectos.')
     return render_template('inicio_sesion/login.html')
@@ -73,26 +67,19 @@ def registro():
     if 'correo' in session and session.get('role') == 'admin':
         if request.method == 'POST':
             nombre = request.form['nombre']
-            apellido = request.form['apellido']
             correo = request.form['correo']
             role = request.form['role']
-            cargo = request.form['cargo']
-            habilidades = request.form['habilidades'].split(',')
             if usuarios_collection.find_one({'correo': correo}):
                 flash('El correo ya está registrado.')
             else:
                 try:
-                 alphabet = string.ascii_letters + string.digits
-                 passwordsin = ''.join(secrets.choice(alphabet) for i in range(8))
-                 password = generate_password_hash(passwordsin)
-                 nuevo_usuario = Usuario(nombre, apellido, correo, password, role, cargo, habilidades)
+                 password = generar_contraseña()
+                 s = URLSafeTimedSerializer(app.secret_key)
+                 token=s.dumps(correo, salt='registro-usuario')
+                 passwordHashed=generate_password_hash(password)
+                 nuevo_usuario = UserWithoutRegister(nombre, correo, passwordHashed, role)
                  usuarios_collection.insert_one(nuevo_usuario.formato_doc())
-                 usuarios_collection.update_one(
-                 {'correo': correo}, 
-                 {'$set': {'CambioDeContraseña': True }}
-                 )
-                 msg = Message("Registro exitoso", recipients=[correo])
-                 msg.body = f"Hola {nombre},\n\nTu cuenta ha sido registrada exitosamente.\n\nTu correo: {correo}\nTu contraseña: {passwordsin}\n\nPor favor, cámbiala en tu próximo inicio de sesión."
+                 msg=enviar_correo_registro(correo,password,token)
                  mail.send(msg)
                  flash('Registro exitoso. Se ha enviado un correo con tus credenciales.')
                 except Exception as e:
@@ -103,6 +90,63 @@ def registro():
         flash('No tienes permisos para acceder a esta página.')
         return redirect(url_for('home'))
 
+@app.route('/completar_registro/<token>', methods=['GET', 'POST'])
+def completar_registro(token):
+    try:
+        s = URLSafeTimedSerializer(app.secret_key)
+        email = s.loads(token, salt='registro-usuario', max_age=3600)  
+        usuario = usuarios_collection.find_one({'correo': email})
+
+        if not usuario:
+            flash('Usuario no encontrado.')
+            return redirect(url_for('home'))
+        
+        nombre_completo = usuario.get('nombre')  
+        correo = usuario.get('correo')
+        password = usuario.get('password')
+         
+        if request.method == 'POST':
+            
+            telefono = request.form.get('telefono')
+            profesion = request.form.get('profesion')
+            estudios = request.form.get('estudios')
+            habilidades = request.form.get('habilidades')
+            experiencia = request.form.get('experiencia')
+            programa = request.form.get('programa')
+            temp_Password= request.form['temp_password']
+            new_password = request.form['new_password']
+            
+            # Validar que las contraseñas coincidan (opcional)
+            if not check_password_hash(password, temp_Password):
+                print('La contraseña temporal no es válida.')
+                return redirect(url_for('completar_registro', token=token))
+            
+            # Actualizar los datos del usuario en la base de datos
+            usuarios_collection.update_one(
+                {'correo': correo},
+                {
+                    '$set': {
+                        'telefono': telefono,
+                        'profesion': profesion,
+                        'estudios': estudios,
+                        'habilidades': habilidades,
+                        'experiencia': experiencia,
+                        'programa': programa,
+                        'password': generate_password_hash(new_password),
+                        'registroCompletado': True  
+                    }
+                }
+            )
+
+            flash('Registro completado exitosamente.')
+            return redirect(url_for('login'))
+            
+        return render_template('inicio_sesion/completar_registro.html',
+                               nombre_completo=nombre_completo,correo=correo,token=token)
+    except Exception as e:
+        print('El enlace de registro ha expirado o es inválido. Error: {str(e)}')
+        return redirect(url_for('home'))
+    
 @app.route('/logout')
 def logout():
     session.pop('correo', None)
