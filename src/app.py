@@ -1,4 +1,8 @@
 import datetime
+import secrets
+import random
+import string
+from flask_mail import Mail, Message 
 from bson import ObjectId, errors as bson_errors
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -9,6 +13,19 @@ from datetime import datetime
 from operator import itemgetter
 
 app = Flask(__name__)
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'eusebioorlando1515@gmail.com' 
+app.config['MAIL_PASSWORD'] = 'oxctlajixjkgjruc'    
+app.config['MAIL_DEFAULT_SENDER'] = 'centrodigitaldedesarrollotecnologico@gmail.com' 
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_SUPPRESS_SEND'] = False  # Para evitar que supriman el envío de correos en modo debug
+app.config['MAIL_ASCII_ATTACHMENTS'] = False
+
+# Inicializamos Mail
+mail = Mail(app)
 app.secret_key = 'uhggjghlñhu'
 
 # Conexión a la base de datos
@@ -38,9 +55,14 @@ def login():
         if usuario and check_password_hash(usuario['password'], password):
             session['correo'] = usuario['correo']
             session['role'] = usuario['role']
-            return redirect(url_for('home'))
+            session['CambioDeContraseña']= usuario['CambioDeContraseña']
+            if usuario['CambioDeContraseña']:
+             flash('Por favor, cambia tu contraseña predeterminada.')
+             return render_template('inicio_sesion/recuperar.html')
+            else:
+             return redirect(url_for('home'))
         else:
-            flash('Correo o contraseña incorrectos.')
+         flash('Correo o contraseña incorrectos.')
     return render_template('inicio_sesion/login.html')
 
 @app.route('/registro', methods=['GET', 'POST'])
@@ -50,17 +72,28 @@ def registro():
             nombre = request.form['nombre']
             apellido = request.form['apellido']
             correo = request.form['correo']
-            passwordsin = request.form['password']
             role = request.form['role']
             cargo = request.form['cargo']
             habilidades = request.form['habilidades'].split(',')
             if usuarios_collection.find_one({'correo': correo}):
                 flash('El correo ya está registrado.')
             else:
-                password = generate_password_hash(passwordsin)
-                nuevo_usuario = Usuario(nombre, apellido, correo, password, role, cargo, habilidades)
-                usuarios_collection.insert_one(nuevo_usuario.formato_doc())
-                flash('Registro exitoso. Ahora puedes iniciar sesión.')
+                try:
+                 alphabet = string.ascii_letters + string.digits
+                 passwordsin = ''.join(secrets.choice(alphabet) for i in range(8))
+                 password = generate_password_hash(passwordsin)
+                 nuevo_usuario = Usuario(nombre, apellido, correo, password, role, cargo, habilidades)
+                 usuarios_collection.insert_one(nuevo_usuario.formato_doc())
+                 usuarios_collection.update_one(
+                 {'correo': correo}, 
+                 {'$set': {'CambioDeContraseña': True }}
+                 )
+                 msg = Message("Registro exitoso", recipients=[correo])
+                 msg.body = f"Hola {nombre},\n\nTu cuenta ha sido registrada exitosamente.\n\nTu correo: {correo}\nTu contraseña: {passwordsin}\n\nPor favor, cámbiala en tu próximo inicio de sesión."
+                 mail.send(msg)
+                 flash('Registro exitoso. Se ha enviado un correo con tus credenciales.')
+                except Exception as e:
+                    flash(f'Error al enviar el correo: {str(e)}')
                 return redirect(url_for('home'))
         return render_template('inicio_sesion/registro.html')
     else:
@@ -490,9 +523,30 @@ def mis_tareas():
     return redirect(url_for('home'))
 
 
-@app.route('/recuperacion')
-def recuperar_contraseña():
-    return render_template('inicio_sesion/recuperar.html')
+@app.route('/recuperacion', methods=['GET', 'POST'])
+def recuperacion():
+     if request.method == 'POST':
+        correo = request.form['correo']
+        usuario = usuarios_collection.find_one({'correo': correo})
+        if usuario:
+            # Generar un código de validación aleatorio
+            codigo_validacion = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            # Guardamos el código en la base de datos asociado al usuario
+            usuarios_collection.update_one(
+                {'correo': correo}, 
+                {'$set': {'codigo_validacion': codigo_validacion}}
+            )
+            # Enviar el código de validación por correo
+            msg = Message('Recuperación de Contraseña', sender='CentroDigitalDeDesarrollo@gmail.com', recipients=[correo])
+            msg.body = f"Tu código de validación es: {codigo_validacion}"
+            mail.send(msg)
+            
+            flash('Se ha enviado un código de validación a tu correo electrónico.')
+            return redirect(url_for('validar_codigo', correo=correo))
+        else:
+            flash('El correo ingresado no está registrado.')
+
+     return render_template('inicio_sesion/recuperar.html')
 
 @app.route('/registro_empresa')
 def registro_empresa():
@@ -520,6 +574,45 @@ def cambiar_estado_tarea(id):
     flash('No se pudo actualizar el estado de la tarea.')
     return redirect(url_for('mis_tareas'))
 
+
+@app.route('/validar_codigo/<correo>', methods=['GET', 'POST'])
+def validar_codigo(correo):
+    usuario = usuarios_collection.find_one({'correo': correo})
+    
+    if request.method == 'POST':
+        codigo_ingresado = request.form.get('codigo')
+        nueva_password = request.form.get('nueva_password')
+        confirmar_password = request.form.get('confirmar_password')
+
+        # Paso 1: Validar el código de recuperación (si aún no se ha ingresado la nueva contraseña)
+        if not nueva_password and not confirmar_password:
+            if usuario.get('codigo_validacion') == codigo_ingresado:
+                flash('Código de validación correcto. Ahora puedes cambiar tu contraseña.')
+                return redirect(url_for('validar_codigo', correo=correo) + '?validado=true')
+            else:
+                flash('El código de validación es incorrecto.')
+                return redirect(url_for('validar_codigo', correo=correo))
+
+        # Paso 2: Validar las contraseñas ingresadas (una vez el código ya fue validado)
+        if nueva_password and confirmar_password:
+            if nueva_password != confirmar_password:
+                flash('Las contraseñas no coinciden.')
+                return redirect(url_for('validar_codigo', correo=correo) + '?validado=true')
+            
+            # Actualizamos la contraseña en la base de datos
+            nueva_password_hashed = generate_password_hash(nueva_password)
+            usuarios_collection.update_one(
+                {'correo': correo},
+                {'$set': {'password': nueva_password_hashed, 'codigo_validacion': None,'CambioDeContraseña':None}}
+            )
+            flash('Contraseña actualizada exitosamente.')
+            return redirect(url_for('login'))
+
+    # Aquí verificamos si el código fue validado y cambiamos la vista en base a esa variable
+    codigo_valido = request.args.get('validado') == 'true'
+
+    # Renderizar la plantilla con el estado del código validado
+    return render_template('inicio_sesion/validar_codigo.html', correo=correo, codigo_valido=codigo_valido)
 
 if __name__ == '__main__':
     app.run(debug=True)

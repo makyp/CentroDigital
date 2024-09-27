@@ -77,16 +77,4 @@ class Tarea:
             'tiempo_dedicado': self.tiempo_dedicado,
         }
 
-class Comentario:
-    def __init__(self, autor_id, contenido, fecha):
-        self.autor_id = autor_id
-        self.contenido = contenido
-        self.fecha = fecha
-
-    def formato_doc(self):
-        return {
-            'autor_id': self.autor_id,
-            'contenido': self.contenido,
-            'fecha': self.fecha
-        }
 
