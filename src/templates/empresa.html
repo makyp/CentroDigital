@@ -9,7 +9,10 @@
     <title>Registro empresa - CDDT</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Incluye Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
+
 <body>
     <section class="background-radial-gradient overflow-hidden">
         <div class="container px-4 py-5 px-md-5 text-center text-lg-start my-5">
@@ -36,14 +39,27 @@
                                     <label for="cargo">NIT</label>
                                     <input type="text" name="NIT" class="form-control" required>
                                 </div>
-                                <div class="form-group">
-                                    <label for="password">Contraseña:</label>
-                                    <input type="password" name="password" class="form-control" required>
+
+                                <!-- Campo de Contraseña con ícono de ojo -->
+                                <label for="password" class="form-label">Contraseña</label>
+                                <div class="input-group">
+                                    <input type="password" id="password" class="form-control" name="password" required>
+                                    <!-- Botón con ícono de ojo para mostrar/ocultar la contraseña -->
+                                    <span class="input-group-text" onclick="togglePassword('password', 'eyeIcon1')">
+                                        <i id="eyeIcon1" class="fas fa-eye"></i>
+                                    </span>
                                 </div>
-                                <div class="form-group">
-                                    <label for="password">Confirmar Contraseña:</label>
-                                    <input type="password" name="Confirm_password" class="form-control" required>
+
+                                <!-- Campo de Confirmar Contraseña con ícono de ojo -->
+                                <label for="Confirm_password" class="form-label">Confirmar Contraseña</label>
+                                <div class="input-group">
+                                    <input type="password" id="Confirm_password" class="form-control" name="Confirm_password" required>
+                                    <!-- Botón con ícono de ojo para mostrar/ocultar la contraseña -->
+                                    <span class="input-group-text" onclick="togglePassword('Confirm_password', 'eyeIcon2')">
+                                        <i id="eyeIcon2" class="fas fa-eye"></i>
+                                    </span>
                                 </div>
+
                                 <br>
                                 <button type="submit" class="btn btn-primary">Registrar</button>
                             </form>
@@ -53,32 +69,53 @@
             </div>
         </div>
     </section>
-</div>
-<footer>
-    <div class="contenedor-footer">
-        <div class="content-foo">
-            <h4>Funciones</h4>
-            <p><a href="/">Inicio</a></p>
+
+    <footer>
+        <div class="contenedor-footer">
+            <div class="content-foo">
+                <h4>Funciones</h4>
+                <p><a href="/">Inicio</a></p>
+            </div>
+            <div class="content-foo">
+                <h4>Correo de contacto</h4>
+                <p></p>
+            </div>
+            <div class="content-foo">
+                <h4>Ubicación</h4>
+                <p>Villa De San Diego De Ubaté</p>
+            </div>
+            <div class="content-foo">
+                <h4>Equipo</h4>
+                <p><label>Brandon Enrique Bustos Veloza</label></p>
+                <p><label>Maira Tatiana Quiroga Peralta</label></p>
+                <p><label>Segundo Leonardo Cortes Lopez</label></p>
+            </div>
         </div>
-        <div class="content-foo">
-            <h4>Correo de contacto</h4>
-            <p></p>
-        </div>
-        <div class="content-foo">
-            <h4>Ubicación</h4>
-            <p>Villa De San Diego De Ubaté</p>
-        </div>
-        <div class="content-foo">
-            <h4>Equipo</h4>
-            <p><label>Brandon Enrique Bustos Veloza</label></p>
-            <p><label>Maira Tatiana Quiroga Peralta</label></p>
-            <p><label>Segundo Leonardo Cortes Lopez</label></p>
-        </div>
-    </div>
-    <h2 class="titulo-final">&copy; CDDT | Centro Digital de Desarrollo Tecnologico</h2>
-</footer>
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <h2 class="titulo-final">&copy; CDDT | Centro Digital de Desarrollo Tecnologico</h2>
+    </footer>
+
+    <!-- Scripts de Bootstrap y JQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Script para alternar el ícono del ojo y mostrar/ocultar la contraseña -->
+    <script>
+        function togglePassword(inputId, iconId) {
+            var passwordField = document.getElementById(inputId);
+            var eyeIcon = document.getElementById(iconId);
+            
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                eyeIcon.classList.remove("fa-eye");
+                eyeIcon.classList.add("fa-eye-slash");
+            } else {
+                passwordField.type = "password";
+                eyeIcon.classList.remove("fa-eye-slash");
+                eyeIcon.classList.add("fa-eye");
+            }
+        }
+    </script>
 </body>
+
 </html>
