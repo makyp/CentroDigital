@@ -13,6 +13,7 @@ from datos import *
 from functions import *
 from datetime import datetime
 from operator import itemgetter
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 
@@ -48,18 +49,26 @@ def home():
             return render_template('home.html', usuario = usuario)
     return redirect(url_for('login'))
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         correo = request.form['correo']
         password = request.form['password']
+        
+        # Consulta para buscar al usuario en la base de datos
         usuario = usuarios_collection.find_one({'correo': correo})
+        
+        # Verificar si el usuario existe y si la contraseña es correcta
         if usuario and check_password_hash(usuario['password'], password):
             session['correo'] = usuario['correo']
             session['role'] = usuario['role']
             return redirect(url_for('home'))
         else:
-         flash('Correo o contraseña incorrectos.')
+            # Agregar mensaje flash de error
+            flash('Correo o contraseña incorrectos.', 'danger')
+    
+    # Renderizar la página de inicio de sesión
     return render_template('inicio_sesion/login.html')
 
 @app.route('/registro', methods=['GET', 'POST'])
