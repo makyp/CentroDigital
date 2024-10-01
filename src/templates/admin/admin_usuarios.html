@@ -21,11 +21,11 @@ Administrar Usuarios
             <thead class="thead-dark">
                 <tr>
                     <th>Nombre</th>
-                    <th>Apellido</th>
                     <th>Correo</th>
                     <th>Rol</th>
                     <th>Cargo</th>
                     <th>Habilidades</th>
+                    <th>Estado Registro</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -33,11 +33,19 @@ Administrar Usuarios
                 {% for usuario in usuarios %}
                     <tr>
                         <td>{{ usuario.nombre }}</td>
-                        <td>{{ usuario.apellido }}</td>
                         <td>{{ usuario.correo }}</td>
                         <td>{{ usuario.role }}</td>
                         <td>{{ usuario.cargo }}</td>
-                        <td>{{ ', '.join(usuario.habilidades) }}</td>
+                        <td>
+                            <ul>
+                                {% for habilidad in usuario.habilidades %}
+                                    <li>{{ habilidad }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            {% if usuario.registroCompletado %}Completado{% else %}Pendiente{% endif %}
+                        </td>
                         <td>
                             <a href="{{ url_for('editar_usuario', id=usuario._id) }}" class="btn btn-primary">Editar</a>
                             <form action="{{ url_for('eliminar_usuario', id=usuario._id) }}" method="post" style="display:inline;">

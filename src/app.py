@@ -3,6 +3,8 @@ import secrets
 import random
 from itsdangerous import URLSafeTimedSerializer
 import string
+from flask import request, session, flash, redirect, url_for, render_template
+from bson.objectid import ObjectId
 from flask_mail import Mail, Message 
 from bson import ObjectId, errors as bson_errors
 from flask import Flask, render_template, request, redirect, url_for, session, flash
@@ -125,12 +127,15 @@ def completar_registro(token):
             temp_Password= request.form['temp_password']
             new_password = request.form['new_password']
             
-            # Validar que las contraseñas coincidan (opcional)
             if not check_password_hash(password, temp_Password):
                 print('La contraseña temporal no es válida.')
                 return redirect(url_for('completar_registro', token=token))
             
-            # Actualizar los datos del usuario en la base de datos
+            if habilidades:
+                habilidades_lista = [h.strip() for h in re.split(r'\s*,\s*', habilidades)]
+            else:
+                habilidades_lista = []
+
             usuarios_collection.update_one(
                 {'correo': correo},
                 {
@@ -138,7 +143,7 @@ def completar_registro(token):
                         'telefono': telefono,
                         'profesion': profesion,
                         'estudios': estudios,
-                        'habilidades': habilidades,
+                        'habilidades': habilidades_lista,
                         'experiencia': experiencia,
                         'programa': programa,
                         'password': generate_password_hash(new_password),
@@ -251,6 +256,7 @@ def eliminar_usuario(id):
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
+
 @app.route('/admin_proyectos', methods=['GET', 'POST'])
 def admin_proyectos():
     if 'correo' in session and session.get('role') == 'admin':
@@ -259,16 +265,38 @@ def admin_proyectos():
 
         # Para agregar un nuevo proyecto
         if request.method == 'POST':
-            nombre = request.form['nombre']
-            descripcion = request.form['descripcion']
-            fechainicio = request.form['fechainicio']
-            fechafinal = request.form['fechafinal']
-            estado = request.form['estado']
-            nuevo_proyecto = Proyecto(nombre, descripcion, fechainicio, fechafinal, estado)
-            proyectos_collection.insert_one(nuevo_proyecto.formato_doc())
-            flash('Proyecto creado exitosamente.')
-            return redirect(url_for('admin_proyectos'))
+             nombre = request.form.get('nombre')
+             descripcion = request.form.get('descripcion')
+             fechainicio = request.form.get('fechainicio')
+             fechafinal = request.form.get('fechafinal')
+             objetivo_general = request.form.get('objetivo_general')
+             objetivos_especificos = request.form.getlist('objetivos_especificos')
+             estado = request.form.get('estado')
 
+                # Validar que todos los campos requeridos estén presentes
+             if not all([nombre, descripcion, fechainicio, fechafinal, objetivo_general, estado]):
+                    flash('Todos los campos son obligatorios.', 'danger')
+                    return redirect(url_for('admin_proyectos'))
+
+                # Crear el nuevo proyecto
+             nuevo_proyecto = Proyecto(
+                    nombre=nombre,
+                    descripcion=descripcion,
+                    fechainicio=fechainicio,
+                    fechafinal=fechafinal,
+                    estado=estado,
+                    objetivoGeneral=objetivo_general,
+                    objetivosEspecificos=objetivos_especificos
+                )
+
+                # Insertar el proyecto en la base de datos
+             proyectos_collection.insert_one(nuevo_proyecto.formato_doc())
+
+                # Reiniciar 'objetivos_mostrados' en la sesión
+             session.pop('objetivos_mostrados', None)
+             flash('Proyecto creado exitosamente.', 'success')
+             return redirect(url_for('admin_proyectos'))
+        
         # Convertir el cursor de proyectos en una lista para poder iterar sobre ella múltiples veces
         lista_proyectos = list(proyectos)
         
@@ -364,55 +392,62 @@ def seleccionar_proyecto():
     if 'correo' in session and session.get('role') == 'admin':
         if request.method == 'POST':
             proyecto_id = request.form.get('proyecto_id')
-            return redirect(url_for('agregar_tarea', id=proyecto_id))
+            return redirect(url_for('agregar_tarea', proyecto_id=proyecto_id))
         proyectos = proyectos_collection.find()
         return render_template('admin/seleccionar_proyecto.html', proyectos=proyectos)
     
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
-@app.route('/proyecto/<id>/agregar_tarea', methods=['GET', 'POST'])
-def agregar_tarea(id):
+@app.route('/proyecto/<proyecto_id>/agregar_tarea/', methods=['GET', 'POST'])
+def agregar_tarea(proyecto_id):
     if 'correo' in session and session.get('role') == 'admin':
-        proyecto = proyectos_collection.find_one({'_id': ObjectId(id)})
-        if proyecto:
+
+        proyecto_data = proyectos_collection.find_one({'_id': ObjectId(proyecto_id)})
+
+        if proyecto_data:
             if request.method == 'POST':
+
                 nombre = request.form['nombre']
                 descripcion = request.form['descripcion']
-                fechavencimiento = request.form['fechavencimiento']
-                miembroasignado = request.form['miembroasignado']
-                estado = request.form['estado']
-                
+                fechavencimiento = request.form['fechavencimiento']  # Fecha de vencimiento
+                miembro_asignado = request.form.get('miembro_asignado')  # Miembro asignado opcional
+                estado = request.form.get('estado')  # Estado de la tarea (por defecto: 'pendiente')
+                objetivo_especifico_id = request.form['objetivo_especifico_id']
+                print(miembro_asignado )
+                print(miembro_asignado )
+                print(objetivo_especifico_id)
+                print(objetivo_especifico_id)
+
+                objetivos_ids = [obj['id'] for obj in proyecto_data['objetivosEspecificos']]
+                if objetivo_especifico_id not in objetivos_ids:
+                    raise ValueError("El ID del objetivo específico no es válido")
+
                 nueva_tarea = {
                     'nombre': nombre,
                     'descripcion': descripcion,
                     'fechavencimiento': fechavencimiento,
-                    'miembroasignado': miembroasignado,
+                    'miembro_asignado': miembro_asignado,
                     'estado': estado,
-                    'comentarios': [],
-                    'tiempo_dedicado': 0
+                    'objetivo_especifico_id': objetivo_especifico_id,
                 }
-                
-                tarea_id = tareas_collection.insert_one(nueva_tarea).inserted_id
-                nueva_tarea['_id'] = tarea_id
+
                 proyectos_collection.update_one(
-                    {'_id': ObjectId(id)},
+                    {'_id': ObjectId(proyecto_id)},
                     {'$push': {'tareas': nueva_tarea}}
                 )
-                flash('Tarea agregada exitosamente.')
-                return redirect(url_for('ver_todas_las_tareas'))
-            
-            miembros_asignados_ids = [ObjectId(miembro['_id']) for miembro in proyecto['miembros']]
+                return redirect(url_for('seleccionar_proyecto'))
+                
+            miembros_asignados_ids = [ObjectId(miembro['_id']) for miembro in proyecto_data['miembros']]
             miembros_asignados = list(usuarios_collection.find({'_id': {'$in': miembros_asignados_ids}}))
-            return render_template('admin/agregar_tarea.html', proyecto=proyecto, usuarios=miembros_asignados)
+            return render_template('admin/agregar_tarea.html', proyecto=proyecto_data, usuarios=miembros_asignados)
         
         flash('No se encontró el proyecto.')
         return redirect(url_for('admin_proyectos'))
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
-from flask import request, session, flash, redirect, url_for, render_template
-from bson.objectid import ObjectId
+
 
 @app.route('/tareas', methods=['GET'])
 def ver_todas_las_tareas():
