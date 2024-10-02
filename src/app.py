@@ -105,7 +105,7 @@ def registro():
 def completar_registro(token):
     try:
         s = URLSafeTimedSerializer(app.secret_key)
-        email = s.loads(token, salt='registro-usuario', max_age=3600)  
+        email = s.loads(token, salt='registro-usuario', max_age=259200)  
         usuario = usuarios_collection.find_one({'correo': email})
 
         if not usuario:
