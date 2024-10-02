@@ -303,15 +303,17 @@ def admin_proyectos():
         # Reemplazar el ID del miembro asignado por su nombre completo
         for proyecto in lista_proyectos:
             for tarea in proyecto.get('tareas', []):
-                miembro_id = tarea.get('miembroasignado')
+                miembro_id = tarea.get('miembro_asignado')  # el 'id' del miembro asignado
                 if miembro_id:
-                    miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)}, {'nombre': 1, 'apellido': 1})
+                    # Buscar al usuario en la base de datos usando el id
+                    miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)}, {'nombre': 1})
+                    # Si se encuentra el usuario, reemplazar el 'id' con su nombre completo
                     if miembro:
-                        tarea['miembroasignado'] = f"{miembro['nombre']} {miembro['apellido']}"
+                        tarea['miembro_asignado'] = f"{miembro['nombre']}"
                     else:
-                        tarea['miembroasignado'] = "Sin asignar"
+                        tarea['miembro_asignado'] = "Sin asignar"
                 else:
-                    tarea['miembroasignado'] = "Sin asignar"
+                    tarea['miembro_asignado'] = "Sin asignar"
 
         return render_template('admin/admin_proyectos.html', proyectos=lista_proyectos)
     flash('No tienes permisos para realizar esta acción.')

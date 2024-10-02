@@ -46,8 +46,8 @@ Lista de Proyectos
                         <ul>
                             {% for tarea in proyecto.tareas %}
                                 <li>Nombre: {{ tarea.nombre }} <br> Descripción: {{ tarea.descripcion }} <br> Responsable: 
-                                    {% if tarea.miembroasignado %}
-                                        {{ tarea.miembroasignado }}
+                                    {% if tarea.miembro_asignado %}
+                                        {{ tarea.miembro_asignado }}
                                     {% else %}
                                         Sin asignar
                                     {% endif %}
