@@ -170,8 +170,10 @@ def logout():
 @app.route('/admin_usuarios', methods=['GET', 'POST'])
 def admin_usuarios():
     if 'correo' in session and session.get('role') == 'admin':
-        usuarios = list(usuarios_collection.find())
-        return render_template('admin/admin_usuarios.html', usuarios=usuarios)
+        # Filtrar usuarios cuyo role no sea "empresa"
+        getusuarios = list(usuarios_collection.find({"role": {"$ne": "empresa"}}))
+        
+        return render_template('admin/admin_usuarios.html', usuarios=getusuarios)
     else:
         flash('No tienes permisos para acceder a esta página.')
         return redirect(url_for('home'))
@@ -378,7 +380,7 @@ def asignar_miembros(id):
                 flash('Acciones de asignación de miembros realizadas exitosamente.')
                 return redirect(url_for('admin_proyectos'))
             
-            usuarios = usuarios_collection.find()
+            usuarios = usuarios_collection.find({"registroCompletado": True})
             return render_template('admin/asignar_miembros.html', proyecto=proyecto, usuarios=usuarios)
         else:
             flash('No se encontró el proyecto.')
