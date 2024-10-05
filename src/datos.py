@@ -112,17 +112,17 @@ class ObjetivoEspecifico:
             'descripcion': self.descripcion
         }
 
-    
-    class Proyecto:
-     
-     def __init__(self, nombre, descripcion, fechainicio, fechafinal, estado, objetivoGeneral, objetivosEspecificos):
+
+class Proyecto:
+    def __init__(self, nombre, descripcion, fechainicio, fechafinal, estado, objetivoGeneral, objetivosEspecificos):
         self.nombre = nombre
         self.descripcion = descripcion
         self.fechainicio = fechainicio
         self.fechafinal = fechafinal
         self.estado = estado
         self.objetivoGeneral = objetivoGeneral
-        self.objetivosEspecificos = self.generar_objetivos_con_id(objetivosEspecificos)  # Lista de objetivos con ID y descripción
+        # Generar los ObjetivosEspecificos correctamente
+        self.objetivosEspecificos = self.generar_objetivos_con_id(objetivosEspecificos)  # Lista de ObjetivoEspecifico con ID
         self.tareas = []  # Lista de tareas
         self.miembros = []  # Lista de miembros
 
@@ -157,6 +157,9 @@ class ObjetivoEspecifico:
         self.tareas.append(nueva_tarea)
 
     def formato_doc(self):
+        """
+        Convierte los datos del proyecto a un diccionario para poder almacenarlo o serializarlo.
+        """
         return {
             'nombre': self.nombre,
             'descripcion': self.descripcion,
@@ -164,23 +167,9 @@ class ObjetivoEspecifico:
             'fechafinal': self.fechafinal,
             'estado': self.estado,
             'objetivoGeneral': self.objetivoGeneral,
-            'objetivosEspecificos': [objeto.to_dict() for objeto in self.objetivosEspecificos],  # Convierte cada objeto a dict
-            'tareas': self.tareas,
-            'miembros': self.miembros,
-        }
-
-
-    def formato_doc(self):
-        return {
-            'nombre': self.nombre,
-            'descripcion': self.descripcion,
-            'fechainicio': self.fechainicio,
-            'fechafinal': self.fechafinal,
-            'estado': self.estado,
-            'objetivoGeneral': self.objetivoGeneral,
-            'objetivosEspecificos': self.generar_objetivos_con_id(self.objetivosEspecificos),
-            'tareas': self.tareas,  
-            'miembros': self.miembros,  
+            'objetivosEspecificos': [objeto.to_dict() for objeto in self.objetivosEspecificos],  # Convierte cada objetivo a dict
+            'tareas': self.tareas,  # Lista de tareas
+            'miembros': self.miembros  # Lista de miembros
         }
 
 class Tarea:
