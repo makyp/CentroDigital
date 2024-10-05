@@ -47,10 +47,10 @@ class Empresa:
         }
     
 class UserWithoutRegister:
-     def __init__(self, nombre, correo, password, role):
+     def __init__(self, nombre, correo, VerificationCode, role):
         self.nombre = nombre
         self.correo = correo
-        self.password = password
+        self.VerificationCode= VerificationCode
         self.role = role
       
     
@@ -58,7 +58,8 @@ class UserWithoutRegister:
         return {
             'nombre': self.nombre,
             'correo': self.correo,
-            'password': self.password,
+            'verficationCode':self.VerificationCode,
+            'password': None,
             'role': self.role,
             'registroCompletado': False
         }

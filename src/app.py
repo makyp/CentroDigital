@@ -62,7 +62,7 @@ def login():
         usuario = usuarios_collection.find_one({'correo': correo})
         
         # Verificar si el usuario existe y si la contraseña es correcta
-        if usuario and check_password_hash(usuario['password'], password):
+        if usuario and usuario['password'] and password.strip() and check_password_hash(usuario['password'], password):
             session['correo'] = usuario['correo']
             session['role'] = usuario['role']
             return redirect(url_for('home'))
@@ -84,13 +84,12 @@ def registro():
                 flash('El correo ya está registrado.')
             else:
                 try:
-                 password = generar_contraseña()
+                 VerificationCode = generar_contraseña()
                  s = URLSafeTimedSerializer(app.secret_key)
                  token=s.dumps(correo, salt='registro-usuario')
-                 passwordHashed=generate_password_hash(password)
-                 nuevo_usuario = UserWithoutRegister(nombre, correo, passwordHashed, role)
+                 nuevo_usuario = UserWithoutRegister(nombre, correo, VerificationCode, role)
                  usuarios_collection.insert_one(nuevo_usuario.formato_doc())
-                 msg=enviar_correo_registro(correo,password,token)
+                 msg=enviar_correo_registro(correo,VerificationCode,token)
                  mail.send(msg)
                  flash('Registro exitoso. Se ha enviado un correo con tus credenciales.')
                 except Exception as e:
@@ -114,7 +113,7 @@ def completar_registro(token):
         
         nombre_completo = usuario.get('nombre')  
         correo = usuario.get('correo')
-        password = usuario.get('password')
+        verificationCode = usuario.get('verficationCode')
          
         if request.method == 'POST':
             
@@ -127,7 +126,7 @@ def completar_registro(token):
             temp_Password= request.form['temp_password']
             new_password = request.form['new_password']
             
-            if not check_password_hash(password, temp_Password):
+            if (verificationCode != temp_Password):
                 print('La contraseña temporal no es válida.')
                 return redirect(url_for('completar_registro', token=token))
             
@@ -145,6 +144,7 @@ def completar_registro(token):
                         'estudios': estudios,
                         'habilidades': habilidades_lista,
                         'experiencia': experiencia,
+                        'verficationCode': None,
                         'programa': programa,
                         'password': generate_password_hash(new_password),
                         'registroCompletado': True  
