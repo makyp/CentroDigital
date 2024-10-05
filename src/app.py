@@ -3,6 +3,8 @@ import secrets
 import random
 from itsdangerous import URLSafeTimedSerializer
 import string
+from flask import request, session, flash, redirect, url_for, render_template
+from bson.objectid import ObjectId
 from flask_mail import Mail, Message 
 from bson import ObjectId, errors as bson_errors
 from flask import Flask, render_template, request, redirect, url_for, session, flash
@@ -20,8 +22,8 @@ app = Flask(__name__)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'eusebioorlando1515@gmail.com' 
-app.config['MAIL_PASSWORD'] = 'oxctlajixjkgjruc'    
+app.config['MAIL_USERNAME'] = 'maira.quiro.p02@gmail.com' 
+app.config['MAIL_PASSWORD'] = 'aibxuphykognlqyc'    
 app.config['MAIL_DEFAULT_SENDER'] = 'centrodigitaldedesarrollotecnologico@gmail.com' 
 app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_SUPPRESS_SEND'] = False  # Para evitar que supriman el envío de correos en modo debug
@@ -60,7 +62,7 @@ def login():
         usuario = usuarios_collection.find_one({'correo': correo})
         
         # Verificar si el usuario existe y si la contraseña es correcta
-        if usuario and check_password_hash(usuario['password'], password):
+        if usuario and usuario['password'] and password.strip() and check_password_hash(usuario['password'], password):
             session['correo'] = usuario['correo']
             session['role'] = usuario['role']
             return redirect(url_for('home'))
@@ -82,13 +84,12 @@ def registro():
                 flash('El correo ya está registrado.')
             else:
                 try:
-                 password = generar_contraseña()
+                 VerificationCode = generar_contraseña()
                  s = URLSafeTimedSerializer(app.secret_key)
                  token=s.dumps(correo, salt='registro-usuario')
-                 passwordHashed=generate_password_hash(password)
-                 nuevo_usuario = UserWithoutRegister(nombre, correo, passwordHashed, role)
+                 nuevo_usuario = UserWithoutRegister(nombre, correo, VerificationCode, role)
                  usuarios_collection.insert_one(nuevo_usuario.formato_doc())
-                 msg=enviar_correo_registro(correo,password,token)
+                 msg=enviar_correo_registro(correo,VerificationCode,token)
                  mail.send(msg)
                  flash('Registro exitoso. Se ha enviado un correo con tus credenciales.')
                 except Exception as e:
@@ -103,7 +104,7 @@ def registro():
 def completar_registro(token):
     try:
         s = URLSafeTimedSerializer(app.secret_key)
-        email = s.loads(token, salt='registro-usuario', max_age=3600)  
+        email = s.loads(token, salt='registro-usuario', max_age=259200)  
         usuario = usuarios_collection.find_one({'correo': email})
 
         if not usuario:
@@ -112,7 +113,7 @@ def completar_registro(token):
         
         nombre_completo = usuario.get('nombre')  
         correo = usuario.get('correo')
-        password = usuario.get('password')
+        verificationCode = usuario.get('verficationCode')
          
         if request.method == 'POST':
             
@@ -125,12 +126,15 @@ def completar_registro(token):
             temp_Password= request.form['temp_password']
             new_password = request.form['new_password']
             
-            # Validar que las contraseñas coincidan (opcional)
-            if not check_password_hash(password, temp_Password):
+            if (verificationCode != temp_Password):
                 print('La contraseña temporal no es válida.')
                 return redirect(url_for('completar_registro', token=token))
             
-            # Actualizar los datos del usuario en la base de datos
+            if habilidades:
+                habilidades_lista = [h.strip() for h in re.split(r'\s*,\s*', habilidades)]
+            else:
+                habilidades_lista = []
+
             usuarios_collection.update_one(
                 {'correo': correo},
                 {
@@ -138,8 +142,9 @@ def completar_registro(token):
                         'telefono': telefono,
                         'profesion': profesion,
                         'estudios': estudios,
-                        'habilidades': habilidades,
+                        'habilidades': habilidades_lista,
                         'experiencia': experiencia,
+                        'verficationCode': None,
                         'programa': programa,
                         'password': generate_password_hash(new_password),
                         'registroCompletado': True  
@@ -165,8 +170,10 @@ def logout():
 @app.route('/admin_usuarios', methods=['GET', 'POST'])
 def admin_usuarios():
     if 'correo' in session and session.get('role') == 'admin':
-        usuarios = list(usuarios_collection.find())
-        return render_template('admin/admin_usuarios.html', usuarios=usuarios)
+        # Filtrar usuarios cuyo role no sea "empresa"
+        getusuarios = list(usuarios_collection.find({"role": {"$ne": "empresa"}}))
+        
+        return render_template('admin/admin_usuarios.html', usuarios=getusuarios)
     else:
         flash('No tienes permisos para acceder a esta página.')
         return redirect(url_for('home'))
@@ -251,6 +258,7 @@ def eliminar_usuario(id):
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
+
 @app.route('/admin_proyectos', methods=['GET', 'POST'])
 def admin_proyectos():
     if 'correo' in session and session.get('role') == 'admin':
@@ -259,31 +267,55 @@ def admin_proyectos():
 
         # Para agregar un nuevo proyecto
         if request.method == 'POST':
-            nombre = request.form['nombre']
-            descripcion = request.form['descripcion']
-            fechainicio = request.form['fechainicio']
-            fechafinal = request.form['fechafinal']
-            estado = request.form['estado']
-            nuevo_proyecto = Proyecto(nombre, descripcion, fechainicio, fechafinal, estado)
-            proyectos_collection.insert_one(nuevo_proyecto.formato_doc())
-            flash('Proyecto creado exitosamente.')
-            return redirect(url_for('admin_proyectos'))
+             nombre = request.form.get('nombre')
+             descripcion = request.form.get('descripcion')
+             fechainicio = request.form.get('fechainicio')
+             fechafinal = request.form.get('fechafinal')
+             objetivo_general = request.form.get('objetivo_general')
+             objetivos_especificos = request.form.getlist('objetivos_especificos')
+             estado = request.form.get('estado')
 
+                # Validar que todos los campos requeridos estén presentes
+             if not all([nombre, descripcion, fechainicio, fechafinal, objetivo_general, estado]):
+                    flash('Todos los campos son obligatorios.', 'danger')
+                    return redirect(url_for('admin_proyectos'))
+
+                # Crear el nuevo proyecto
+             nuevo_proyecto = Proyecto(
+                    nombre=nombre,
+                    descripcion=descripcion,
+                    fechainicio=fechainicio,
+                    fechafinal=fechafinal,
+                    estado=estado,
+                    objetivoGeneral=objetivo_general,
+                    objetivosEspecificos=objetivos_especificos
+                )
+
+                # Insertar el proyecto en la base de datos
+             proyectos_collection.insert_one(nuevo_proyecto.formato_doc())
+
+                # Reiniciar 'objetivos_mostrados' en la sesión
+             session.pop('objetivos_mostrados', None)
+             flash('Proyecto creado exitosamente.', 'success')
+             return redirect(url_for('admin_proyectos'))
+        
         # Convertir el cursor de proyectos en una lista para poder iterar sobre ella múltiples veces
         lista_proyectos = list(proyectos)
         
         # Reemplazar el ID del miembro asignado por su nombre completo
         for proyecto in lista_proyectos:
             for tarea in proyecto.get('tareas', []):
-                miembro_id = tarea.get('miembroasignado')
+                miembro_id = tarea.get('miembro_asignado')  # el 'id' del miembro asignado
                 if miembro_id:
-                    miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)}, {'nombre': 1, 'apellido': 1})
+                    # Buscar al usuario en la base de datos usando el id
+                    miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)}, {'nombre': 1})
+                    # Si se encuentra el usuario, reemplazar el 'id' con su nombre completo
                     if miembro:
-                        tarea['miembroasignado'] = f"{miembro['nombre']} {miembro['apellido']}"
+                        tarea['miembro_asignado'] = f"{miembro['nombre']}"
                     else:
-                        tarea['miembroasignado'] = "Sin asignar"
+                        tarea['miembro_asignado'] = "Sin asignar"
                 else:
-                    tarea['miembroasignado'] = "Sin asignar"
+                    tarea['miembro_asignado'] = "Sin asignar"
 
         return render_template('admin/admin_proyectos.html', proyectos=lista_proyectos)
     flash('No tienes permisos para realizar esta acción.')
@@ -348,7 +380,7 @@ def asignar_miembros(id):
                 flash('Acciones de asignación de miembros realizadas exitosamente.')
                 return redirect(url_for('admin_proyectos'))
             
-            usuarios = usuarios_collection.find()
+            usuarios = usuarios_collection.find({"registroCompletado": True})
             return render_template('admin/asignar_miembros.html', proyecto=proyecto, usuarios=usuarios)
         else:
             flash('No se encontró el proyecto.')
@@ -364,55 +396,62 @@ def seleccionar_proyecto():
     if 'correo' in session and session.get('role') == 'admin':
         if request.method == 'POST':
             proyecto_id = request.form.get('proyecto_id')
-            return redirect(url_for('agregar_tarea', id=proyecto_id))
+            return redirect(url_for('agregar_tarea', proyecto_id=proyecto_id))
         proyectos = proyectos_collection.find()
         return render_template('admin/seleccionar_proyecto.html', proyectos=proyectos)
     
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
-@app.route('/proyecto/<id>/agregar_tarea', methods=['GET', 'POST'])
-def agregar_tarea(id):
+@app.route('/proyecto/<proyecto_id>/agregar_tarea/', methods=['GET', 'POST'])
+def agregar_tarea(proyecto_id):
     if 'correo' in session and session.get('role') == 'admin':
-        proyecto = proyectos_collection.find_one({'_id': ObjectId(id)})
-        if proyecto:
+
+        proyecto_data = proyectos_collection.find_one({'_id': ObjectId(proyecto_id)})
+
+        if proyecto_data:
             if request.method == 'POST':
+
                 nombre = request.form['nombre']
                 descripcion = request.form['descripcion']
-                fechavencimiento = request.form['fechavencimiento']
-                miembroasignado = request.form['miembroasignado']
-                estado = request.form['estado']
-                
+                fechavencimiento = request.form['fechavencimiento']  # Fecha de vencimiento
+                miembro_asignado = request.form.get('miembro_asignado')  # Miembro asignado opcional
+                estado = request.form.get('estado')  # Estado de la tarea (por defecto: 'pendiente')
+                objetivo_especifico_id = request.form['objetivo_especifico_id']
+                print(miembro_asignado )
+                print(miembro_asignado )
+                print(objetivo_especifico_id)
+                print(objetivo_especifico_id)
+
+                objetivos_ids = [obj['id'] for obj in proyecto_data['objetivosEspecificos']]
+                if objetivo_especifico_id not in objetivos_ids:
+                    raise ValueError("El ID del objetivo específico no es válido")
+
                 nueva_tarea = {
                     'nombre': nombre,
                     'descripcion': descripcion,
                     'fechavencimiento': fechavencimiento,
-                    'miembroasignado': miembroasignado,
+                    'miembro_asignado': miembro_asignado,
                     'estado': estado,
-                    'comentarios': [],
-                    'tiempo_dedicado': 0
+                    'objetivo_especifico_id': objetivo_especifico_id,
                 }
-                
-                tarea_id = tareas_collection.insert_one(nueva_tarea).inserted_id
-                nueva_tarea['_id'] = tarea_id
+
                 proyectos_collection.update_one(
-                    {'_id': ObjectId(id)},
+                    {'_id': ObjectId(proyecto_id)},
                     {'$push': {'tareas': nueva_tarea}}
                 )
-                flash('Tarea agregada exitosamente.')
-                return redirect(url_for('ver_todas_las_tareas'))
-            
-            miembros_asignados_ids = [ObjectId(miembro['_id']) for miembro in proyecto['miembros']]
+                return redirect(url_for('seleccionar_proyecto'))
+                
+            miembros_asignados_ids = [ObjectId(miembro['_id']) for miembro in proyecto_data['miembros']]
             miembros_asignados = list(usuarios_collection.find({'_id': {'$in': miembros_asignados_ids}}))
-            return render_template('admin/agregar_tarea.html', proyecto=proyecto, usuarios=miembros_asignados)
+            return render_template('admin/agregar_tarea.html', proyecto=proyecto_data, usuarios=miembros_asignados)
         
         flash('No se encontró el proyecto.')
         return redirect(url_for('admin_proyectos'))
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
-from flask import request, session, flash, redirect, url_for, render_template
-from bson.objectid import ObjectId
+
 
 @app.route('/tareas', methods=['GET'])
 def ver_todas_las_tareas():

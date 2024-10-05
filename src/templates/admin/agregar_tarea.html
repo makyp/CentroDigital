@@ -19,7 +19,7 @@ Agregar Tarea
                 </div>
             {% endif %}
         {% endwith %}
-        <form method="post">
+        <form method="POST" >
             <div class="form-group">
                 <label for="nombre">Nombre:</label>
                 <input type="text" id="nombre" name="nombre" class="form-control" required>
@@ -33,8 +33,16 @@ Agregar Tarea
                 <input type="date" id="fechavencimiento" name="fechavencimiento" class="form-control" required>
             </div>
             <div class="form-group">
+                <label for="objetivo_especifico_id">Objetivo Específico:</label>
+                <select id="objetivo_especifico_id" name="objetivo_especifico_id" class="form-control" required>
+                    {% for objetivo in proyecto.objetivosEspecificos %}
+                        <option value="{{ objetivo.id }}">{{ objetivo.descripcion }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="miembroasignado">Asignar a:</label>
-                <select id="miembroasignado" name="miembroasignado" class="form-control" required>
+                <select id="miembroasignado" name="miembro_asignado" class="form-control" required>
                     {% for miembro in usuarios %}
                         <option value="{{ miembro._id }}">{{ miembro.nombre }} {{ miembro.apellido }}</option>
                     {% endfor %}
@@ -49,8 +57,8 @@ Agregar Tarea
                 </select>
             </div>
             <button type="submit" class="btn btn-primary">Agregar Tarea</button>
+            <p></p>
         </form>
-        <br>
         <a href="{{ url_for('ver_todas_las_tareas') }}" class="btn btn-secondary">Volver a Tareas</a>
     </div>
 </div>
