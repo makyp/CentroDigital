@@ -325,12 +325,22 @@ def admin_proyectos():
 def editar_proyecto(id):
     if 'correo' in session and session.get('role') == 'admin':
         proyecto = proyectos_collection.find_one({'_id': ObjectId(id)})
+        
+        if not proyecto:
+            flash('No se encontró el proyecto.')
+            return redirect(url_for('ver_proyectos'))
+
         if request.method == 'POST':
-            nombre = request.form['nombre']
-            descripcion = request.form['descripcion']
-            fechainicio = request.form['fechainicio']
-            fechafinal = request.form['fechafinal']
-            estado = request.form['estado']
+            nombre = request.form.get('nombre')
+            descripcion = request.form.get('descripcion')
+            objetivoGeneral= request.form.get('objetivoGeneral')
+            fechainicio = request.form.get('fechainicio')
+            fechafinal = request.form.get('fechafinal')
+            estado = request.form.get('estado')
+            objetivos_ids = request.form.getlist('objetivos_especificos_ids')
+            objetivos_descripciones = request.form.getlist('objetivos_especificos')
+
+            # Actualizar la información del proyecto
             proyectos_collection.update_one(
                 {'_id': ObjectId(id)},
                 {'$set': {
@@ -338,12 +348,30 @@ def editar_proyecto(id):
                     'descripcion': descripcion,
                     'fechainicio': fechainicio,
                     'fechafinal': fechafinal,
-                    'estado': estado
+                    'estado': estado,
+                    'objetivoGeneral':objetivoGeneral
                 }}
             )
+
+            # Actualizar los objetivos específicos
+            nuevos_objetivos = []
+            for obj_id, descripcion in zip(objetivos_ids, objetivos_descripciones):
+                if descripcion.strip():  # Si la descripción no está vacía
+                    nuevos_objetivos.append({
+                        'id': obj_id if obj_id else str(uuid.uuid4()),  # Generar un nuevo ID si es un objetivo nuevo
+                        'descripcion': descripcion
+                    })
+
+            proyectos_collection.update_one(
+                {'_id': ObjectId(id)},
+                {'$set': {'objetivosEspecificos': nuevos_objetivos}}
+            )
+
             flash('Proyecto actualizado exitosamente.')
             return redirect(url_for('admin_proyectos'))
+
         return render_template('admin/editar_proyecto.html', proyecto=proyecto)
+
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
@@ -411,23 +439,19 @@ def agregar_tarea(proyecto_id):
 
         if proyecto_data:
             if request.method == 'POST':
-
                 nombre = request.form['nombre']
                 descripcion = request.form['descripcion']
                 fechavencimiento = request.form['fechavencimiento']  # Fecha de vencimiento
                 miembro_asignado = request.form.get('miembro_asignado')  # Miembro asignado opcional
                 estado = request.form.get('estado')  # Estado de la tarea (por defecto: 'pendiente')
                 objetivo_especifico_id = request.form['objetivo_especifico_id']
-                print(miembro_asignado )
-                print(miembro_asignado )
-                print(objetivo_especifico_id)
-                print(objetivo_especifico_id)
-
+               
                 objetivos_ids = [obj['id'] for obj in proyecto_data['objetivosEspecificos']]
                 if objetivo_especifico_id not in objetivos_ids:
                     raise ValueError("El ID del objetivo específico no es válido")
-
+                nueva_tarea_id = ObjectId()
                 nueva_tarea = {
+                    '_id':nueva_tarea_id,
                     'nombre': nombre,
                     'descripcion': descripcion,
                     'fechavencimiento': fechavencimiento,
@@ -456,46 +480,63 @@ def agregar_tarea(proyecto_id):
 @app.route('/tareas', methods=['GET'])
 def ver_todas_las_tareas():
     if 'correo' in session and session.get('role') == 'admin':
-        # Obtener los filtros de la URL
-        filtro_proyecto = request.args.get('proyecto')
-        filtro_miembro = request.args.get('miembro')
+        filtro_proyecto = request.args.get('proyecto')  # Filtro de nombre de proyecto
+        filtro_miembro = request.args.get('miembro')  # Filtro de miembro asignado
         
         proyectos = proyectos_collection.find()
         tareas = []
+        
         for proyecto in proyectos:
-            # Si hay filtro por nombre de proyecto, aplicar el filtro
+            # Filtro de proyectos por nombre
             if filtro_proyecto and filtro_proyecto.lower() not in proyecto['nombre'].lower():
-                continue  # Saltar este proyecto si no coincide con el filtro
+                continue 
 
             for tarea in proyecto.get('tareas', []):
-                miembro_id = tarea.get('miembroasignado')
+                miembro_id = tarea.get('miembro_asignado')
                 miembro_nombre = "Sin asignar"
                 
+                # Buscar el nombre del miembro asignado
                 if miembro_id:
-                    if isinstance(miembro_id, dict):  # Verificar si es un diccionario
-                        miembro_id = miembro_id.get('_id')  # Obtener el ID del diccionario
-                    if isinstance(miembro_id, (str, bytes)):  # Verificar si es una cadena o bytes
-                        miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)}, {'nombre': 1, 'apellido': 1})
-                        if miembro:
-                            miembro_nombre = f"{miembro['nombre']} {miembro['apellido']}"
+                    if isinstance(miembro_id, str):  
+                        try:
+                            miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)}, {'nombre': 1})
+                            if miembro and 'nombre' in miembro:
+                                miembro_nombre = miembro['nombre']
+                        except Exception as e:
+                            print(f"Error al convertir miembro_id a ObjectId: {e}")
                 
                 tarea['miembro_nombre'] = miembro_nombre
                 tarea['proyecto_nombre'] = proyecto['nombre']
-                tarea['proyecto_id'] = proyecto['_id']
-
-                # Si hay filtro por miembro, aplicar el filtro
+                tarea['proyecto_id'] = proyecto['_id'] 
+                tarea['proyecto_objetivoGeneral'] = proyecto.get('objetivoGeneral', 'Sin objetivo general')
+                
+                # Buscar el nombre del objetivo específico relacionado
+                objetivo_especifico_id = tarea.get('objetivo_especifico_id')
+                objetivo_especifico_nombre = "Objetivo no encontrado"
+                
+                if objetivo_especifico_id and 'objetivosEspecificos' in proyecto:
+                    for objetivo in proyecto['objetivosEspecificos']:
+                        if objetivo.get('id') == objetivo_especifico_id:
+                            objetivo_especifico_nombre = objetivo.get('descripcion', 'descripcion no definida')
+                            break
+                
+                tarea['objetivo_especifico_nombre'] = objetivo_especifico_nombre
+                
+                # Filtro de miembro asignado
                 if filtro_miembro and filtro_miembro.lower() not in miembro_nombre.lower():
-                    continue  # Saltar esta tarea si no coincide con el filtro
+                    continue  
 
                 tareas.append(tarea)
 
         return render_template('admin/ver_tareas.html', tareas=tareas)
 
+    # Redirigir si no tiene permisos
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
 
-# Ruta para ver todas las tareas
+
+
 @app.route('/tareas_general')
 def ver_tareas_general():
     tareas = tareas_collection.find()
@@ -513,68 +554,83 @@ def comentar_tarea(id):
 
 @app.route('/tarea/<id>/editar', methods=['GET', 'POST'])
 def editar_tarea(id):
+    # Verificar si el usuario está en sesión y tiene permisos
     if 'correo' in session and session.get('role') == 'admin':
-        tarea = tareas_collection.find_one({'_id': ObjectId(id)})
-        if tarea:
-            proyecto = proyectos_collection.find_one({'tareas._id': ObjectId(id)})
-            if request.method == 'POST':
-                nombre = request.form['nombre']
-                descripcion = request.form['descripcion']
-                fechavencimiento = request.form['fechavencimiento']
-                miembroasignado = request.form['miembroasignado']
-                estado = request.form['estado']
-
-                tareas_collection.update_one(
-                    {'_id': ObjectId(id)},
-                    {'$set': {
-                        'nombre': nombre,
-                        'descripcion': descripcion,
-                        'fechavencimiento': fechavencimiento,
-                        'miembroasignado': miembroasignado,
-                        'estado': estado
-                    }}
-                )
-
-                proyectos_collection.update_one(
-                    {'_id': proyecto['_id'], 'tareas._id': ObjectId(id)},
-                    {'$set': {
-                        'tareas.$.nombre': nombre,
-                        'tareas.$.descripcion': descripcion,
-                        'tareas.$.fechavencimiento': fechavencimiento,
-                        'tareas.$.miembroasignado': miembroasignado,
-                        'tareas.$.estado': estado
-                    }}
-                )
-
-                flash('Tarea actualizada exitosamente.')
-                return redirect(url_for('ver_todas_las_tareas'))
-            
-            miembros_asignados_ids = [ObjectId(miembro['_id']) for miembro in proyecto['miembros']]
-            miembros_asignados = list(usuarios_collection.find({'_id': {'$in': miembros_asignados_ids}}))
-            return render_template('admin/editar_tarea.html', tarea=tarea, proyecto=proyecto, miembros=miembros_asignados)
         
-        flash('No se encontró la tarea.')
-        return redirect(url_for('ver_todas_las_tareas'))
+        proyecto = proyectos_collection.find_one({'tareas._id': ObjectId(id)})
+        objetivos_especificos = proyecto.get('objetivosEspecificos', [])
+        
+        if not proyecto:
+            flash('No se encontró la tarea.')
+            return redirect(url_for('ver_todas_las_tareas'))
+        
+        tarea = next((t for t in proyecto['tareas'] if t['_id'] == ObjectId(id)), None)
+        
+        if not tarea:
+            flash('No se encontró la tarea.')
+            return redirect(url_for('ver_todas_las_tareas'))
+
+        
+        if request.method == 'POST':
+            nombre = request.form.get('nombre')
+            descripcion = request.form.get('descripcion')
+            fechavencimiento = request.form.get('fechavencimiento')
+            miembro_asignado = request.form.get('miembro_asignado')
+            estado = request.form.get('estado')
+            objetivo_especifico_id = request.form.get('objetivo_especifico')
+            proyectos_collection.update_one(
+                {'_id': proyecto['_id'], 'tareas._id': ObjectId(id)},
+                {'$set': {
+                    'tareas.$.nombre': nombre,
+                    'tareas.$.descripcion': descripcion,
+                    'tareas.$.fechavencimiento': fechavencimiento,
+                    'tareas.$.miembro_asignado': miembro_asignado,
+                    'tareas.$.estado': estado,
+                    'tareas.$.objetivo_especifico_id':objetivo_especifico_id
+                }}
+            )
+
+            flash('Tarea actualizada exitosamente.')
+            return redirect(url_for('ver_todas_las_tareas'))
+
+
+        miembros_asignados_ids = [ObjectId(miembro['_id']) for miembro in proyecto['miembros']]
+        miembros_asignados = list(usuarios_collection.find({'_id': {'$in': miembros_asignados_ids}}))
+
+        # Renderizar la plantilla con los datos de la tarea y del proyecto
+        return render_template(
+            'admin/editar_tarea.html', 
+            tarea=tarea, 
+            proyecto=proyecto, 
+            miembros=miembros_asignados,
+            objetivos_especificos=objetivos_especificos
+        )
     
+    # En caso de no tener permisos
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
+
 @app.route('/tarea/<id>/eliminar', methods=['POST'])
 def eliminar_tarea(id):
+    
     if 'correo' in session and session.get('role') == 'admin':
-        tarea = tareas_collection.find_one({'_id': ObjectId(id)})
-        if tarea:
-            tareas_collection.delete_one({'_id': ObjectId(id)})
+        proyecto = proyectos_collection.find_one({'tareas._id': ObjectId(id)})
+        
+        if proyecto:
             proyectos_collection.update_one(
-                {'tareas._id': ObjectId(id)},
+                {'_id': proyecto['_id']},
                 {'$pull': {'tareas': {'_id': ObjectId(id)}}}
             )
             flash('Tarea eliminada exitosamente.')
         else:
             flash('No se encontró la tarea.')
+        
         return redirect(url_for('ver_todas_las_tareas'))
+    
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
+
 
 @app.route('/perfil')
 def perfil():
@@ -595,27 +651,35 @@ def perfil():
 
 @app.route('/mis_tareas')
 def mis_tareas():
-    if 'correo' in session:
+    if 'correo' in session:  # Verificamos que haya una sesión activa
         usuario = usuarios_collection.find_one({'correo': session['correo']})
-        if usuario:
+        
+        if usuario:  # Si se encuentra el usuario en la base de datos
+            # Obtener todos los proyectos en los que el usuario es miembro
             proyectos = list(proyectos_collection.find({'miembros._id': usuario['_id']}))
             
             tareas_asignadas = []
+            # Iteramos sobre los proyectos para extraer las tareas asignadas al usuario
             for proyecto in proyectos:
                 for tarea in proyecto['tareas']:
-                    if tarea['miembroasignado'] == str(usuario['_id']):
+                    # Asegurarnos de comparar el ID del miembro asignado como string
+                    if str(tarea['miembro_asignado']) == str(usuario['_id']):
                         tarea_info = {
-                            '_id': tarea['_id'],  # Incluimos el ID de la tarea
-                            'nombre': tarea['nombre'],
-                            'descripcion': tarea['descripcion'],
-                            'estado': tarea['estado'],
-                            'proyecto': proyecto['nombre']
+                            '_id': tarea['_id'],  # ID de la tarea
+                            'nombre': tarea['nombre'],  # Nombre de la tarea
+                            'descripcion': tarea['descripcion'],  # Descripción de la tarea
+                            'estado': tarea['estado'],  # Estado de la tarea
+                            'fechavencimiento': tarea.get('fechavencimiento', 'No asignada'),  # Fecha de vencimiento (opcional)
+                            'proyecto': proyecto['nombre']  # Nombre del proyecto
                         }
                         tareas_asignadas.append(tarea_info)
             
+            # Renderizamos la plantilla con las tareas asignadas al usuario
             return render_template('mis_tareas.html', tareas=tareas_asignadas)
+    
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
+
 
 
 @app.route('/recuperacion', methods=['GET', 'POST'])

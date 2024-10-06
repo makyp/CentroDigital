@@ -20,10 +20,10 @@
                 {% for tarea in tareas %}
                     {% if tarea.estado == "Por iniciar" %}
                         <div class="kanban-taskpi mb-3 p-2 border">
-                            <strong>Proyecto: {{ tarea.proyecto }}</strong><br>
+                            <strong>Proyecto:</strong> {{ tarea.proyecto }}<br>
                             <strong>Nombre:</strong> {{ tarea.nombre }}<br>
-                            <strong>Descripción: </strong> {{ tarea.descripcion }}<br>
-                            <strong>Fecha Vencimiento: </strong> {{ tarea.fechavencimiento }}<br>
+                            <strong>Descripción:</strong> {{ tarea.descripcion }}<br>
+                            <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
                             
                             <!-- Formulario para cambiar el estado -->
                             <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
@@ -47,10 +47,10 @@
                 {% for tarea in tareas %}
                     {% if tarea.estado == "En progreso" %}
                         <div class="kanban-taskep mb-3 p-2 border">
-                            <strong>Proyecto: {{ tarea.proyecto }}</strong><br>
+                            <strong>Proyecto:</strong> {{ tarea.proyecto }}<br>
                             <strong>Nombre:</strong> {{ tarea.nombre }}<br>
-                            <strong>Descripción: </strong> {{ tarea.descripcion }}<br>
-                            <strong>Fecha Vencimiento: </strong> {{ tarea.fechavencimiento }}<br>
+                            <strong>Descripción:</strong> {{ tarea.descripcion }}<br>
+                            <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
                             
                             <!-- Formulario para cambiar el estado -->
                             <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
@@ -74,10 +74,10 @@
                 {% for tarea in tareas %}
                     {% if tarea.estado == "Completado" %}
                         <div class="kanban-taskc mb-3 p-2 border">
-                            <strong>Proyecto: {{ tarea.proyecto }}</strong><br>
+                            <strong>Proyecto:</strong> {{ tarea.proyecto }}<br>
                             <strong>Nombre:</strong> {{ tarea.nombre }}<br>
-                            <strong>Descripción: </strong> {{ tarea.descripcion }}<br>
-                            <strong>Fecha Vencimiento: </strong> {{ tarea.fechavencimiento }}<br>
+                            <strong>Descripción:</strong> {{ tarea.descripcion }}<br>
+                            <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
                             
                             <!-- Formulario para cambiar el estado -->
                             <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">

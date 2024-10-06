@@ -42,6 +42,8 @@ Ver Todas las Tareas
             <thead class="thead-dark">
                 <tr>
                     <th>Proyecto</th>
+                    <th>Objetivo General</th>
+                    <th>Objetivo especifico</th>
                     <th>Nombre</th>
                     <th>Descripción</th>
                     <th>Fecha de Vencimiento</th>
@@ -54,6 +56,8 @@ Ver Todas las Tareas
                 {% for tarea in tareas %}
                 <tr>
                     <td>{{ tarea.proyecto_nombre }}</td>
+                    <td>{{ tarea.proyecto_objetivoGeneral }}</td>
+                    <td>{{ tarea.objetivo_especifico_nombre }}</td>
                     <td>{{ tarea.nombre }}</td>
                     <td>{{ tarea.descripcion }}</td>
                     <td>{{ tarea.fechavencimiento }}</td>

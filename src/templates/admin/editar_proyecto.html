@@ -9,6 +9,7 @@ Editar Proyecto
     <div class="col-md-6 offset-md-3">
         <h2>Editar Proyecto</h2>
         <form method="POST">
+            <!-- Información general del proyecto -->
             <div class="form-group">
                 <label for="nombre">Nombre:</label>
                 <input type="text" id="nombre" name="nombre" value="{{ proyecto.nombre }}" class="form-control" required>
@@ -18,6 +19,10 @@ Editar Proyecto
                 <input type="text" id="descripcion" name="descripcion" value="{{ proyecto.descripcion }}" class="form-control" required>
             </div>
             <div class="form-group">
+                <label for="objetivoGeneral">Objetivo general:</label>
+                <input type="text" id="objetivoGeneral" name="objetivoGeneral" value="{{ proyecto.objetivoGeneral }}" class="form-control" required>
+            </div>
+            <div class="form-group">
                 <label for="fechainicio">Fecha de Inicio:</label>
                 <input type="date" id="fechainicio" name="fechainicio" value="{{ proyecto.fechainicio }}" class="form-control" required>
             </div>
@@ -25,6 +30,22 @@ Editar Proyecto
                 <label for="fechafinal">Fecha de Finalización:</label>
                 <input type="date" id="fechafinal" name="fechafinal" value="{{ proyecto.fechafinal }}" class="form-control" required>
             </div>
+
+             <!-- Objetivos Específicos -->
+            <h4>Objetivos Específicos</h4>
+            <div id="objetivosEspecificosContainer" data-objetivos-mostrandose="{{ proyecto.objetivosEspecificos | length }}">
+                {% for objetivo in proyecto.objetivosEspecificos %}
+                <div class="form-group objetivo-especifico" id="objetivo_{{ loop.index }}">
+                    <label for="objetivo_especifico_{{ loop.index }}">Objetivo Específico {{ loop.index }}:</label>
+                    <input type="hidden" name="objetivos_especificos_ids" value="{{ objetivo.id }}">
+                    <input type="text" id="objetivo_especifico_{{ loop.index }}" name="objetivos_especificos" value="{{ objetivo.descripcion }}" class="form-control" required>
+                    <!-- Botón para eliminar el objetivo -->
+                    <button type="button" class="btn btn-danger mt-2 eliminarObjetivoBtn">Eliminar</button>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" id="agregarObjetivoBtn" class="btn btn-secondary">Agregar Objetivo</button>
+
             <div class="form-group">
                 <label for="estado">Estado:</label>
                 <select id="estado" name="estado" class="form-control" required>
@@ -33,9 +54,70 @@ Editar Proyecto
                     <option value="Completado" {% if proyecto.estado == 'Completado' %} selected {% endif %}>Completado</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+
+            <!-- Botón para guardar los cambios -->
+            <button type="submit" class="btn btn-primary mt-3">Guardar Cambios</button>
         </form>
     </div>
 </div>
-{% endblock %}
 
+<!-- Script para agregar y eliminar dinámicamente campos de objetivos -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('objetivosEspecificosContainer');
+        const agregarBtn = document.getElementById('agregarObjetivoBtn');
+        const eliminarBtns = document.querySelectorAll('.eliminarObjetivoBtn');
+        const maxObjetivos = 5;
+        const minObjetivos = 3;
+        let objetivoCount = parseInt(container.dataset.objetivosMostrandose) || 0;
+
+        // Función para agregar un nuevo campo de objetivo
+        function agregarCampoObjetivo() {
+            if (objetivoCount < maxObjetivos) {
+                objetivoCount++;
+                const div = document.createElement('div');
+                div.classList.add('form-group', 'objetivo-especifico');
+                div.id = `objetivo_${objetivoCount}`;
+                div.innerHTML = `
+                    <label for="objetivo_especifico_${objetivoCount}">Objetivo Específico ${objetivoCount}:</label>
+                    <input type="hidden" name="objetivos_especificos_ids" value="">
+                    <input type="text" id="objetivo_especifico_${objetivoCount}" name="objetivos_especificos" class="form-control" required>
+                    <button type="button" class="btn btn-danger mt-2 eliminarObjetivoBtn">Eliminar</button>
+                `;
+                container.appendChild(div);
+
+                // Añadir el listener para eliminar el nuevo campo
+                div.querySelector('.eliminarObjetivoBtn').addEventListener('click', eliminarCampoObjetivo);
+            }
+
+            if (objetivoCount === maxObjetivos) {
+                agregarBtn.disabled = true;
+                agregarBtn.textContent = 'Máximo de objetivos alcanzado';
+            }
+        }
+
+        // Función para eliminar un campo de objetivo
+        function eliminarCampoObjetivo(event) {
+            if (objetivoCount > minObjetivos) {
+                const objetivoDiv = event.target.closest('.objetivo-especifico');
+                objetivoDiv.remove();
+                objetivoCount--;
+
+                // Reactivar el botón de agregar si estaba desactivado
+                agregarBtn.disabled = false;
+                agregarBtn.textContent = 'Agregar Objetivo';
+            }
+
+            if (objetivoCount === minObjetivos) {
+                alert('Debe haber al menos 3 objetivos específicos.');
+            }
+        }
+
+        // Listener para agregar un nuevo campo
+        agregarBtn.addEventListener('click', agregarCampoObjetivo);
+
+        // Asignar el listener de eliminar a los objetivos existentes
+        eliminarBtns.forEach(btn => btn.addEventListener('click', eliminarCampoObjetivo));
+    });
+</script>
+{% endblock %}
