@@ -32,8 +32,9 @@
             <a href="{{ url_for('mis_tareas') }}">Mis Tareas</a>
             <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
         {% elif session.get('role') == 'empresa' %}
-            <a href="{{ url_for('mis_tareas') }}">Mis Tareas</a>
-            <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
+            <a href="{{ url_for('mis_tareas') }}">Radicar solicitud</a>
+            <a href="{{ url_for('ver_tareas_general') }}">Ver solicitudes</a>
+            <a href="{{ url_for('ver_tareas_general') }}">Ver indicadores</a>
         {% endif %}
     </div>
 
