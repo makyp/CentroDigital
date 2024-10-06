@@ -22,13 +22,24 @@ Editar Tarea
             <label for="fechavencimiento">Fecha de Vencimiento:</label>
             <input type="date" id="fechavencimiento" name="fechavencimiento" value="{{ tarea.fechavencimiento }}" class="form-control" required>
         </div>
-
+        <div class="form-group">
+            <label for="objetivo_especifico">Objetivo Específico:</label>
+            <select id="objetivo_especifico" name="objetivo_especifico" class="form-control" required>
+                {% for objetivo in objetivos_especificos %}
+                    <option value="{{ objetivo.id }}" {% if objetivo.id == tarea.objetivo_especifico_id %}selected{% endif %}>
+                        {{ objetivo.descripcion }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
         <div class="form-group">
             <label for="miembroasignado">Asignar a:</label>
-            <select id="miembroasignado" name="miembroasignado" class="form-control" required>
+            <select id="miembroasignado" name="miembro_asignado" class="form-control" required>
+                <option value="" {% if tarea.miembro_asignado is none %}selected{% endif %}>Asignar miembro</option>
                 {% for miembro in miembros %}
-                <option value="{{ miembro._id }}" {% if miembro._id == tarea.miembroasignado %}selected{% endif %}>
-                    {{ miembro.nombre }} {{ miembro.apellido }}
+                <option value="{{ miembro._id }}" {% if miembro._id == tarea.miembro_asignado %}selected{% endif %}>
+                    {{ miembro.nombre }}
                 </option>
                 {% endfor %}
             </select>

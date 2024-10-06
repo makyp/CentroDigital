@@ -21,6 +21,7 @@ Lista de Proyectos
             <thead class="thead-dark">
                 <tr>
                     <th>Nombre</th>
+                    <th>Objetivo General</th>
                     <th>Descripción</th>
                     <th>Fecha de Inicio</th>
                     <th>Fecha de Finalización</th>
@@ -34,6 +35,7 @@ Lista de Proyectos
                 {% for proyecto in proyectos %}
                 <tr>
                     <td>{{ proyecto.nombre }}</td>
+                    <td>{{ proyecto.objetivoGeneral }}</td>
                     <td>{{ proyecto.descripcion }}</td>
                     <td>{{ proyecto.fechainicio }}</td>
                     <td>{{ proyecto.fechafinal }}</td>
@@ -100,7 +102,6 @@ Lista de Proyectos
                     <label for="objetivo_especifico1">Objetivo Específico 1:</label>
                     <input type="text" id="objetivo_especifico1" name="objetivos_especificos" class="form-control" required>
                 </div>
-                
             </div>
             
             <div class="form-group">
