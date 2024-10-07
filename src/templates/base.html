@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="/static/img/Ima1.png">
+    <link rel="shortcut icon" href="/static/img/logo.png">
     <title>{% block title %}{% endblock %}</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/estilos_base.css') }}" rel="stylesheet">
@@ -24,7 +24,7 @@
             <a href="{{ url_for('admin_proyectos') }}">Administrar Proyectos</a>
             <a href="{{ url_for('admin_usuarios') }}">Administrar Usuarios</a>
             <a href="{{ url_for('registro') }}">Agregar nuevo miembro</a>
-            <a href="{{ url_for('registro_empresa') }}">Solicitudes de empresas</a>
+            <a href="{{ url_for('registro_empresa') }}">Ver empresas</a>
             <a href="{{ url_for('seleccionar_proyecto') }}">Agregar Tarea</a>
             <a href="{{ url_for('ver_todas_las_tareas') }}">Ver Tareas</a>
             <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
@@ -32,8 +32,9 @@
             <a href="{{ url_for('mis_tareas') }}">Mis Tareas</a>
             <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
         {% elif session.get('role') == 'empresa' %}
-            <a href="{{ url_for('mis_tareas') }}">Mis Tareas</a>
-            <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
+            <a href="{{ url_for('solicitar_proyecto') }}">Radicar Solicitud</a>
+            <a href="{{ url_for('ver_solicitudes') }}">Ver solicitudes</a>
+            <a href="{{ url_for('ver_tareas_general') }}">Ver indicadores</a>
         {% endif %}
     </div>
 

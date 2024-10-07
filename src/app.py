@@ -321,6 +321,45 @@ def admin_proyectos():
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
+@app.route('/nuevo_proyecto', methods=['GET', 'POST'])
+def nuevo_proyecto():
+    if 'correo' in session and session.get('role') == 'admin':
+        if request.method == 'POST':
+            nombre = request.form.get('nombre')
+            descripcion = request.form.get('descripcion')
+            fechainicio = request.form.get('fechainicio')
+            fechafinal = request.form.get('fechafinal')
+            objetivo_general = request.form.get('objetivo_general')
+            objetivos_especificos = request.form.getlist('objetivos_especificos')
+            estado = request.form.get('estado')
+
+            # Validar que todos los campos requeridos estén presentes
+            if not all([nombre, descripcion, fechainicio, fechafinal, objetivo_general, estado]):
+                flash('Todos los campos son obligatorios.', 'danger')
+                return redirect(url_for('nuevo_proyecto'))
+
+            # Crear el nuevo proyecto
+            nuevo_proyecto = Proyecto(
+                nombre=nombre,
+                descripcion=descripcion,
+                fechainicio=fechainicio,
+                fechafinal=fechafinal,
+                estado=estado,
+                objetivoGeneral=objetivo_general,
+                objetivosEspecificos=objetivos_especificos
+            )
+
+            # Insertar el proyecto en la base de datos
+            proyectos_collection.insert_one(nuevo_proyecto.formato_doc())
+
+            flash('Proyecto creado exitosamente.', 'success')
+            return redirect(url_for('admin_proyectos'))  # Redirigir de vuelta a la lista de proyectos
+
+        return render_template('admin/nuevo_proyecto.html')  # Cargar el formulario para agregar un nuevo proyecto
+
+    flash('No tienes permisos para realizar esta acción.')
+    return redirect(url_for('home'))
+
 @app.route('/proyecto/<id>/editar', methods=['GET', 'POST'])
 def editar_proyecto(id):
     if 'correo' in session and session.get('role') == 'admin':
@@ -799,6 +838,14 @@ def validar_codigo(correo):
 
     # Renderizar la plantilla con el estado del código valido
     return render_template('inicio_sesion/validar_codigo.html', correo=correo, codigo_valido=codigo_valido)
+
+@app.route('/solicitar_proyecto', methods=['GET', 'POST'])
+def solicitar_proyecto():
+    return render_template('solicitud_proyecto.html')
+
+@app.route('/solicitudes')
+def ver_solicitudes():
+    return render_template('ver_solicitudes.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

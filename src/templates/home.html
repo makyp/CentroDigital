@@ -3,12 +3,12 @@
 {% block title %}Inicio{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container d-flex align-items-center justify-content-center vh-100">
     <!-- Card principal con información del usuario -->
-    <div class="card">
+    <div class="card shadow-lg border-light" style="width: 100%; max-width: 700px;">
         <div class="card-body">
             <h2 class="card-title">Bienvenido, {{ usuario.nombre }} {{ usuario.apellido }}</h2>
-            <h5 class="card-subtitle mb-3 text-muted">Información Personal</h5>
+            <h5 class="card-subtitle mb-4 text-muted">Información Personal</h5>
             
             <!-- Información detallada del usuario -->
             <div class="row">
@@ -21,9 +21,9 @@
                 <div class="col-md-12">
                     <p><strong>Habilidades:</strong> 
                         {% if usuario.habilidades %}
-                            {{ usuario.habilidades | join(', ') }}
+                            <span class="text-success">{{ usuario.habilidades | join(', ') }}</span>
                         {% else %}
-                            No hay habilidades registradas.
+                            <span class="text-danger">No hay habilidades registradas.</span>
                         {% endif %}
                     </p>
                 </div>

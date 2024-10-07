@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}
+Solicitud de Proyecto
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h2 class="text-center">Solicitar Nuevo Proyecto</h2>
+        
+        <!-- Mensajes flash de retroalimentación -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info" role="alert">
+                    <ul>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Formulario de solicitud -->
+        <form method="POST" action="{{ url_for('solicitar_proyecto') }}">
+            <div class="form-group">
+                <label for="nombre_proyecto">Nombre del Proyecto:</label>
+                <input type="text" id="nombre_proyecto" name="nombre_proyecto" class="form-control" placeholder="Ingrese el nombre del proyecto" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="descripcion">Breve Descripción:</label>
+                <textarea id="descripcion" name="descripcion" class="form-control" placeholder="Describa brevemente el proyecto" rows="3" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="requerimientos">Requerimientos del Proyecto:</label>
+                <textarea id="requerimientos" name="requerimientos" class="form-control" placeholder="Especifique los requerimientos del proyecto" rows="3" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="tiempo_estimado">Tiempo Estimado (en semanas):</label>
+                <input type="number" id="tiempo_estimado" name="tiempo_estimado" class="form-control" placeholder="Ingrese el tiempo estimado en semanas" required min="1">
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

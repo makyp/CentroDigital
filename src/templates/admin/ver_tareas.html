@@ -21,7 +21,7 @@ Ver Todas las Tareas
                     <input type="text" name="miembro" class="form-control" placeholder="Nombre del Miembro" value="{{ request.args.get('miembro', '') }}">
                 </div>
                 <div class="form-group col-md-2 align-self-end">
-                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                    <button type="submit" class="btn btn-success">Filtrar</button>
                 </div>
             </div>
         </form>
@@ -39,7 +39,7 @@ Ver Todas las Tareas
         {% endwith %}
 
         <table class="table table-bordered">
-            <thead class="thead-dark">
+            <thead style="background-color: #027333; color: white;">
                 <tr>
                     <th>Proyecto</th>
                     <th>Objetivo General</th>
@@ -64,9 +64,9 @@ Ver Todas las Tareas
                     <td>{{ tarea.miembro_nombre }}</td>
                     <td>{{ tarea.estado }}</td> 
                     <td>
-                        <a href="{{ url_for('editar_tarea', id=tarea._id) }}" class="btn btn-primary btn-sm">Editar</a>
+                        <a href="{{ url_for('editar_tarea', id=tarea._id) }}" class="btn" style="background-color: #84BF04; color: white;">Editar</a>
                         <form action="{{ url_for('eliminar_tarea', id=tarea._id) }}" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            <button type="submit" class="btn" style="background-color: #A52A2A; color: white;">Eliminar</button>
                         </form>
                     </td>
                 </tr>
