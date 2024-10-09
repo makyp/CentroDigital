@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+Administrar Usuarios
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="text-center">Administrar Empresas</h1>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-success" role="alert">
+                    {% for message in messages %}
+                        {{ message }}<br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <table class="table">
+            <thead style="background-color: #027333; color: white;">
+                <tr>
+                    <th>Nombre de la empresa</th>
+                    <th>Correo</th>
+                    <th>Rol</th>
+                    <th>Nit</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                    <tr>
+                        <td>{{ usuario.nombre }}</td>
+                        <td>{{ usuario.correo }}</td>
+                        <td>{{ usuario.role }}</td>
+                        <td>{{ usuario.NIT }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('home') }}" class="btn btn-secondary">Volver a Inicio</a>
+    </div>
+</div>
+{% endblock %}
+
