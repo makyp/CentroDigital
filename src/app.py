@@ -802,19 +802,28 @@ def perfil():
     if 'correo' in session:
         usuario = usuarios_collection.find_one({'correo': session['correo']})
         if usuario:
+            # Obtener todos los proyectos en los que el usuario es miembro
             proyectos = list(proyectos_collection.find({'miembros._id': usuario['_id']}))
             
             tareas_asignadas = []
             for proyecto in proyectos:
-                for tarea in proyecto['tareas']:
-                    if tarea['miembroasignado'] == str(usuario['_id']):
-                        tareas_asignadas.append(tarea)
+                for tarea in proyecto.get('tareas', []):
+                    # Comparar el ID del miembro asignado como string
+                    if str(tarea.get('miembro_asignado')) == str(usuario['_id']):
+                        tarea_info = {
+                            'nombre': tarea['nombre'],
+                            'descripcion': tarea['descripcion'],
+                            'estado': tarea['estado'],
+                            'proyecto': proyecto['nombre']
+                        }
+                        tareas_asignadas.append(tarea_info)
             
             return render_template('perfil.html', usuario=usuario, proyectos=proyectos, tareas=tareas_asignadas)
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
 @app.route('/mis_tareas')
+
 def mis_tareas():
     if 'correo' in session:  # Verificamos que haya una sesión activa
         usuario = usuarios_collection.find_one({'correo': session['correo']})
