@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{{url_for('static', filename='css/estilos.css')}}">
-    <link rel="shortcut icon" href="/static/img/Ima1.png">
+    <link rel="shortcut icon" href="/static/img/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +14,7 @@
     <header>
         <nav>
             <a href="{{ url_for('login') }}">Iniciar Sesión</a>
+            <a href="{{ url_for('registro_empresa') }}" >Registro empresa</a>
         </nav>
         <section class="textos-header">
             <h1>Centro Digital de Desarrollo Tecnologico <br>
@@ -28,7 +29,7 @@
         <section class="contenedor sobre-nosotros">
             <h2 class="titulo">Quienes somos...</h2>
             <div class="contenedor-sobre-nosotros">
-                <img src="static/img/Ima1.png" alt="" class="imagen-about-us">
+                <img src="static/img/logo.png" alt="" class="imagen-about-us">
                 <div class="contenido-textos">
                     <h3><span>1</span>Misión</h3>
                     <p>El Centro de Desarrollo Tecnológico de la Universidad de Cundinamarca realiza procesos de consultoría, asesoría, formula y ejecuta proyectos de investigación, 
@@ -43,15 +44,17 @@
             </div>
         </section>
         <section class="contenedor sobre-nosotros">
-            <h2 class="titulo">Eres Empresa...</h2>
+            <h2 class="titulo">¡Eres Empresa! Únete a Nosotros</h2>
             <div class="contenedor-sobre-nosotros">
-                <img src="static/img/Ima2.png" alt="" class="imagen-about-us">
+                <img src="static/img/Ima2.png" alt="Colaboración empresarial" class="imagen-about-us">
                 <div class="contenido-textos">
-                    <h3><span>1</span>Haz click en el siguiente boton...</h3>
-                    <a href="{{ url_for('registro_empresa') }}" >Click Aqui</a>
+                    <h3><span>1</span> Da el siguiente paso hacia el éxito...</h3>
+                    <p>Colaborar con nosotros te brindará oportunidades únicas de crecimiento y expansión. No pierdas la oportunidad de ser parte de nuestra red de empresas.</p>
+                    <a href="{{ url_for('registro_empresa') }}" class="boton-llamada">¡Haz Click Aquí y Comienza Ahora!</a>
                 </div>
             </div>
         </section>
+        
         <section class="clientes contenedor">
             <h2 class="titulo">Desarrolladores</h2>
             <div class="cards">

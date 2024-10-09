@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}
+Proyectos Solicitados
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2 class="text-center">Solicitudes de Proyectos</h2>
+        
+        {% if proyectos %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nombre del Proyecto</th>
+                        <th>Descripción</th>
+                        <th>Requerimientos</th>
+                        <th>Tiempo Estimado (semanas)</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for proyecto in proyectos %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ proyecto.nombre }}</td>
+                        <td>{{ proyecto.descripcion }}</td>
+                        <td>{{ proyecto.requerimientos }}</td>
+                        <td>{{ proyecto.tiempo_estimado }}</td>
+                        <td>{{ proyecto.estado}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="text-center">No hay proyectos solicitados por el momento.</p>
+        {% endif %}
+        
+        <a href="{{ url_for('solicitar_proyecto') }}" class="btn btn-primary mt-3">Solicitar Nuevo Proyecto</a>
+    </div>
+</div>
+{% endblock %}

@@ -18,7 +18,7 @@ Administrar Usuarios
             {% endif %}
         {% endwith %}
         <table class="table">
-            <thead class="thead-dark">
+            <thead style="background-color: #027333; color: white;">
                 <tr>
                     <th>Nombre</th>
                     <th>Correo</th>
@@ -47,9 +47,9 @@ Administrar Usuarios
                             {% if usuario.registroCompletado %}Completado{% else %}Pendiente{% endif %}
                         </td>
                         <td>
-                            <a href="{{ url_for('editar_usuario', id=usuario._id) }}" class="btn btn-primary">Editar</a>
+                            <a href="{{ url_for('editar_usuario', id=usuario._id) }}" class="btn" style="background-color: #84BF04; color: white;">Editar</a>
                             <form action="{{ url_for('eliminar_usuario', id=usuario._id) }}" method="post" style="display:inline;">
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que quieres eliminar este usuario?')">Eliminar</button>
+                                <button type="submit" class="btn" style="background-color: #A52A2A; color: white;" onclick="return confirm('¿Estás seguro de que quieres eliminar este usuario?')">Eliminar</button>
                             </form>
                         </td>
                     </tr>

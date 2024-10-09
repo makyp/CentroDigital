@@ -18,7 +18,7 @@ Lista de Proyectos
         {% endwith %}
         <h2>Lista de Proyectos</h2>
         <table class="table table-bordered">
-            <thead class="thead-dark">
+            <thead style="background-color: #027333; color: white;">
                 <tr>
                     <th>Nombre</th>
                     <th>Objetivo General</th>
@@ -59,97 +59,21 @@ Lista de Proyectos
                     </td>
                     <td>{{ proyecto.estado }}</td>
                     <td>
-                        <a href="{{ url_for('editar_proyecto', id=proyecto._id) }}" class="btn btn-primary">Editar</a>
-                        <a href="{{ url_for('eliminar_proyecto', id=proyecto._id) }}" class="btn btn-danger">Eliminar</a>
+                        <a href="{{ url_for('editar_proyecto', id=proyecto._id) }}" class="btn" style="background-color: #84BF04; color: white;">Editar</a>
+                        <a href="{{ url_for('eliminar_proyecto', id=proyecto._id) }}" class="btn" style="background-color: #A52A2A; color: white;">Eliminar</a>
                         <a href="{{ url_for('asignar_miembros', id=proyecto._id) }}" class="btn btn-success">Administrar Integrantes</a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
-        </table>
+        </table>         
     </div>
 </div>
 
+<!-- Botón para mostrar el formulario de agregar proyecto -->
 <div class="row">
     <div class="col-md-12">
-        <h2>Agregar Nuevo Proyecto</h2>
-        <form method="POST" action="{{ url_for('admin_proyectos') }}" id="proyectoForm">
-            <div class="form-group">
-                <label for="nombre">Nombre:</label>
-                <input type="text" id="nombre" name="nombre" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="descripcion">Descripción:</label>
-                <input type="text" id="descripcion" name="descripcion" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="fechainicio">Fecha de Inicio:</label>
-                <input type="date" id="fechainicio" name="fechainicio" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="fechafinal">Fecha de Finalización:</label>
-                <input type="date" id="fechafinal" name="fechafinal" class="form-control" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="objetivo_general">Objetivo General:</label>
-                <textarea id="objetivo_general" name="objetivo_general" class="form-control" rows="3" required></textarea>
-            </div>
-            
-            <h4>Objetivos Específicos</h4>
-            <div id="objetivosEspecificosContainer">
-                <div class="form-group objetivo-especifico">
-                    <label for="objetivo_especifico1">Objetivo Específico 1:</label>
-                    <input type="text" id="objetivo_especifico1" name="objetivos_especificos" class="form-control" required>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <button type="button" id="agregarObjetivoBtn" class="btn btn-secondary">Agregar otro objetivo específico</button>
-            </div>
-            
-            <div class="form-group">
-                <label for="estado">Estado:</label>
-                <select id="estado" name="estado" class="form-control" required>
-                    <option value="Por iniciar">Por iniciar</option>
-                    <option value="En proceso">En proceso</option>
-                    <option value="Completado">Completado</option>
-                </select>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Agregar Proyecto</button>
-        </form>
+        <a href="{{ url_for('nuevo_proyecto') }}" class="btn btn-success">Agregar Nuevo Proyecto</a>
     </div>
 </div>
-
-<!-- JavaScript para manejar la adición de campos -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const container = document.getElementById('objetivosEspecificosContainer');
-        const agregarBtn = document.getElementById('agregarObjetivoBtn');
-        const objetivosMostrados = parseInt(container.dataset.objetivosMostrados) || 3;
-        let objetivoCount = 1; 
-        const maxObjetivos = 5;
-
-        function agregarCampoObjetivo() {
-            objetivoCount++;
-            const div = document.createElement('div');
-            div.classList.add('form-group', 'objetivo-especifico');
-            div.innerHTML = `
-                <label for="objetivo_especifico${objetivoCount}">Objetivo Específico ${objetivoCount}:</label>
-                <input type="text" id="objetivo_especifico${objetivoCount}" name="objetivos_especificos" class="form-control" required>
-            `;
-            container.appendChild(div);
-            if (objetivoCount === maxObjetivos) {
-                agregarBtn.disabled = true;
-                agregarBtn.textContent = 'Máximo de objetivos alcanzado';
-            }
-        }
-        for (let i = objetivoCount; i < objetivosMostrados; i++) {
-            agregarCampoObjetivo();
-        }
-
-        agregarBtn.addEventListener('click', agregarCampoObjetivo);
-    });
-</script>
 {% endblock %}

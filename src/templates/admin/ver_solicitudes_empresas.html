@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}
+Ver Todas las Solicitudes
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="text-center">Solicitudes de Proyectos</h2>
+        {% if proyectos %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nombre del Proyecto</th>
+                        <th>Descripción</th>
+                        <th>Requerimientos</th>
+                        <th>Tiempo Estimado (semanas)</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for proyecto in proyectos %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ proyecto.nombre }}</td>
+                        <td>{{ proyecto.descripcion }}</td>
+                        <td>{{ proyecto.requerimientos }}</td>
+                        <td>{{ proyecto.tiempo_estimado }}</td>
+                        <td>{{ proyecto.estado }}</td>
+                        <td>
+                            {% if proyecto.estado == 'Pendiente' %}
+                            <form method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}">
+                                <input type="hidden" name="estado" value="Aprobado">
+                                <button type="submit" class="btn btn-success" {% if proyecto.estado != 'Pendiente' %} disabled {% endif %}>Aprobar</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}">
+                                <input type="hidden" name="estado" value="Rechazado">
+                                <button type="submit" class="btn btn-danger" {% if proyecto.estado != 'Pendiente' %} disabled {% endif %}>Rechazar</button>
+                            </form>
+                            {% else %}
+                            <button class="btn btn-secondary" disabled>Acción tomada</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="text-center">No hay proyectos solicitados por el momento.</p>
+        {% endif %}
+        
+        <a href="{{ url_for('home') }}" class="btn btn-primary mt-3">Volver a Inicio</a>
+    </div>
+</div>
+{% endblock %}
