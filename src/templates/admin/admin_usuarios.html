@@ -21,36 +21,46 @@ Administrar Usuarios
             <thead style="background-color: #027333; color: white;">
                 <tr>
                     <th>Nombre</th>
-                    <th>Correo</th>
                     <th>Rol</th>
-                    <th>Programa academico</th>
-                    <th>Habilidades</th>
-                    <th>Estado Registro</th>
+                    <th>Programa Académico</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for usuario in usuarios %}
                     <tr>
-                        <td>{{ usuario.nombre }}</td>
-                        <td>{{ usuario.correo }}</td>
+                        <!-- Nombre como enlace para desplegar información adicional -->
+                        <td>
+                            <a href="#" class="nombre-usuario" style="color: black;" onclick="toggleInfo('{{ usuario._id }}'); return false;">
+                                {{ usuario.nombre }}
+                            </a>
+                        </td>
                         <td>{{ usuario.role }}</td>
                         <td>{{ usuario.programa }}</td>
-                        <td>
-                            <ul>
-                                {% for habilidad in usuario.habilidades %}
-                                    <li>{{ habilidad }}</li>
-                                {% endfor %}
-                            </ul>
-                        </td>
-                        <td>
-                            {% if usuario.registroCompletado %}Completado{% else %}Pendiente{% endif %}
-                        </td>
                         <td>
                             <a href="{{ url_for('editar_usuario', id=usuario._id) }}" class="btn" style="background-color: #84BF04; color: white;">Editar</a>
                             <form action="{{ url_for('eliminar_usuario', id=usuario._id) }}" method="post" style="display:inline;">
                                 <button type="submit" class="btn" style="background-color: #A52A2A; color: white;" onclick="return confirm('¿Estás seguro de que quieres eliminar este usuario?')">Eliminar</button>
                             </form>
+                        </td>
+                    </tr>
+                    <!-- Fila adicional con información extra (oculta por defecto) -->
+                    <tr id="info-{{ usuario._id }}" style="display: none;">
+                        <td colspan="4" style="padding: 15px; background-color: #f9f9f9;">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Correo:</strong> {{ usuario.correo }}</td>
+                                    <td>
+                                        <strong>Habilidades:</strong>
+                                        <ul style="margin-left: 20px;">
+                                            {% for habilidad in usuario.habilidades %}
+                                                <li>{{ habilidad }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td><strong>Estado Registro:</strong> {% if usuario.registroCompletado %}Completado{% else %}Pendiente{% endif %}</td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
                 {% endfor %}
@@ -59,5 +69,24 @@ Administrar Usuarios
         <a href="{{ url_for('home') }}" class="btn btn-secondary">Volver a Inicio</a>
     </div>
 </div>
-{% endblock %}
 
+<script>
+    // Función para mostrar/ocultar la información adicional
+    function toggleInfo(id) {
+        var infoRow = document.getElementById('info-' + id);
+        if (infoRow.style.display === 'none') {
+            infoRow.style.display = '';
+        } else {
+            infoRow.style.display = 'none';
+        }
+    }
+</script>
+<script>
+    setTimeout(function() {
+        var flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';  // Oculta el mensaje
+        }
+    }, 3000);  // Tiempo en milisegundos (3000 ms = 3 segundos)
+</script>
+{% endblock %}

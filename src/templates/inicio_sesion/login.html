@@ -1,61 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="/static/img/Ima1.png">
     <link rel="stylesheet" type="text/css" href="static/css/estilos_login.css">
     <title>Iniciar Sesión - CDDT</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <!-- Incluye Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
+
 <body>
     <section class="background-radial-gradient overflow-hidden">
         <div class="container px-4 py-5 px-md-5 text-center text-lg-start my-5">
             <div class="row gx-lg-5 align-items-center mb-5">
                 <div class="col-lg-6 mb-5 mb-lg-0" style="z-index: 10">
-                    <h1 class="my-5 display-5 fw-bold ls-tight" style="color: hsl(120, 81%, 95%)">Centro Digital de Desarrollo Tecnologico</h1>
-                    <p class="mb-4 opacity-70" style="color: white; text-shadow: 2px 2px 5px rgba(0, 255, 0, 0.5);">Mensaje del cddt...</p>
+                    <h1 class="my-5 display-5 fw-bold ls-tight" style="color: hsl(120, 81%, 95%)">Centro Digital de
+                        Desarrollo Tecnologico</h1>
+                    <p class="mb-4 opacity-70" style="color: white; text-shadow: 2px 2px 5px rgba(0, 255, 0, 0.5);">
+                        Mensaje del cddt...</p>
                 </div>
                 <div class="col-lg-6 mb-5 mb-lg-0 position-relative">
                     <div class="card bg-glass">
                         <div class="card-body px-4 py-5 px-md-5">
                             <h1 class="h3 mb-3" style="color: black;">Iniciar Sesión</h1>
-                            
+
                             <!-- Bloque para mostrar mensajes flash -->
                             {% with messages = get_flashed_messages(with_categories=true) %}
-                                {% if messages %}
-                                <div class="alert-container">
-                                    {% for category, message in messages %}
-                                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                        {{ message }}
-                                    </div>
-                                    {% endfor %}
+                            {% if messages %}
+                            <div class="alert-container">
+                                {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
                                 </div>
-                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                             {% endwith %}
-                            
-                            <form method="POST">
+
+                            <!-- Formulario de Iniciar Sesión -->
+                            <form method="POST" onsubmit="return validatePassword()">
                                 <label for="exampleFormControlInput1" class="form-label">Correo Electrónico</label>
-                                <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="correo@ejemplo.com" name="correo" required>
+                                <input type="email" class="form-control" id="exampleFormControlInput1"
+                                    placeholder="correo@ejemplo.com" name="correo" required>
                                 <br>
-                                
+
                                 <label for="inputPassword5" class="form-label">Contraseña</label>
                                 <div class="input-group">
-                                    <input type="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock" name="password" required>
+                                    <input type="password" id="inputPassword5" class="form-control"
+                                        aria-describedby="passwordHelpBlock" name="password" required>
                                     <!-- Botón con ícono de ojo para mostrar/ocultar la contraseña -->
                                     <span class="input-group-text" onclick="togglePassword()">
                                         <i id="eyeIcon" class="fas fa-eye"></i>
                                     </span>
                                 </div>
-                                <div id="passwordHelpBlock" class="form-text"></div>
+                                <div id="passwordHelpBlock" class="form-text" style="color:red;"></div>
                                 <br>
-                                
+
                                 <button class="btn btn-primary w-100 py-2" type="submit">Iniciar Sesión</button>
                                 <br><br>
-                                <p>¿Olvidaste tu contraseña? Haz clic aquí <a href="{{ url_for('recuperacion') }}">Recuperar contraseña</a></p>
+                                <p>¿Olvidaste tu contraseña? Haz clic aquí <a
+                                        href="{{ url_for('recuperacion') }}">Recuperar contraseña</a></p>
                             </form>
+
                         </div>
                     </div>
                 </div>
@@ -94,10 +104,38 @@
 
     <!-- Script para alternar el ícono del ojo y mostrar/ocultar la contraseña -->
     <script>
+        window.setTimeout(function () {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function (alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 3000); 
+    </script>
+    <script>
+        // Validar si la contraseña cumple con los requisitos de seguridad
+        /*function validatePassword() {
+            var passwordField = document.getElementById("inputPassword5");
+            var password = passwordField.value;
+            var passwordHelpBlock = document.getElementById("passwordHelpBlock");
+
+            // Requisitos de la contraseña
+            var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+            if (!regex.test(password)) {
+                passwordHelpBlock.textContent = "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números.";
+                return false;  // Impide el envío del formulario si la contraseña no es válida
+            }
+
+            passwordHelpBlock.textContent = "";  // Si la contraseña es válida, limpia el mensaje de error
+            return true;  // Permite el envío del formulario
+        }*/
+
+        // Mostrar/ocultar la contraseña
         function togglePassword() {
             var passwordField = document.getElementById("inputPassword5");
             var eyeIcon = document.getElementById("eyeIcon");
-            
+
             if (passwordField.type === "password") {
                 passwordField.type = "text";
                 eyeIcon.classList.remove("fa-eye");
@@ -108,15 +146,8 @@
                 eyeIcon.classList.add("fa-eye");
             }
         }
-    </script>
-    <script>
-        window.setTimeout(function() {
-            var alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                var bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            });
-        }, 3000); 
+
     </script>
 </body>
+
 </html>

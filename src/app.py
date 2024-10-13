@@ -101,7 +101,7 @@ def registro():
                  flash('Registro exitoso. Se ha enviado un correo con tus credenciales.')
                 except Exception as e:
                     flash(f'Error al enviar el correo: {str(e)}')
-                return redirect(url_for('home'))
+                return redirect(url_for('admin_usuarios'))
         return render_template('inicio_sesion/registro.html')
     else:
         flash('No tienes permisos para acceder a esta página.')
@@ -202,7 +202,6 @@ def editar_usuario(id):
         usuario = usuarios_collection.find_one({'_id': ObjectId(id)})
         if request.method == 'POST':
             nombre = request.form['nombre']
-            apellido = request.form['apellido']
             correo = request.form['correo']
             role = request.form['role']
             cargo = request.form['cargo']
@@ -213,7 +212,6 @@ def editar_usuario(id):
                 {'_id': ObjectId(id)},
                 {'$set': {
                     'nombre': nombre,
-                    'apellido': apellido,
                     'correo': correo,
                     'role': role,
                     'cargo': cargo,
@@ -226,7 +224,6 @@ def editar_usuario(id):
                 {'miembros._id': ObjectId(id)},
                 {'$set': {
                     'miembros.$.nombre': nombre,
-                    'miembros.$.apellido': apellido,
                     'miembros.$.correo': correo
                 }}
             )
@@ -236,7 +233,7 @@ def editar_usuario(id):
             for proyecto in proyectos:
                 for tarea in proyecto['tareas']:
                     if tarea['miembroasignado'] == str(id):
-                        tarea['miembro_nombre'] = f"{nombre} {apellido}"
+                        tarea['miembro_nombre'] = f"{nombre}"
                 proyectos_collection.update_one(
                     {'_id': proyecto['_id']},
                     {'$set': {'tareas': proyecto['tareas']}}

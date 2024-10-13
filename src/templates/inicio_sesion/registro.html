@@ -10,16 +10,24 @@ Registro
         <h2 class="text-center">Registro</h2>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="alert alert-info" role="alert">
+                <div class="alert alert-info" role="alert" id="flash-message">
                     <ul>
                         {% for message in messages %}
                             <li>{{ message }}</li>
                         {% endfor %}
                     </ul>
                 </div>
+                <script>
+                    setTimeout(function() {
+                        var flashMessage = document.getElementById('flash-message');
+                        if (flashMessage) {
+                            flashMessage.style.display = 'none';  // Oculta el mensaje
+                        }
+                    }, 3000);  // Tiempo en milisegundos (3000 ms = 3 segundos)
+                </script>
             {% endif %}
         {% endwith %}
-        <form method="POST" action="{{ url_for('registro') }}"  >
+        <form method="POST" action="{{ url_for('registro') }}">
             <div class="form-group">
                 <label for="nombre">Nombre Completo :</label>
                 <input type="text" name="nombre" class="form-control" required>
@@ -34,9 +42,9 @@ Registro
                     <option value="admin">Administrador</option>
                     <option value="miembro">Miembro</option>
                 </select>
+            </div>
             <button type="submit" class="btn btn-primary">Registrar</button>
         </form>
-        <!-- <a href="{{ url_for('login') }}">Iniciar sesión</a> -->
     </div>
 </div>
 {% endblock %}

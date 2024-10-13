@@ -27,7 +27,7 @@
                             <h1 class="h3 mb-3" style="color: black;">Registro empresa</h1>
                             <form method="POST" action="{{ url_for('registro_empresa') }}">
                                 <div class="form-group">
-                                    <label for="nombre">Nombre empresa</label>
+                                    <label for="nombre">Nombre empresa:</label>
                                     <input type="text" name="empresa" class="form-control" required>
                                 </div>
                                 <div class="form-group">
@@ -35,8 +35,16 @@
                                     <input type="email" name="correo_empresa" class="form-control" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="cargo">NIT</label>
+                                    <label for="cargo">NIT:</label>
                                     <input type="text" name="NIT" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cargo">Nombre persona encargada:</label>
+                                    <input type="text" name="encargado" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cargo">Telefono de contacto:</label>
+                                    <input type="text" name="telefono" class="form-control" required>
                                 </div>
                                 <label for="password" class="form-label">Contraseña</label>
                                 <div class="input-group">

@@ -11,7 +11,7 @@ Ver Todas las Solicitudes
         {% if proyectos %}
         <div class="table-responsive">
             <table class="table table-bordered table-striped table-hover">
-                <thead>
+                <thead style="background-color: #027333; color: white;">
                     <tr>
                         <th>#</th>
                         <th>Nombre del Proyecto</th>
@@ -53,8 +53,6 @@ Ver Todas las Solicitudes
         {% else %}
             <p class="text-center">No hay proyectos solicitados por el momento.</p>
         {% endif %}
-        
-        <a href="{{ url_for('home') }}" class="btn btn-primary mt-3">Volver a Inicio</a>
     </div>
 </div>
 {% endblock %}

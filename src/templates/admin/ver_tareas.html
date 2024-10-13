@@ -38,15 +38,11 @@ Ver Todas las Tareas
             {% endif %}
         {% endwith %}
 
-        <table class="table table-bordered">
+        <table class="table">
             <thead style="background-color: #027333; color: white;">
                 <tr>
-                    <th>Proyecto</th>
-                    <th>Objetivo General</th>
-                    <th>Objetivo especifico</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Fecha de Vencimiento</th>
+                    <th>Nombre del Proyecto</th>
+                    <th>Nombre de la Tarea</th>
                     <th>Responsable</th>
                     <th>Estado</th>
                     <th>Acciones</th>
@@ -56,26 +52,56 @@ Ver Todas las Tareas
                 {% for tarea in tareas %}
                 <tr>
                     <td>{{ tarea.proyecto_nombre }}</td>
-                    <td>{{ tarea.proyecto_objetivoGeneral }}</td>
-                    <td>{{ tarea.objetivo_especifico_nombre }}</td>
-                    <td>{{ tarea.nombre }}</td>
-                    <td>{{ tarea.descripcion }}</td>
-                    <td>{{ tarea.fechavencimiento }}</td>
+                    <td>
+                        <!-- Nombre de la tarea como enlace para mostrar información adicional -->
+                        <a href="#" style="color: black;" onclick="toggleInfo('{{ tarea._id }}'); return false;">
+                            {{ tarea.nombre }}
+                        </a>
+                    </td>
                     <td>{{ tarea.miembro_nombre }}</td>
                     <td>{{ tarea.estado }}</td> 
                     <td>
                         <a href="{{ url_for('editar_tarea', id=tarea._id) }}" class="btn" style="background-color: #84BF04; color: white;">Editar</a>
                         <form action="{{ url_for('eliminar_tarea', id=tarea._id) }}" method="post" style="display:inline;">
-                            <button type="submit" class="btn" style="background-color: #A52A2A; color: white;">Eliminar</button>
+                            <button type="submit" class="btn" style="background-color: #A52A2A; color: white;" onclick="return confirm('¿Estás seguro de que quieres eliminar esta tarea?')">Eliminar</button>
                         </form>
+                    </td>
+                </tr>
+                <!-- Fila adicional con información extra (oculta por defecto) -->
+                <tr id="info-{{ tarea._id }}" style="display: none;">
+                    <td colspan="5" style="padding: 15px; background-color: #f9f9f9;">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Descripción:</strong> {{ tarea.descripcion }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fecha de Vencimiento:</strong> {{ tarea.fechavencimiento }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Objetivo General:</strong> {{ tarea.proyecto_objetivoGeneral }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Objetivo Específico:</strong> {{ tarea.objetivo_especifico_nombre }}</td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         <br>
-        <a href="{{ url_for('admin_proyectos') }}" class="btn btn-secondary">Volver a Proyectos</a>
     </div>
 </div>
-{% endblock %}
 
+<script>
+    // Función para mostrar/ocultar la información adicional
+    function toggleInfo(id) {
+        var infoRow = document.getElementById('info-' + id);
+        if (infoRow.style.display === 'none') {
+            infoRow.style.display = '';
+        } else {
+            infoRow.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}
