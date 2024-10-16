@@ -31,19 +31,23 @@ class Usuario:
         }
 
 class Empresa:
-    def __init__(self, nombre_empresa, correo_empresa, NIT, password):
-        self.nombre_empresa = nombre_empresa
-        self.correo_empresa = correo_empresa
-        self.NIT = NIT
+    def __init__(self, nombre, correo, nit, encargado, telefono, password):
+        self.nombre = nombre
+        self.correo = correo
+        self.nit = nit
+        self.encargado = encargado
+        self.telefono = telefono
         self.password = password
 
     def formato_doc(self):
         return {
-            'nombre': self.nombre_empresa,
-            'correo': self.correo_empresa,
+            'nombre': self.nombre,
+            'correo': self.correo,
             'role': 'empresa',
-            'NIT': self.NIT,
-            'password': self.password,
+            'nit': self.nit,
+            'encargado': self.encargado,
+            'telefono': self.telefono,
+            'password': self.password
         }
 
 class UserWithoutRegister:

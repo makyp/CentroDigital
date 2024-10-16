@@ -884,6 +884,8 @@ def registro_empresa():
         nombre_empresa = request.form['empresa']
         correo_empresa = request.form['correo_empresa']
         nit = request.form['NIT']
+        encargado = request.form['encargado']
+        telefono = request.form['telefono']
         password = request.form['password']
         ConfirmPassword = request.form['Confirm_password']
 
@@ -891,10 +893,10 @@ def registro_empresa():
             flash('El correo ya está registrado.')
         else:
             try:
-                if nombre_empresa and correo_empresa and nit and password and ConfirmPassword:
+                if nombre_empresa and correo_empresa and nit and encargado and telefono and password and ConfirmPassword:
                     if ConfirmPassword == password:
                         passwordHashed = generate_password_hash(password)
-                        nuevo_usuario = Empresa(nombre_empresa, correo_empresa, nit, passwordHashed)
+                        nuevo_usuario = Empresa(nombre_empresa, correo_empresa, nit, encargado, telefono, passwordHashed)
                         usuarios_collection.insert_one(nuevo_usuario.formato_doc())
                         flash('Empresa registrada exitosamente.')
                         return redirect(url_for('home'))
@@ -978,7 +980,8 @@ def solicitar_proyecto():
         descripcion = request.form.get('descripcion')
         requerimientos = request.form.get('requerimientos')
         tiempo_estimado = request.form.get('tiempo_estimado')
-        
+        correo_soli =  request.form.get('correo_soli')
+        telefono_soli =  request.form.get('telefono_soli')
         # Obtener el ID de la empresa desde la sesión (sin pasarlo en el formulario)
         empresa_id = session.get('empresa_id')
 
@@ -987,6 +990,8 @@ def solicitar_proyecto():
             'descripcion': descripcion,
             'requerimientos': requerimientos,
             'tiempo_estimado': tiempo_estimado,
+            'correo_soli': correo_soli,
+            'telefono_soli': telefono_soli,
             'fecha_solicitud': datetime.now(),
             'estado': 'Pendiente',
             'empresa_id': ObjectId(empresa_id)  # Relacionar con la empresa
