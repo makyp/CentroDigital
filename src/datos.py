@@ -4,13 +4,11 @@ import uuid
 from datetime import datetime
 
 class Usuario:
-    def __init__(self, nombre, apellido, correo, password, role, cargo, habilidades):
+    def __init__(self, nombre, correo, password, role, habilidades):
         self.nombre = nombre
-        self.apellido = apellido
         self.correo = correo
         self.password = password
         self.role = role
-        self.cargo = cargo
 
         if isinstance(habilidades, str):
             self.habilidades = [h.strip() for h in re.split(r'\s*,\s*', habilidades)]  # regex para crear lista

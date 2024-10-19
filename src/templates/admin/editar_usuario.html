@@ -22,11 +22,6 @@
                 <option value="miembro" {% if usuario.role == 'miembro' %}selected{% endif %}>Miembro</option>
             </select>
         </div>
-
-        <div class="form-group">
-            <label for="cargo">Cargo:</label>
-            <input type="text" class="form-control" name="cargo" id="cargo" value="{{ usuario.cargo }}" required>
-        </div>
         
         <div class="form-group">
             <label for="habilidades">Habilidades (separadas por comas):</label>

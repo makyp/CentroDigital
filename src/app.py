@@ -204,7 +204,6 @@ def editar_usuario(id):
             nombre = request.form['nombre']
             correo = request.form['correo']
             role = request.form['role']
-            cargo = request.form['cargo']
             habilidades = request.form['habilidades'].split(',')
 
             # Actualizar información del usuario
@@ -214,7 +213,6 @@ def editar_usuario(id):
                     'nombre': nombre,
                     'correo': correo,
                     'role': role,
-                    'cargo': cargo,
                     'habilidades': habilidades
                 }}
             )
@@ -227,17 +225,6 @@ def editar_usuario(id):
                     'miembros.$.correo': correo
                 }}
             )
-
-            # Actualizar la información del usuario en las tareas donde esté asignado
-            proyectos = proyectos_collection.find({'tareas.miembroasignado': ObjectId(id)})
-            for proyecto in proyectos:
-                for tarea in proyecto['tareas']:
-                    if tarea['miembroasignado'] == str(id):
-                        tarea['miembro_nombre'] = f"{nombre}"
-                proyectos_collection.update_one(
-                    {'_id': proyecto['_id']},
-                    {'$set': {'tareas': proyecto['tareas']}}
-                )
 
             flash('Usuario actualizado exitosamente.')
             return redirect(url_for('admin_usuarios'))
@@ -980,6 +967,7 @@ def solicitar_proyecto():
         descripcion = request.form.get('descripcion')
         requerimientos = request.form.get('requerimientos')
         tiempo_estimado = request.form.get('tiempo_estimado')
+        nombre_soli =  request.form.get('nombre_soli')
         correo_soli =  request.form.get('correo_soli')
         telefono_soli =  request.form.get('telefono_soli')
         # Obtener el ID de la empresa desde la sesión (sin pasarlo en el formulario)
@@ -990,6 +978,7 @@ def solicitar_proyecto():
             'descripcion': descripcion,
             'requerimientos': requerimientos,
             'tiempo_estimado': tiempo_estimado,
+            'nombre_soli': nombre_soli,
             'correo_soli': correo_soli,
             'telefono_soli': telefono_soli,
             'fecha_solicitud': datetime.now(),
