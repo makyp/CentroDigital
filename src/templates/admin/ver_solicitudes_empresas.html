@@ -10,7 +10,7 @@ Ver Todas las Solicitudes
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <div class="alert alert-success" role="alert">
-                    {% for message in messages %}
+                    {% for message in messages %} 
                         {{ message }}<br>
                     {% endfor %}
                 </div>
@@ -59,6 +59,13 @@ Ver Todas las Solicitudes
                                     <textarea name="comentario_rechazo" class="form-control" rows="3" required></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-danger">Confirmar Rechazo</button>
+                            </form>
+                            
+                            {% elif proyecto.estado == 'Rechazado' %}
+                            <!-- Botón para aprobar con cambios después del rechazo -->
+                            <form method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}">
+                                <input type="hidden" name="estado" value="Aprobado con cambios">
+                                <button type="submit" class="btn btn-warning">Aprobar con cambios</button>
                             </form>
                             {% else %}
                             <button class="btn btn-secondary" disabled>Acción tomada</button>

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-Asignar Miembros a Proyecto
+Asignar Miembros y Líderes a Proyecto
 {% endblock %}
 
 {% block content %}
@@ -36,16 +36,28 @@ Asignar Miembros a Proyecto
                 <form method="POST">
                     {% for usuario in usuarios %}
                         {% if usuario not in proyecto.miembros %}
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" name="agregar_miembro" value="{{ usuario._id }}" id="usuario{{ usuario._id }}">
-                                <label class="form-check-label" for="usuario{{ usuario._id }}">{{ usuario.nombre }} {{ usuario.apellido }}</label>
+                            <div class="form-check mb-2 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <!-- Checkbox para agregar miembro -->
+                                    <input type="checkbox" class="form-check-input" name="agregar_miembro" value="{{ usuario._id }}" id="usuario{{ usuario._id }}">
+                                    <label class="form-check-label" for="usuario{{ usuario._id }}">
+                                        {{ usuario.nombre }} {{ usuario.apellido }}
+                                    </label>
+                                </div>
+    
+                                <div>
+                                    <!-- Checkbox para asignar como líder -->
+                                    <input type="checkbox" class="form-check-input" name="asignar_lider" value="{{ usuario._id }}" id="lider{{ usuario._id }}">
+                                    <label class="form-check-label" for="lider{{ usuario._id }}">Asignar como líder</label>
+                                </div>
                             </div>
                         {% endif %}
                     {% endfor %}
-                    <button type="submit" class="btn btn-primary mt-3">Agregar Miembros</button>
+                    <button type="submit" class="btn btn-primary mt-3">Agregar Miembros y Líderes</button>
                 </form>
             </div>
         </div>
-    </div>
+    </div>       
+    
 </div>
 {% endblock %}

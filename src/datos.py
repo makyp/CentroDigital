@@ -100,6 +100,7 @@ class Proyecto:
         self.solicitud_id= solicitud_id
         self.tareas = []  # Lista de tareas
         self.miembros = []  # Lista de miembros
+        self.lideres = []
 
     def generar_objetivos_con_id(self, descripciones_objetivos):
         return [ObjetivoEspecifico(descripcion) for descripcion in descripciones_objetivos]
@@ -139,5 +140,6 @@ class Proyecto:
             'objetivoGeneral': self.objetivoGeneral,
             'objetivosEspecificos': [objeto.to_dict() for objeto in self.objetivosEspecificos],
             'tareas': self.tareas,
-            'miembros': self.miembros
+            'miembros': self.miembros,
+            'lideres': self.lideres 
         }

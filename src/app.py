@@ -196,42 +196,25 @@ def admin_empresas():
         flash('No tienes permisos para acceder a esta página.')
         return redirect(url_for('home'))
 
-@app.route('/usuario/<id>/editar', methods=['GET', 'POST'])
+@app.route('/usuario/<id>/editar', methods=['POST'])
 def editar_usuario(id):
     if 'correo' in session and session.get('role') == 'admin':
-        usuario = usuarios_collection.find_one({'_id': ObjectId(id)})
-        if request.method == 'POST':
-            nombre = request.form['nombre']
-            correo = request.form['correo']
-            role = request.form['role']
-            habilidades = request.form['habilidades'].split(',')
+        data = request.get_json()  # Obtener los datos en formato JSON
+        role = data.get('role')  # Extraer el nuevo rol
 
-            # Actualizar información del usuario
+        if role:
+            # Actualizar la base de datos
             usuarios_collection.update_one(
                 {'_id': ObjectId(id)},
-                {'$set': {
-                    'nombre': nombre,
-                    'correo': correo,
-                    'role': role,
-                    'habilidades': habilidades
-                }}
+                {'$set': {'role': role}}
             )
-
-            # Actualizar la información del usuario en los proyectos donde esté asignado
-            proyectos_collection.update_many(
-                {'miembros._id': ObjectId(id)},
-                {'$set': {
-                    'miembros.$.nombre': nombre,
-                    'miembros.$.correo': correo
-                }}
-            )
-
             flash('Usuario actualizado exitosamente.')
-            return redirect(url_for('admin_usuarios'))
+            return '', 200  # Responder con un código 200 OK
+        
+        return 'Faltan datos', 400  # Responder con un error si no hay rol
+    else:
+        return 'No tienes permisos', 403  # Responder con un error de permiso
 
-        return render_template('admin/editar_usuario.html', usuario=usuario)
-    flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('home'))
 
 @app.route('/usuario/<id>/eliminar', methods=['POST'])
 def eliminar_usuario(id):
@@ -260,66 +243,51 @@ def eliminar_usuario(id):
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
-
 @app.route('/admin_proyectos', methods=['GET', 'POST'])
 def admin_proyectos():
     if 'correo' in session and session.get('role') == 'admin':
-        # Para ver los proyectos existentes
+        # Obtener todos los proyectos
         proyectos = proyectos_collection.find()
-
-        # Para agregar un nuevo proyecto
-        if request.method == 'POST':
-             nombre = request.form.get('nombre')
-             descripcion = request.form.get('descripcion')
-             fechainicio = request.form.get('fechainicio')
-             fechafinal = request.form.get('fechafinal')
-             objetivo_general = request.form.get('objetivo_general')
-             objetivos_especificos = request.form.getlist('objetivos_especificos')
-             estado = request.form.get('estado')
-
-                # Validar que todos los campos requeridos estén presentes
-             if not all([nombre, descripcion, fechainicio, fechafinal, objetivo_general, estado]):
-                    flash('Todos los campos son obligatorios.', 'danger')
-                    return redirect(url_for('admin_proyectos'))
-
-                # Crear el nuevo proyecto
-             nuevo_proyecto = Proyecto(
-                    nombre=nombre,
-                    descripcion=descripcion,
-                    fechainicio=fechainicio,
-                    fechafinal=fechafinal,
-                    estado=estado,
-                    objetivoGeneral=objetivo_general,
-                    objetivosEspecificos=objetivos_especificos
-                )
-
-                # Insertar el proyecto en la base de datos
-             proyectos_collection.insert_one(nuevo_proyecto.formato_doc())
-
-                # Reiniciar 'objetivos_mostrados' en la sesión
-             session.pop('objetivos_mostrados', None)
-             flash('Proyecto creado exitosamente.', 'success')
-             return redirect(url_for('admin_proyectos'))
-        
         # Convertir el cursor de proyectos en una lista para poder iterar sobre ella múltiples veces
         lista_proyectos = list(proyectos)
-        
-        # Reemplazar el ID del miembro asignado por su nombre completo
+        # Iterar sobre cada proyecto para buscar la empresa y la solicitud asociadas
         for proyecto in lista_proyectos:
+            # Buscar la empresa relacionada usando 'id_empresa'
+            empresa_id = proyecto.get('empresa_id')
+            if empresa_id:
+                empresa = usuarios_collection.find_one({'_id': ObjectId(empresa_id)}, {'nombre': 1})
+                if empresa:
+                    proyecto['nombre_empresa'] = empresa['nombre']
+                else:
+                    proyecto['nombre_empresa'] = "Empresa no encontrada"
+            else:
+                proyecto['nombre_empresa'] = "Sin empresa asignada"
+
+            # Buscar la solicitud relacionada usando 'solicitud_id'
+            solicitud_id = proyecto.get('solicitud_id')
+            if solicitud_id:
+                solicitud = solicitudes_collection.find_one({'_id': ObjectId(solicitud_id)}, {'nombre': 1})
+                if solicitud:
+                    proyecto['nombre_solicitud'] = solicitud['nombre']
+                else:
+                    proyecto['nombre_solicitud'] = "Solicitud no encontrada"
+            else:
+                proyecto['nombre_solicitud'] = "Sin solicitud asignada"
+
+            # Opcional: Reemplazar el ID del miembro asignado por su nombre completo en las tareas
             for tarea in proyecto.get('tareas', []):
                 miembro_id = tarea.get('miembro_asignado')  # el 'id' del miembro asignado
                 if miembro_id:
-                    # Buscar al usuario en la base de datos usando el id
                     miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)}, {'nombre': 1})
-                    # Si se encuentra el usuario, reemplazar el 'id' con su nombre completo
                     if miembro:
-                        tarea['miembro_asignado'] = f"{miembro['nombre']}"
+                        tarea['miembro_asignado'] = miembro['nombre']
                     else:
                         tarea['miembro_asignado'] = "Sin asignar"
                 else:
                     tarea['miembro_asignado'] = "Sin asignar"
 
         return render_template('admin/admin_proyectos.html', proyectos=lista_proyectos)
+
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
@@ -395,7 +363,19 @@ def asignar_miembros(id):
                 # Procesar la eliminación de miembros seleccionados
                 eliminar_miembros_seleccionados = request.form.getlist('eliminar_miembro')
                 if eliminar_miembros_seleccionados:
+                    for miembro_id in eliminar_miembros_seleccionados:
+                        miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)})
+                        if miembro:
+                            # Enviar notificación por correo
+                            msg = Message(f'Removido del proyecto: {proyecto["nombre"]}', 
+                                          sender='CentroDigitalDeDesarrollo@gmail.com', 
+                                          recipients=[miembro['correo']])
+                            msg.body = f"Has sido eliminado del proyecto {proyecto['nombre']}."
+                            mail.send(msg)
+                    
+                    # Actualizar la lista de miembros del proyecto
                     proyecto['miembros'] = [miembro for miembro in proyecto['miembros'] if str(miembro['_id']) not in eliminar_miembros_seleccionados]
+                    proyecto['lideres'] = [lider for lider in proyecto.get('lideres', []) if str(lider['_id']) not in eliminar_miembros_seleccionados]  # Eliminar también de líderes
                 
                 # Procesar la adición de miembros seleccionados
                 agregar_miembros_seleccionados = request.form.getlist('agregar_miembro')
@@ -403,11 +383,32 @@ def asignar_miembros(id):
                     miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)})
                     if miembro:
                         proyecto['miembros'].append(miembro)
+                        # Enviar notificación por correo
+                        msg = Message(f'Asignado al proyecto: {proyecto["nombre"]}', 
+                                      sender='CentroDigitalDeDesarrollo@gmail.com', 
+                                      recipients=[miembro['correo']])
+                        msg.body = f"Has sido agregado al proyecto {proyecto['nombre']}."
+                        mail.send(msg)
+                
+                # Procesar la asignación de líderes seleccionados
+                lideres_seleccionados = request.form.getlist('asignar_lider')
+                for lider_id in lideres_seleccionados:
+                    lider = usuarios_collection.find_one({'_id': ObjectId(lider_id)})
+                    if lider and lider not in proyecto.get('lideres', []):
+                        if 'lideres' not in proyecto:
+                            proyecto['lideres'] = []
+                        proyecto['lideres'].append(lider)
+                        # Enviar notificación por correo
+                        msg = Message(f'Asignado como líder en el proyecto: {proyecto["nombre"]}', 
+                                      sender='CentroDigitalDeDesarrollo@gmail.com', 
+                                      recipients=[lider['correo']])
+                        msg.body = f"Has sido asignado como líder en el proyecto {proyecto['nombre']}."
+                        mail.send(msg)
                 
                 # Actualizar el proyecto en la base de datos
                 proyectos_collection.update_one({'_id': ObjectId(id)}, {'$set': proyecto})
                 
-                flash('Acciones de asignación de miembros realizadas exitosamente.')
+                flash('Acciones de asignación de miembros y líderes realizadas exitosamente.')
                 return redirect(url_for('admin_proyectos'))
             
             usuarios = usuarios_collection.find({"registroCompletado": True})
@@ -418,8 +419,6 @@ def asignar_miembros(id):
     
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
-
-
 
 @app.route('/seleccionar_proyecto', methods=['GET', 'POST'])
 def seleccionar_proyecto():
@@ -649,7 +648,6 @@ def editar_tarea(id):
                     if miembro:
                         msg = Message(
                             subject=f'Actualización de Tarea: {nombre}',
-                            sender='tu_email@gmail.com',
                             recipients=[miembro['correo']]
                         )
                         msg.body = f"""
@@ -1038,7 +1036,7 @@ def actualizar_solicitud(solicitud_id):
                 flash(f'Solicitud rechazada y notificación enviada.', 'success')
 
             # Si la solicitud es "Aprobada", redirigir a la creación del nuevo proyecto
-            elif nuevo_estado == 'Aprobado':
+            elif nuevo_estado in ['Aprobado', 'Aprobado con cambios']:
                 # Verificar si ya existe un proyecto relacionado con la solicitud
                 proyecto_existente = proyectos_collection.find_one({'solicitud_id': ObjectId(solicitud_id)})
                 
@@ -1084,6 +1082,13 @@ def nuevo_proyecto():
             estado = request.form.get('estado')
             solicitud_id = request.form.get('solicitud_id') 
             empresa_id = request.form.get('empresa_id')
+            objetivos_especificos_list = []
+            for objetivo in objetivos_especificos:
+                if objetivo:  # Asegurarse de que el objetivo no esté vacío
+                    objetivos_especificos_list.append({
+                        'id': str(uuid.uuid4()),  # Generar un ID único para cada objetivo
+                        'descripcion': objetivo
+                    })
 
             # Validar que todos los campos requeridos estén presentes
             if not all([nombre, descripcion, fechainicio, fechafinal, objetivo_general, estado]):
@@ -1134,9 +1139,12 @@ def nuevo_proyecto():
                     'fechafinal': fechafinal,
                     'estado': estado,
                     'objetivoGeneral': objetivo_general,
-                    'objetivosEspecificos': objetivos_especificos,
+                    'objetivosEspecificos': objetivos_especificos_list,
                     'solicitud_id': ObjectId(solicitud_id),
-                    'empresa_id': ObjectId(empresa_id)
+                    'empresa_id': ObjectId(empresa_id),
+                    'miembros': [],
+                    'lideres': []
+
                 }
 
                 # Insertar el proyecto en la base de datos

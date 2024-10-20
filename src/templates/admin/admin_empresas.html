@@ -22,9 +22,8 @@ Administrar Usuarios
                 <tr>
                     <th>Nombre de la empresa</th>
                     <th>Correo</th>
-                    <th>Rol</th>
+                    <th>Encargado</th>
                     <th>Nit</th>
-                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -32,8 +31,8 @@ Administrar Usuarios
                     <tr>
                         <td>{{ usuario.nombre }}</td>
                         <td>{{ usuario.correo }}</td>
-                        <td>{{ usuario.role }}</td>
-                        <td>{{ usuario.NIT }}</td>
+                        <td>{{ usuario.encargado }}</td>
+                        <td>{{ usuario.NIT }}{{ usuario.nit }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

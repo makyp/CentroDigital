@@ -21,6 +21,8 @@ Lista de Proyectos
             <thead style="background-color: #027333; color: white;">
                 <tr>
                     <th>Nombre del Proyecto</th>
+                    <th>Nombre de la Empresa</th>
+                    <th>Nombre de la solicitud</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
@@ -34,16 +36,18 @@ Lista de Proyectos
                             {{ proyecto.nombre }}
                         </a>
                     </td>
+                    <td>{{ proyecto.nombre_empresa }}</td>
+                    <td>{{ proyecto.nombre_solicitud }}</td>
                     <td>{{ proyecto.estado }}</td>
                     <td>
                         <a href="{{ url_for('editar_proyecto', id=proyecto._id) }}" class="btn" style="background-color: #84BF04; color: white;">Editar</a>
-                        <a href="{{ url_for('eliminar_proyecto', id=proyecto._id) }}" class="btn" style="background-color: #A52A2A; color: white;">Eliminar</a>
+                        <a href="#" data-url="{{ url_for('eliminar_proyecto', id=proyecto._id)}}" onclick="confirmarEliminacion(this);" class="btn" style="background-color: #A52A2A; color: white;">Eliminar</a>
                         <a href="{{ url_for('asignar_miembros', id=proyecto._id) }}" class="btn btn-success">Administrar Integrantes</a>
                     </td>
                 </tr>
                 <!-- Fila adicional con información extra (oculta por defecto) -->
                 <tr id="info-{{ proyecto._id }}" style="display: none;">
-                    <td colspan="3" style="padding: 15px; background-color: #f9f9f9;">
+                    <td colspan="5" style="padding: 15px; background-color: #f9f9f9;">
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
@@ -55,6 +59,16 @@ Lista de Proyectos
                                 <tr>
                                     <td><strong>Objetivo General</strong></td>
                                     <td>{{ proyecto.objetivoGeneral }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Objetivos Específicos</strong></td>
+                                    <td>
+                                        <ul style="margin-left: 20px;">
+                                            {% for objetivosEspecificos in proyecto.objetivosEspecificos %}
+                                                <li>{{ objetivosEspecificos.descripcion }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Descripción</strong></td>
@@ -73,7 +87,17 @@ Lista de Proyectos
                                     <td>
                                         <ul style="margin-left: 20px;">
                                             {% for miembro in proyecto.miembros %}
-                                                <li>{{ miembro.nombre }} {{ miembro.apellido }}</li>
+                                                <li>{{ miembro.nombre }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Lider</strong></td>
+                                    <td>
+                                        <ul style="margin-left: 20px;">
+                                            {% for lider in proyecto.lideres %}
+                                                <li>{{ lider.nombre }}</li>
                                             {% endfor %}
                                         </ul>
                                     </td>
@@ -83,7 +107,7 @@ Lista de Proyectos
                                     <td>
                                         <ul style="margin-left: 20px;">
                                             {% for tarea in proyecto.tareas %}
-                                                <li>Nombre: {{ tarea.nombre }} <br> Descripción: {{ tarea.descripcion }} <br> Responsable: 
+                                                <li>Nombre de la tarea: {{ tarea.nombre }} <br> Descripción de la tarea: {{ tarea.descripcion }} <br> Responsable de la tarea: 
                                                     {% if tarea.miembro_asignado %}
                                                         {{ tarea.miembro_asignado }}
                                                     {% else %}
@@ -104,7 +128,27 @@ Lista de Proyectos
     </div>
 </div>
 
+<!-- JavaScript para manejar la confirmación de eliminación -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    function confirmarEliminacion(element) {
+        url = element.getAttribute('data-url'); // Obtener la URL del atributo data-url
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "No podrás revertir esta acción",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url; // Redirigir a la URL proporcionada
+            }
+        });
+    }
+
     // Función para mostrar/ocultar la información adicional
     function toggleInfo(id) {
         var infoRow = document.getElementById('info-' + id);
