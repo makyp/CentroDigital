@@ -7,6 +7,15 @@ Ver Todas las Solicitudes
 {% block content %}
 <div class="row">
     <div class="col-md-12">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-success" role="alert">
+                    {% for message in messages %}
+                        {{ message }}<br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
         <h2 class="text-center">Solicitudes de Proyectos</h2>
         {% if proyectos %}
         <div class="table-responsive">
@@ -33,13 +42,23 @@ Ver Todas las Solicitudes
                         <td>{{ proyecto.estado }}</td>
                         <td>
                             {% if proyecto.estado == 'Pendiente' %}
+                            <!-- Botones para aprobar la solicitud -->
                             <form method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}">
                                 <input type="hidden" name="estado" value="Aprobado">
-                                <button type="submit" class="btn btn-success" {% if proyecto.estado != 'Pendiente' %} disabled {% endif %}>Aprobar</button>
+                                <button type="submit" class="btn btn-success">Aprobar</button>
                             </form>
-                            <form method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}">
+                            
+                            <!-- Botón para rechazar y mostrar el campo de comentario -->
+                            <button class="btn btn-danger" onclick="mostrarComentarioRechazo('{{ proyecto._id }}')">Rechazar</button>
+                            
+                            <!-- Formulario para rechazar con comentario -->
+                            <form id="form-rechazo-{{ proyecto._id }}" method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}" style="display: none;">
                                 <input type="hidden" name="estado" value="Rechazado">
-                                <button type="submit" class="btn btn-danger" {% if proyecto.estado != 'Pendiente' %} disabled {% endif %}>Rechazar</button>
+                                <div class="form-group">
+                                    <label for="comentario_rechazo">Comentario sobre el rechazo:</label>
+                                    <textarea name="comentario_rechazo" class="form-control" rows="3" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-danger">Confirmar Rechazo</button>
                             </form>
                             {% else %}
                             <button class="btn btn-secondary" disabled>Acción tomada</button>
@@ -55,4 +74,12 @@ Ver Todas las Solicitudes
         {% endif %}
     </div>
 </div>
+
+<!-- Script para mostrar el formulario de rechazo -->
+<script>
+    function mostrarComentarioRechazo(id) {
+        var form = document.getElementById('form-rechazo-' + id);
+        form.style.display = 'block'; // Mostrar el formulario
+    }
+</script>
 {% endblock %}

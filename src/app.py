@@ -323,54 +323,6 @@ def admin_proyectos():
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
 
-@app.route('/nuevo_proyecto', methods=['GET', 'POST'])
-def nuevo_proyecto():
-    if 'correo' in session and session.get('role') == 'admin':
-        if request.method == 'POST':
-            nombre = request.form.get('nombre')
-            descripcion = request.form.get('descripcion')
-            fechainicio = request.form.get('fechainicio')
-            fechafinal = request.form.get('fechafinal')
-            objetivo_general = request.form.get('objetivo_general')
-            objetivos_especificos = request.form.getlist('objetivos_especificos')
-            estado = request.form.get('estado')
-
-            # Validar que todos los campos requeridos estén presentes
-            if not all([nombre, descripcion, fechainicio, fechafinal, objetivo_general, estado]):
-                flash('Todos los campos son obligatorios.', 'danger')
-                return redirect(url_for('nuevo_proyecto'))
-
-            # Validar que fechainicio sea anterior a fechafinal
-            if fechainicio > fechafinal:
-                flash('La fecha de inicio debe ser anterior a la fecha final.', 'danger')
-                return redirect(url_for('nuevo_proyecto'))
-
-            try:
-                # Crear el nuevo proyecto
-                nuevo_proyecto = Proyecto(
-                    nombre=nombre,
-                    descripcion=descripcion,
-                    fechainicio=fechainicio,
-                    fechafinal=fechafinal,
-                    estado=estado,
-                    objetivoGeneral=objetivo_general,
-                    objetivosEspecificos=objetivos_especificos
-                )
-
-                # Insertar el proyecto en la base de datos
-                proyectos_collection.insert_one(nuevo_proyecto.formato_doc())
-                flash('Proyecto creado exitosamente.', 'success')
-
-            except Exception as e:
-                flash('Error al crear el proyecto: {}'.format(str(e)), 'danger')
-
-            return redirect(url_for('admin_proyectos'))  # Redirigir de vuelta a la lista de proyectos
-
-        return render_template('admin/nuevo_proyecto.html')  # Cargar el formulario para agregar un nuevo proyecto
-
-    flash('No tienes permisos para realizar esta acción.', 'danger')
-    return redirect(url_for('home'))
-
 @app.route('/proyecto/<id>/editar', methods=['GET', 'POST'])
 def editar_proyecto(id):
     if 'correo' in session and session.get('role') == 'admin':
@@ -1027,60 +979,202 @@ def ver_todas_solicitudes():
 
 @app.route('/actualizar_solicitud/<solicitud_id>', methods=['POST'])
 def actualizar_solicitud(solicitud_id):
+    print(f"Correo en sesión: {session.get('correo')}, Rol en sesión: {session.get('role')}")  # Verifica el valor de la sesión
     if 'correo' in session and session.get('role') == 'admin':
-        nuevo_estado = request.form.get('estado')  # Obtener el nuevo estado desde el formulario
-        
+        nuevo_estado = request.form.get('estado')
+        comentario_rechazo = request.form.get('comentario_rechazo')  # Obtén el comentario de rechazo si está presente
+
         try:
-            # Buscar la solicitud por ID
+            # Buscar la solicitud
             solicitud = solicitudes_collection.find_one({'_id': ObjectId(solicitud_id)})
             if not solicitud:
                 flash('Solicitud no encontrada.', 'danger')
                 return redirect(url_for('ver_todas_solicitudes'))
-            
-            # Obtener el ID de la empresa relacionada
-            empresa_id = solicitud.get('empresa_id')  # Asumiendo que la solicitud tiene un campo 'empresa_id'
-            
-            # Buscar el correo de la empresa utilizando el ID
+
+            # Buscar la empresa asociada
+            empresa_id = solicitud.get('empresa_id')
             empresa = usuarios_collection.find_one({'_id': ObjectId(empresa_id)})
             if not empresa:
                 flash('Empresa no encontrada.', 'danger')
                 return redirect(url_for('ver_todas_solicitudes'))
-            
-            # Actualizar la solicitud
-            solicitudes_collection.update_one(
-                {'_id': ObjectId(solicitud_id)}, 
-                {'$set': {'estado': nuevo_estado}}
-            )
 
-            # Enviar correo de notificación
-            msg = Message(
-                subject=f'Actualización de Solicitud: {solicitud["nombre"]}',
-                sender='maira.quiro.p02@gmail.com',
-                recipients=[empresa['correo']]  # Usar el correo de la empresa
-            )
-            msg.body = f"""
-            Estimado(a),
+            # Validar comentario de rechazo si el estado es "Rechazado"
+            if nuevo_estado == 'Rechazado':
+                if not comentario_rechazo:
+                    flash('Debe proporcionar un comentario al rechazar la solicitud.', 'danger')
+                    return redirect(url_for('ver_todas_solicitudes'))
 
-            La solicitud del proyecto "{solicitud['nombre']}" ha sido actualizada a estado: {nuevo_estado}.
+                # Actualizar el estado de la solicitud a "Rechazado" con comentario
+                solicitudes_collection.update_one(
+                    {'_id': ObjectId(solicitud_id)},
+                    {'$set': {'estado': 'Rechazado', 'causal_rechazo': comentario_rechazo}}
+                )
 
-            Detalles de la solicitud:
-            - Descripción: {solicitud['descripcion']}
-            - Requerimientos: {solicitud['requerimientos']}
-            - Tiempo estimado: {solicitud['tiempo_estimado']} semanas
+                # Preparar el cuerpo del correo de notificación
+                msg = Message(
+                    subject=f'Actualización de Solicitud: {solicitud["nombre"]}',
+                    recipients=[empresa['correo']]
+                )
+                msg.body = f"""
+                Estimado(a),
 
-            Si tienes alguna pregunta o necesitas más información, no dudes en contactarnos.
+                La solicitud del proyecto "{solicitud['nombre']}" ha sido actualizada a estado: {nuevo_estado}.
 
-            Saludos cordiales,
-            Centro Digital de Desarrollo Tecnológico
-            """
-            mail.send(msg)
+                Comentario sobre el rechazo:
+                {comentario_rechazo}
 
-            flash(f'Solicitud actualizada a {nuevo_estado}.', 'success')
+                Detalles de la solicitud:
+                - Descripción: {solicitud['descripcion']}
+                - Requerimientos: {solicitud['requerimientos']}
+                - Tiempo estimado: {solicitud['tiempo_estimado']} semanas
+
+                Si tienes alguna pregunta o necesitas más información, no dudes en contactarnos.
+
+                Saludos cordiales,
+                Centro Digital de Desarrollo Tecnológico
+                """
+                mail.send(msg)
+
+                flash(f'Solicitud rechazada y notificación enviada.', 'success')
+
+            # Si la solicitud es "Aprobada", redirigir a la creación del nuevo proyecto
+            elif nuevo_estado == 'Aprobado':
+                # Verificar si ya existe un proyecto relacionado con la solicitud
+                proyecto_existente = proyectos_collection.find_one({'solicitud_id': ObjectId(solicitud_id)})
+                
+                if not proyecto_existente:
+                    # Redirigir a la página de creación de proyecto
+                    return redirect(url_for('nuevo_proyecto', solicitud_id=solicitud_id, empresa_id=empresa_id))
+                else:
+                    flash('El proyecto ya ha sido creado. Puede volver a radicar si es necesario.', 'info')
+
+            # Para cualquier otro estado (si existe)
+            else:
+                solicitudes_collection.update_one(
+                    {'_id': ObjectId(solicitud_id)},
+                    {'$set': {'estado': nuevo_estado}}
+                )
+                flash(f'Solicitud actualizada a {nuevo_estado}.', 'success')
+
         except Exception as e:
             print(f"Error actualizando la solicitud: {e}")
             flash('Ocurrió un error al actualizar la solicitud.', 'danger')
-    
+
+    # Siempre redirigir a la lista de solicitudes después del procesamiento
     return redirect(url_for('ver_todas_solicitudes'))
+
+@app.route('/nuevo_proyecto', methods=['GET', 'POST'])
+def nuevo_proyecto():
+    print(f"Correo en sesión: {session.get('correo')}, Rol en sesión: {session.get('role')}")  # Verifica el valor de la sesión
+    if 'correo' in session and session.get('role') == 'admin':
+        if request.method == 'GET':
+            solicitud_id = request.args.get('solicitud_id')
+            empresa_id = request.args.get('empresa_id')
+
+            # Aquí puedes pasar los IDs a la plantilla si es necesario
+            return render_template('admin/nuevo_proyecto.html', solicitud_id=solicitud_id, empresa_id=empresa_id)
+
+        if request.method == 'POST':
+            nombre = request.form.get('nombre')
+            descripcion = request.form.get('descripcion')
+            fechainicio = request.form.get('fechainicio')
+            fechafinal = request.form.get('fechafinal')
+            objetivo_general = request.form.get('objetivo_general')
+            objetivos_especificos = request.form.getlist('objetivos_especificos')
+            estado = request.form.get('estado')
+            solicitud_id = request.form.get('solicitud_id') 
+            empresa_id = request.form.get('empresa_id')
+
+            # Validar que todos los campos requeridos estén presentes
+            if not all([nombre, descripcion, fechainicio, fechafinal, objetivo_general, estado]):
+                flash('Todos los campos son obligatorios.', 'danger')
+                return redirect(url_for('nuevo_proyecto'))
+
+            # Validar que fechainicio sea anterior a fechafinal
+            if fechainicio > fechafinal:
+                flash('La fecha de inicio debe ser anterior a la fecha final.', 'danger')
+                return redirect(url_for('nuevo_proyecto'))
+
+            try:
+                # Buscar la solicitud correspondiente
+                solicitud = solicitudes_collection.find_one({'_id': ObjectId(solicitud_id)})
+                usuarios = usuarios_collection.find_one({'_id': ObjectId(empresa_id)})
+                print(ObjectId(solicitud_id))
+                if not solicitud:
+                    flash('Solicitud no encontrada.', 'danger')
+                    return redirect(url_for('ver_todas_solicitudes'))
+                
+                # Obtener los correos de solicitud y empresa
+                correo_solicitante = solicitud.get('correo_soli')
+                correo_empresa = usuarios.get('correo')
+
+                # Validar que al menos uno de los correos esté disponible
+                if not correo_solicitante and not correo_empresa:
+                    flash('No hay correos disponibles para enviar la notificación.', 'danger')
+                    return redirect(url_for('ver_todas_solicitudes'))
+
+                # Crear la lista de destinatarios, solo con los correos válidos
+                destinatarios = []
+                if correo_solicitante:
+                    destinatarios.append(correo_solicitante)
+                if correo_empresa:
+                    destinatarios.append(correo_empresa)
+
+                # Actualizar la solicitud a "Aprobado"
+                solicitudes_collection.update_one(
+                    {'_id': ObjectId(solicitud_id)},
+                    {'$set': {'estado': 'Aprobado'}}
+                )
+                
+                # Crear el nuevo proyecto
+                nuevo_proyecto = {
+                    'nombre': nombre,
+                    'descripcion': descripcion,
+                    'fechainicio': fechainicio,
+                    'fechafinal': fechafinal,
+                    'estado': estado,
+                    'objetivoGeneral': objetivo_general,
+                    'objetivosEspecificos': objetivos_especificos,
+                    'solicitud_id': ObjectId(solicitud_id),
+                    'empresa_id': ObjectId(empresa_id)
+                }
+
+                # Insertar el proyecto en la base de datos
+                proyectos_collection.insert_one(nuevo_proyecto)
+
+                # Enviar correo de confirmación de aprobación
+                msg = Message(
+                    subject=f'Solicitud Aprobada: {solicitud["nombre"]}',
+                    recipients=destinatarios 
+                )
+                msg.body = f"""
+                Estimado(a),
+
+                La solicitud "{solicitud['nombre']}" ha sido aprobada y se ha creado un nuevo proyecto.
+
+                Detalles del proyecto:
+                - Nombre: {nombre}
+                - Descripción: {descripcion}
+                - Fecha de inicio: {fechainicio}
+                - Fecha final: {fechafinal}
+                - Objetivo General: {objetivo_general}
+                - Objetivos Específicos: {', '.join(objetivos_especificos)}
+
+                Saludos cordiales,
+                Centro Digital de Desarrollo Tecnológico
+                """
+                mail.send(msg)
+
+                flash('Solicitud aprobada y proyecto creado exitosamente.', 'success')
+
+            except Exception as e:
+                print(f"Error aprobando la solicitud: {e}")
+                flash('Ocurrió un error al aprobar la solicitud.', 'danger')
+
+            return redirect(url_for('admin_proyectos'))  # Redirigir de vuelta a la lista de proyectos
+
+    flash('No tienes permisos para realizar esta acción.', 'danger')
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=True)

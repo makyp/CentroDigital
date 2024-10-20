@@ -88,7 +88,7 @@ class Comentario:
             'fecha': self.fecha.isoformat()  # Convierte la fecha a formato ISO para almacenamiento
         }
 class Proyecto:
-    def __init__(self, nombre, descripcion, fechainicio, fechafinal, estado, objetivoGeneral, objetivosEspecificos):
+    def __init__(self, nombre, descripcion, fechainicio, fechafinal, estado, objetivoGeneral, objetivosEspecificos,empresa_id,solicitud_id ):
         self.nombre = nombre
         self.descripcion = descripcion
         self.fechainicio = fechainicio
@@ -96,6 +96,8 @@ class Proyecto:
         self.estado = estado
         self.objetivoGeneral = objetivoGeneral
         self.objetivosEspecificos = self.generar_objetivos_con_id(objetivosEspecificos)
+        self.empresa_id= empresa_id
+        self.solicitud_id= solicitud_id
         self.tareas = []  # Lista de tareas
         self.miembros = []  # Lista de miembros
 

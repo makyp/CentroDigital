@@ -10,6 +10,8 @@ Agregar Nuevo Proyecto
         <div class="col-md-12">
             <h2 class="mt-4">Agregar Nuevo Proyecto</h2>
             <form method="POST" action="{{ url_for('nuevo_proyecto') }}" id="proyectoForm">
+                <input type="hidden" name="solicitud_id" value="{{ solicitud_id }}">
+                <input type="hidden" name="empresa_id" value="{{ empresa_id }}">
                 
                 <div class="form-group">
                     <label for="nombre">Nombre:</label>
