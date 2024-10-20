@@ -9,15 +9,12 @@ Solicitud de Proyecto
     <div class="col-md-6 offset-md-3">
         <h2 class="text-center">Solicitar Nuevo Proyecto</h2>
         
-        <!-- Mensajes flash de retroalimentación -->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="alert alert-info" role="alert">
-                    <ul>
-                        {% for message in messages %}
-                            <li>{{ message }}</li>
-                        {% endfor %}
-                    </ul>
+                <div class="alert alert-success" role="alert">
+                    {% for message in messages %} 
+                        {{ message }}<br>
+                    {% endfor %}
                 </div>
             {% endif %}
         {% endwith %}
@@ -45,7 +42,7 @@ Solicitud de Proyecto
             </div>
             <div class="form-group">
                 <label for="tiempo_estimado">Nombre de quien radica la solicitud:</label>
-                <input type="text" id="nombre_soli" name="correo_soli" class="form-control" placeholder="Ingrese el nombre de la persona solcitante" required>
+                <input type="text" id="nombre_soli" name="nombre_soli" class="form-control" placeholder="Ingrese el nombre de la persona solcitante" required>
             </div>
             <div class="form-group">
                 <label for="tiempo_estimado">Correo de contacto:</label>

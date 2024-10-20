@@ -80,3 +80,12 @@ footer{
     margin: 20px 0 0 0;
     color: #9e9797;
 }
+
+.card {
+    padding: 50px; /* Aumenta el padding de la tarjeta */
+}
+
+
+.card-body h1 {
+    margin-bottom:50px; /* Añade margen inferior al título */
+}

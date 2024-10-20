@@ -17,7 +17,7 @@ Administrar Usuarios
                 </div>
             {% endif %}
         {% endwith %}
-        <table class="table">
+        <table class="table table-bordered">
             <thead style="background-color: #027333; color: white;">
                 <tr>
                     <th>Nombre</th>
@@ -43,7 +43,7 @@ Administrar Usuarios
                                 </select>
                             </div>
                         </td>
-                        <td>{{ usuario.programa }}</td>
+                        <td>{{ usuario.programa if usuario.programa else 'Pendiente' }}</td>
                         <td>
                             <button class="btn" style="background-color: #84BF04; color: white;" id="edit-btn-{{ usuario._id }}" onclick="toggleEdit('{{ usuario._id }}');">Editar</button>
                             <button class="btn" style="background-color: #84BF04; color: white; display:none;" id="apply-btn-{{ usuario._id }}" onclick="confirmApply('{{ usuario._id }}');">Aplicar</button>
@@ -51,27 +51,58 @@ Administrar Usuarios
                         </td>
                     </tr>
                     <tr id="info-{{ usuario._id }}" style="display: none;">
-                        <td colspan="4" style="padding: 15px; background-color: #f9f9f9;">
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td><strong>Correo:</strong> {{ usuario.correo }}</td>
-                                    <td>
-                                        <strong>Habilidades:</strong>
-                                        <ul style="margin-left: 20px;">
-                                            {% for habilidad in usuario.habilidades %}
-                                                <li>{{ habilidad }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </td>
-                                    <td><strong>Estado Registro:</strong> {% if usuario.registroCompletado %}Completado{% else %}Pendiente{% endif %}</td>
-                                </tr>
+                        <td colspan="5" style="padding: 15px; background-color: #f9f9f9;">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Campo</th>
+                                        <th>Información</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Correo:</strong></td>
+                                        <td>{{ usuario.correo if usuario.correo else 'Pendiente' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Telefono:</strong></td>
+                                        <td>{{ usuario.telefono if usuario.telefono else 'Pendiente' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Habilidades:</strong> 
+                                        </td>
+                                        <td>
+                                            {% if usuario.habilidades %}
+                                                <ul>
+                                                    {% for habilidad in usuario.habilidades %}
+                                                        <li>{{ habilidad }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                Pendiente
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Experiencia:</strong></td>
+                                        <td>{{ usuario.experiencia if usuario.experiencia else 'Pendiente' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Profesión:</strong></td>
+                                        <td>{{ usuario.profesion if usuario.profesion else 'Pendiente' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Estado Registro:</strong></td>
+                                        <td>{% if usuario.registroCompletado %}Completado{% else %}Pendiente{% endif %}</td>
+                                    </tr>
+                                </tbody>
                             </table>
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <a href="{{ url_for('home') }}" class="btn btn-secondary">Volver a Inicio</a>
     </div>
 </div>
 

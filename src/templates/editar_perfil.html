@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Perfil{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="text-center">Editar Perfil</h1>
+
+        <form method="POST">
+            <!-- Nombre y Teléfono para todos los roles -->
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre Completo</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ usuario.nombre }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="telefono" class="form-label">Teléfono</label>
+                <input type="text" class="form-control" id="telefono" name="telefono" value="{{ usuario.telefono }}" required>
+            </div>
+
+            <!-- Campos adicionales para Miembro o Admin -->
+            {% if usuario.role == 'miembro' or usuario.role == 'admin' %}
+                <div class="mb-3">
+                    <label for="estudios" class="form-label">Estudios</label>
+                    <input type="text" class="form-control" id="estudios" name="estudios" value="{{ usuario.estudios }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="profesion" class="form-label">Profesión</label>
+                    <input type="text" class="form-control" id="profesion" name="profesion" value="{{ usuario.profesion }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="programa" class="form-label">Programa</label>
+                    <input type="text" class="form-control" id="programa" name="programa" value="{{ usuario.programa }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="habilidades" class="form-label">Habilidades</label>
+                    <input type="text" class="form-control" id="habilidades" name="habilidades" value="{{ ', '.join(usuario.habilidades) }}">
+                    <!-- Si usas un checkbox, puedes hacer un bucle para las habilidades -->
+                </div>
+            {% endif %}
+
+            <!-- Campos adicionales para Empresa -->
+            {% if usuario.role == 'empresa' %}
+                <div class="mb-3">
+                    <label for="nit" class="form-label">NIT</label>
+                    <input type="text" class="form-control" id="nit" name="nit" value="{{ usuario.nit }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="encargado" class="form-label">Encargado</label>
+                    <input type="text" class="form-control" id="encargado" name="encargado" value="{{ usuario.encargado }}" required>
+                </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </form>
+    </div>
+{% endblock %}

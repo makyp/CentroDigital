@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-Administrar Usuarios
+Administrar Empresas
 {% endblock %}
 
 {% block content %}
@@ -10,34 +10,80 @@ Administrar Usuarios
         <h1 class="text-center">Administrar Empresas</h1>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="alert alert-success" role="alert">
+                <div class="alert alert-success" role="alert" id="flash-message">
                     {% for message in messages %}
                         {{ message }}<br>
                     {% endfor %}
                 </div>
             {% endif %}
         {% endwith %}
-        <table class="table">
+        <table class="table table-bordered">
             <thead style="background-color: #027333; color: white;">
                 <tr>
                     <th>Nombre de la empresa</th>
                     <th>Correo</th>
                     <th>Encargado</th>
-                    <th>Nit</th>
                 </tr>
             </thead>
             <tbody>
                 {% for usuario in usuarios %}
                     <tr>
-                        <td>{{ usuario.nombre }}</td>
-                        <td>{{ usuario.correo }}</td>
+                        <td>
+                            <a href="#" class="nombre-usuario" style="color: black;" onclick="toggleInfo('{{ usuario._id }}'); return false;">
+                                {{ usuario.nombre }}
+                            </a>
+                        </td>
+                        <td>
+                            {{ usuario.correo }}
+                        </td>
                         <td>{{ usuario.encargado }}</td>
-                        <td>{{ usuario.NIT }}{{ usuario.nit }}</td>
+                    </tr>
+                    <tr id="info-{{ usuario._id }}" style="display: none;">
+                        <td colspan="5" style="padding: 15px; background-color: #f9f9f9;">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Campo</th>
+                                        <th>Información</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Nit:</strong></td>
+                                        <td>{{ usuario.nit }}{{ usuario.NIT }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Telefono:</strong></td>
+                                        <td>{{ usuario.telefono }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
-{% endblock %}
 
+<script>
+    function toggleInfo(id) {
+        var infoRow = document.getElementById('info-' + id);
+        if (infoRow.style.display === 'none') {
+            infoRow.style.display = '';
+        } else {
+            infoRow.style.display = 'none';
+        }
+    }
+
+</script>
+
+<script>
+    setTimeout(function() {
+        var flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';  // Oculta el mensaje
+        }
+    }, 3000);  // Tiempo en milisegundos (3000 ms = 3 segundos)
+</script>
+{% endblock %}

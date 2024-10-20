@@ -19,9 +19,7 @@
             <div class="row gx-lg-5 align-items-center mb-5">
                 <div class="col-lg-6 mb-5 mb-lg-0" style="z-index: 10">
                     <h1 class="my-5 display-5 fw-bold ls-tight" style="color: hsl(120, 81%, 95%)">Centro Digital de
-                        Desarrollo Tecnologico</h1>
-                    <p class="mb-4 opacity-70" style="color: white; text-shadow: 2px 2px 5px rgba(0, 255, 0, 0.5);">
-                        Mensaje del cddt...</p>
+                        Desarrollo Tecnológico</h1>
                 </div>
                 <div class="col-lg-6 mb-5 mb-lg-0 position-relative">
                     <div class="card bg-glass">
@@ -62,7 +60,7 @@
 
                                 <button class="btn btn-primary w-100 py-2" type="submit">Iniciar Sesión</button>
                                 <br><br>
-                                <p>¿Olvidaste tu contraseña? Haz clic aquí <a
+                                <p>¿Olvidaste tu contraseña? <a
                                         href="{{ url_for('recuperacion') }}">Recuperar contraseña</a></p>
                             </form>
 
@@ -81,7 +79,7 @@
             </div>
             <div class="content-foo">
                 <h4>Correo de contacto</h4>
-                <p></p>
+                <p>centrodigitaldedesarrollotecno@gmail.com</p>
             </div>
             <div class="content-foo">
                 <h4>Ubicación</h4>
@@ -94,7 +92,7 @@
                 <p><label>Segundo Leonardo Cortes Lopez</label></p>
             </div>
         </div>
-        <h2 class="titulo-final">&copy; CDDT | Centro Digital de Desarrollo Tecnologico</h2>
+        <h2 class="titulo-final">&copy; CDDT | Centro Digital de Desarrollo Tecnológico</h2>
     </footer>
 
     <!-- Scripts de Bootstrap y JQuery -->
@@ -113,23 +111,6 @@
         }, 3000); 
     </script>
     <script>
-        // Validar si la contraseña cumple con los requisitos de seguridad
-        /*function validatePassword() {
-            var passwordField = document.getElementById("inputPassword5");
-            var password = passwordField.value;
-            var passwordHelpBlock = document.getElementById("passwordHelpBlock");
-
-            // Requisitos de la contraseña
-            var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
-
-            if (!regex.test(password)) {
-                passwordHelpBlock.textContent = "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números.";
-                return false;  // Impide el envío del formulario si la contraseña no es válida
-            }
-
-            passwordHelpBlock.textContent = "";  // Si la contraseña es válida, limpia el mensaje de error
-            return true;  // Permite el envío del formulario
-        }*/
 
         // Mostrar/ocultar la contraseña
         function togglePassword() {

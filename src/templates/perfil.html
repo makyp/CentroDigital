@@ -3,39 +3,62 @@
 {% block title %}Perfil de Usuario{% endblock %}
 
 {% block content %}
-    <div class="container mt-4">
-        <div class="text-center">
-            <h1>Perfil</h1>
-        </div>
-        <div class="card mb-4">
-            <div class="card-body">
-                <p><strong>Nombre completo:</strong> {{ usuario.nombre }} {{ usuario.apellido }}</p>
-                <p><strong>Correo:</strong> {{ usuario.correo }}</p>
-                <p><strong>Profesion:</strong> {{ usuario.profesion }}</p>
-                <p><strong>Habilidades:</strong> {{ ', '.join(usuario.habilidades) }}</p>
-            </div>
-        </div>
-
-        <h2>Proyectos</h2>
-        <ul class="list-group mb-4">
-            {% if proyectos %}
-                {% for proyecto in proyectos %}
-                    <li class="list-group-item">{{ proyecto.nombre }} - {{ proyecto.descripcion }}</li>
-                {% endfor %}
-            {% else %}
-                <li class="list-group-item">No estás asignado a ningún proyecto.</li>
+<div class="container mt-4">
+    <div class="text-center">
+        <h1>Perfil de {{ usuario.nombre }}</h1>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info" role="alert">
+                    <ul>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
             {% endif %}
-        </ul>
-
-        <h2>Tareas Asignadas</h2>
-        <ul class="list-group mb-4">
-            {% if tareas %}
-                {% for tarea in tareas %}
-                    <li class="list-group-item">{{ tarea.nombre }} - {{ tarea.descripcion }} (Estado: {{ tarea.estado }})</li>
-                {% endfor %}
-            {% else %}
-                <li class="list-group-item">No tienes ninguna tarea asignada.</li>
-            {% endif %}
-        </ul>
+        {% endwith %}
+        
     </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <!-- Campos comunes para todos los roles -->
+            <p><strong>Nombre completo:</strong> {{ usuario.nombre }} {{ usuario.apellido }}</p>
+            <p><strong>Correo:</strong> {{ usuario.correo }}</p>
+
+            <!-- Condicional para rol miembro o admin -->
+            {% if usuario.role == 'miembro' or usuario.role == 'admin' %}
+            <p><strong>Estudios:</strong> {{ usuario.estudios }}</p>
+            <p><strong>Profesión:</strong> {{ usuario.profesion }}</p>
+            <p><strong>Programa:</strong> {{ usuario.programa }}</p>
+            <p><strong>Teléfono:</strong> {{ usuario.telefono }}</p>
+            <p><strong>Habilidades:</strong> {{ ', '.join(usuario.habilidades) }}</p>
+            {% endif %}
+
+            <!-- Condicional para rol empresa -->
+            {% if usuario.role == 'empresa' %}
+            <p><strong>NIT:</strong> {{ usuario.nit }}</p>
+            <p><strong>Encargado:</strong> {{ usuario.encargado }}</p>
+            <p><strong>Teléfono:</strong> {{ usuario.telefono }}</p>
+            {% endif %}
+        </div>
+        <!-- Botón para editar perfil -->
+        <div class="text-center mb-4">
+            <a href="{{ url_for('editar_perfil') }}" class="btn btn-primary">Editar Perfil</a>
+        </div>
+    </div>
+
+    <!-- Sección de Proyectos -->
+    <h2>Proyectos a los que pertenece</h2>
+    <ul class="list-group mb-4">
+        {% if proyectos %}
+        {% for proyecto in proyectos %}
+        <li class="list-group-item">{{ proyecto.nombre }}</li>
+        {% endfor %}
+        {% else %}
+        <li class="list-group-item">No tienes proyectos asignados.</li>
+        {% endif %}
+    </ul>
+
+</div>
 {% endblock %}

@@ -9,6 +9,7 @@
     <title>Validar código - CDDT</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
 <body>
@@ -17,33 +18,45 @@
             <div class="row gx-lg-5 align-items-center mb-5">
                 <div class="col-lg-6 mb-5 mb-lg-0" style="z-index: 10">
                     <h1 class="my-5 display-5 fw-bold ls-tight" style="color: hsl(120, 81%, 95%)"> Centro Digital de
-                        Desarrollo Tecnologico <br />
+                        Desarrollo Tecnológico <br />
                     </h1>
                 </div>
                 <div class="col-lg-6 mb-5 mb-lg-0 position-relative">
                     <div class="card bg-glass">
                         <div class="card-body px-4 py-5 px-md-5">
                             <h1 class="h3 mb-3" style="color: black;">Validar Código</h1>
-                            <form method="POST">
+                            <form method="POST" onsubmit="return validarContraseñas();">
                                 {% if not codigo_valido %}
-                                    <!-- Mostrar campo para ingresar el código si el código aún no es válido -->
-                                    <label for="codigo" class="form-label">Ingresa el código de validación:</label>
-                                    <input type="text" class="form-control" id="codigo" name="codigo" placeholder="Código de validación" required>
-                                    <br>
-                                    <button class="btn btn-primary w-100 py-2" type="submit">Validar código</button>
+                                <label for="codigo" class="form-label">Ingresa el código de validación:</label>
+                                <input type="text" class="form-control" id="codigo" name="codigo"
+                                    placeholder="Código de validación" required>
+                                <br>
+                                <button class="btn btn-primary w-100 py-2" type="submit">Validar código</button>
                                 {% else %}
-                                    <!-- Mostrar campos de nueva contraseña si el código es válido -->
-                                    <label for="nueva_password" class="form-label">Nueva Contraseña:</label>
-                                    <input type="password" class="form-control" id="nueva_password" name="nueva_password" placeholder="Nueva contraseña" required>
-                                    <br>
+                                <label for="nueva_password" class="form-label">Nueva Contraseña:</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="nueva_password" name="nueva_password"
+                                        placeholder="Nueva contraseña" required>
+                                    <span class="input-group-text" onclick="togglePassword('nueva_password', 'eyeIcon1')">
+                                        <i id="eyeIcon1" class="fas fa-eye"></i>
+                                    </span>
+                                </div>
+                                <br>
 
-                                    <label for="confirmar_password" class="form-label">Confirmar Nueva Contraseña:</label>
-                                    <input type="password" class="form-control" id="confirmar_password" name="confirmar_password" placeholder="Confirmar nueva contraseña" required>
-                                    <br>
+                                <label for="confirmar_password" class="form-label">Confirmar Nueva Contraseña:</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="confirmar_password"
+                                        name="confirmar_password" placeholder="Confirmar nueva contraseña" required>
+                                    <span class="input-group-text" onclick="togglePassword('confirmar_password', 'eyeIcon2')">
+                                        <i id="eyeIcon2" class="fas fa-eye"></i>
+                                    </span>
+                                </div>
+                                <br>
 
-                                    <button class="btn btn-primary w-100 py-2" type="submit">Cambiar Contraseña</button>
+                                <button class="btn btn-primary w-100 py-2" type="submit">Cambiar Contraseña</button>
                                 {% endif %}
                             </form>
+                            <div id="passwordHelpBlock" class="form-text" style="color:red;"></div>
                         </div>
                     </div>
                 </div>
@@ -60,7 +73,7 @@
             </div>
             <div class="content-foo">
                 <h4>Correo de contacto</h4>
-                <p></p>
+                <p>centrodigitaldedesarrollotecno@gmail.com</p>
             </div>
             <div class="content-foo">
                 <h4>Ubicación</h4>
@@ -70,10 +83,46 @@
                 <h4>Equipo</h4>
                 <p><label>Brandon Enrique Bustos Veloza</label></p>
                 <p><label>Maira Tatiana Quiroga Peralta</label></p>
+                <p><label>Segundo Leonardo Cortes Lopez</label></p>
             </div>
         </div>
-        <h2 class="titulo-final">&copy; CDDT | Centro Digital de Desarrollo Tecnologico</h2>
+        <h2 class="titulo-final">&copy; CDDT | Centro Digital de Desarrollo Tecnológico</h2>
     </footer>
+
+    <script>
+        function togglePassword(inputId, iconId) {
+            var passwordField = document.getElementById(inputId);
+            var eyeIcon = document.getElementById(iconId);
+
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                eyeIcon.classList.remove("fa-eye");
+                eyeIcon.classList.add("fa-eye-slash");
+            } else {
+                passwordField.type = "password";
+                eyeIcon.classList.remove("fa-eye-slash");
+                eyeIcon.classList.add("fa-eye");
+            }
+        }
+
+        // Validar si la nueva contraseña cumple con los requisitos de seguridad
+        function validarContraseñas() {
+            var newPasswordField = document.getElementById("nueva_password");
+            var newPassword = newPasswordField.value;
+            var passwordHelpBlock = document.getElementById("passwordHelpBlock");
+
+            // Requisitos de la contraseña
+            var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[.*\/%$#+-;])[A-Za-z\d.*\/%$#+-;]{8,}$/;
+
+            if (!regex.test(newPassword)) {
+                passwordHelpBlock.textContent = "La nueva contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y uno de los siguientes caracteres especiales: * . / % $ + # - ;";
+                return false;  // Impide el envío del formulario si la nueva contraseña no es válida
+            }
+
+            passwordHelpBlock.textContent = "";  // Si la contraseña es válida, limpia el mensaje de error
+            return true;  // Permite el envío del formulario
+        }
+    </script>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>

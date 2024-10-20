@@ -65,17 +65,17 @@
                                         <label class="form-check-label" for="menos1">Menos de 1 año</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="experiencia[]"
+                                        <input class="form-check-input" type="checkbox" name="experiencia"
                                             value="1 a 2 años" id="1a2">
                                         <label class="form-check-label" for="1a2">1 a 2 años</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="experiencia[]"
+                                        <input class="form-check-input" type="checkbox" name="experiencia"
                                             value="2 a 3 años" id="2a3">
                                         <label class="form-check-label" for="2a3">2 a 3 años</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="experiencia[]"
+                                        <input class="form-check-input" type="checkbox" name="experiencia"
                                             value="más de 3 años" id="mas3">
                                         <label class="form-check-label" for="mas3">Más de 3 años</label>
                                     </div>
@@ -130,7 +130,7 @@
             </div>
             <div class="content-foo">
                 <h4>Correo de contacto</h4>
-                <p></p>
+                <p>centrodigitaldedesarrollotecno@gmail.com</p>
             </div>
             <div class="content-foo">
                 <h4>Ubicación</h4>
@@ -153,7 +153,7 @@
             var passwordHelpBlock = document.getElementById("passwordHelpBlock");
 
             // Requisitos de la contraseña
-            var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+            var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[.*\/%$#+-;])[A-Za-z\d.*\/]{8,}$/;
 
             if (!regex.test(newPassword)) {
                 passwordHelpBlock.textContent = "La nueva contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números";

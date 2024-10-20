@@ -49,7 +49,7 @@ def home():
     if 'correo' in session:
         usuario = usuarios_collection.find_one({'correo': session['correo']})
         if usuario:
-            return render_template('home.html', usuario = usuario)
+            return render_template('perfil.html', usuario = usuario)
     return redirect(url_for('login'))
 
 
@@ -736,25 +736,85 @@ def perfil():
     if 'correo' in session:
         usuario = usuarios_collection.find_one({'correo': session['correo']})
         if usuario:
-            # Obtener todos los proyectos en los que el usuario es miembro
-            proyectos = list(proyectos_collection.find({'miembros._id': usuario['_id']}))
-            
-            tareas_asignadas = []
-            for proyecto in proyectos:
-                for tarea in proyecto.get('tareas', []):
-                    # Comparar el ID del miembro asignado como string
-                    if str(tarea.get('miembro_asignado')) == str(usuario['_id']):
-                        tarea_info = {
-                            'nombre': tarea['nombre'],
-                            'descripcion': tarea['descripcion'],
-                            'estado': tarea['estado'],
-                            'proyecto': proyecto['nombre']
-                        }
-                        tareas_asignadas.append(tarea_info)
-            
+            # Si el usuario es una empresa, buscar proyectos por el campo 'empresa_id'
+            if usuario['role'] == 'empresa':
+                proyectos = list(proyectos_collection.find({'empresa_id': usuario['_id']}))
+                tareas_asignadas = []  # Las empresas no tienen tareas asignadas
+
+            # Si es miembro o admin, buscar proyectos por los miembros del proyecto
+            elif usuario['role'] == 'miembro' or usuario['role'] == 'admin':
+                proyectos = list(proyectos_collection.find({'miembros._id': usuario['_id']}))
+                tareas_asignadas = []
+                for proyecto in proyectos:
+                    for tarea in proyecto.get('tareas', []):
+                        # Comparar el ID del miembro asignado como string
+                        if str(tarea.get('miembro_asignado')) == str(usuario['_id']):
+                            tarea_info = {
+                                'nombre': tarea['nombre'],
+                                'descripcion': tarea['descripcion'],
+                                'estado': tarea['estado'],
+                                'proyecto': proyecto['nombre']
+                            }
+                            tareas_asignadas.append(tarea_info)
+
             return render_template('perfil.html', usuario=usuario, proyectos=proyectos, tareas=tareas_asignadas)
+
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('home'))
+
+@app.route('/editar_perfil', methods=['GET', 'POST'])
+def editar_perfil():
+    if 'correo' not in session:
+        flash('Debes iniciar sesión para editar tu perfil.', 'danger')
+        return redirect(url_for('login'))
+
+    usuario = usuarios_collection.find_one({'correo': session['correo']})
+    if not usuario:
+        flash('Usuario no encontrado.', 'danger')
+        return redirect(url_for('home'))
+
+    if request.method == 'POST':
+        # Recoger los datos del formulario
+        nombre = request.form.get('nombre')
+        telefono = request.form.get('telefono')
+        
+        # Actualizar datos comunes para todos los roles
+        update_data = {
+            'nombre': nombre,
+            'telefono': telefono
+        }
+
+        # Campos adicionales dependiendo del rol
+        if usuario['role'] == 'miembro' or usuario['role'] == 'admin':
+            estudios = request.form.get('estudios')
+            profesion = request.form.get('profesion')
+            programa = request.form.get('programa')
+            habilidades = request.form.getlist('habilidades')  # Si tienes un checkbox múltiple
+
+            update_data.update({
+                'estudios': estudios,
+                'profesion': profesion,
+                'programa': programa,
+                'habilidades': habilidades
+            })
+
+        elif usuario['role'] == 'empresa':
+            nit = request.form.get('nit')
+            encargado = request.form.get('encargado')
+
+            update_data.update({
+                'nit': nit,
+                'encargado': encargado
+            })
+
+        # Actualizar los datos del usuario en la base de datos
+        usuarios_collection.update_one({'_id': usuario['_id']}, {'$set': update_data})
+
+        flash('Perfil actualizado exitosamente.', 'success')
+        return redirect(url_for('perfil'))
+
+    # Mostrar el formulario de edición con los datos actuales del usuario
+    return render_template('editar_perfil.html', usuario=usuario)
 
 @app.route('/mis_tareas')
 
@@ -917,10 +977,9 @@ def solicitar_proyecto():
         descripcion = request.form.get('descripcion')
         requerimientos = request.form.get('requerimientos')
         tiempo_estimado = request.form.get('tiempo_estimado')
-        nombre_soli =  request.form.get('nombre_soli')
-        correo_soli =  request.form.get('correo_soli')
-        telefono_soli =  request.form.get('telefono_soli')
-        # Obtener el ID de la empresa desde la sesión (sin pasarlo en el formulario)
+        nombre_soli = request.form.get('nombre_soli')
+        correo_soli = request.form.get('correo_soli')
+        telefono_soli = request.form.get('telefono_soli')
         empresa_id = session.get('empresa_id')
 
         nueva_solicitud = {
@@ -936,7 +995,36 @@ def solicitar_proyecto():
             'empresa_id': ObjectId(empresa_id)  # Relacionar con la empresa
         }
         solicitudes_collection.insert_one(nueva_solicitud)
-        flash('Solicitud de proyecto enviada exitosamente.', 'success')
+
+        # Preparar el mensaje flash
+        mensaje = f"Su solicitud para el proyecto '{nombre_proyecto}' ha sido radicada con éxito. " \
+                  "Recibirá una respuesta en un plazo de 15 días hábiles. ¡Gracias por su solicitud!"
+        flash(mensaje, 'success')
+
+        # Preparar el correo de confirmación
+        msg = Message(
+            subject="Confirmación de Solicitud de Proyecto",
+            recipients=[correo_soli]
+        )
+        msg.body = f"""
+        Estimado/a {nombre_soli},
+
+        Nos complace informarle que su solicitud para el proyecto '{nombre_proyecto}' ha sido recibida con éxito.
+
+        Detalles de la solicitud:
+        - Descripción: {descripcion}
+        - Requerimientos: {requerimientos}
+        - Tiempo estimado: {tiempo_estimado} semanas
+
+        Recibirá una respuesta en un plazo máximo de 15 días hábiles.
+
+        ¡Gracias por confiar en nosotros!
+
+        Saludos cordiales,
+        Centro Digital de Desarrollo Tecnológico
+        """
+        mail.send(msg)
+
         return redirect(url_for('ver_solicitudes'))
 
     return render_template('solicitud_proyecto.html')
