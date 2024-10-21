@@ -8,7 +8,7 @@ Editar Proyecto
 <div class="row">
     <div class="col-md-6 offset-md-3">
         <h2>Editar Proyecto</h2>
-        <form method="POST">
+        <form id="editForm" method="POST">
             <!-- Información general del proyecto -->
             <div class="form-group">
                 <label for="nombre">Nombre:</label>
@@ -31,7 +31,7 @@ Editar Proyecto
                 <input type="date" id="fechafinal" name="fechafinal" value="{{ proyecto.fechafinal }}" class="form-control" required>
             </div>
 
-             <!-- Objetivos Específicos -->
+            <!-- Objetivos Específicos -->
             <h4>Objetivos Específicos</h4>
             <div id="objetivosEspecificosContainer" data-objetivos-mostrandose="{{ proyecto.objetivosEspecificos | length }}">
                 {% for objetivo in proyecto.objetivosEspecificos %}
@@ -39,36 +39,59 @@ Editar Proyecto
                     <label for="objetivo_especifico_{{ loop.index }}">Objetivo Específico {{ loop.index }}:</label>
                     <input type="hidden" name="objetivos_especificos_ids" value="{{ objetivo.id }}">
                     <input type="text" id="objetivo_especifico_{{ loop.index }}" name="objetivos_especificos" value="{{ objetivo.descripcion }}" class="form-control" required>
-                    <!-- Botón para eliminar el objetivo -->
                     <button type="button" class="btn btn-danger mt-2 eliminarObjetivoBtn">Eliminar</button>
                 </div>
                 {% endfor %}
-            </div>
+            </div>           
             <button type="button" id="agregarObjetivoBtn" class="btn btn-secondary">Agregar Objetivo</button>
 
             <div class="form-group">
                 <label for="estado">Estado:</label>
                 <select id="estado" name="estado" class="form-control" required>
-                    <option value="Por iniciar" {% if proyecto.estado == 'Por iniciar' %} selected {% endif %}>Por iniciar</option>
-                    <option value="En proceso" {% if proyecto.estado == 'En proceso' %} selected {% endif %}>En proceso</option>
-                    <option value="Completado" {% if proyecto.estado == 'Completado' %} selected {% endif %}>Completado</option>
+                    <option value="Por iniciar" {% if proyecto.estado=='Por iniciar' %} selected {% endif %}>Por iniciar</option>
+                    <option value="En proceso" {% if proyecto.estado=='En proceso' %} selected {% endif %}>En proceso</option>
+                    <option value="Completado" {% if proyecto.estado=='Completado' %} selected {% endif %}>Completado</option>
                 </select>
             </div>
 
             <!-- Botón para guardar los cambios -->
-            <button type="submit" class="btn btn-primary mt-3">Guardar Cambios</button>
+            <button type="button" class="btn btn-primary mt-3" data-toggle="modal" data-target="#confirmModal">Guardar Cambios</button>
         </form>
     </div>
 </div>
 
-<!-- Script para agregar y eliminar dinámicamente campos de objetivos -->
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">Confirmar Cambios</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que quieres guardar los cambios realizados en este proyecto?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmEdit">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script para manejar la confirmación -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('confirmEdit').addEventListener('click', function() {
+        document.getElementById('editForm').submit();
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
         const container = document.getElementById('objetivosEspecificosContainer');
         const agregarBtn = document.getElementById('agregarObjetivoBtn');
-        const eliminarBtns = document.querySelectorAll('.eliminarObjetivoBtn');
-        const maxObjetivos = 5;
-        const minObjetivos = 3;
+        const maxObjetivos = 4; // Máximo de objetivos permitidos
+        const minObjetivos = 2; // Mínimo de objetivos requeridos
         let objetivoCount = parseInt(container.dataset.objetivosMostrandose) || 0;
 
         // Función para agregar un nuevo campo de objetivo
@@ -79,11 +102,11 @@ Editar Proyecto
                 div.classList.add('form-group', 'objetivo-especifico');
                 div.id = `objetivo_${objetivoCount}`;
                 div.innerHTML = `
-                    <label for="objetivo_especifico_${objetivoCount}">Objetivo Específico ${objetivoCount}:</label>
-                    <input type="hidden" name="objetivos_especificos_ids" value="">
-                    <input type="text" id="objetivo_especifico_${objetivoCount}" name="objetivos_especificos" class="form-control" required>
-                    <button type="button" class="btn btn-danger mt-2 eliminarObjetivoBtn">Eliminar</button>
-                `;
+                <label for="objetivo_especifico_${objetivoCount}">Objetivo Específico ${objetivoCount}:</label>
+                <input type="hidden" name="objetivos_especificos_ids" value="">
+                <input type="text" id="objetivo_especifico_${objetivoCount}" name="objetivos_especificos" class="form-control" required>
+                <button type="button" class="btn btn-danger mt-2 eliminarObjetivoBtn">Eliminar</button>
+            `;
                 container.appendChild(div);
 
                 // Añadir el listener para eliminar el nuevo campo
@@ -117,7 +140,7 @@ Editar Proyecto
         agregarBtn.addEventListener('click', agregarCampoObjetivo);
 
         // Asignar el listener de eliminar a los objetivos existentes
-        eliminarBtns.forEach(btn => btn.addEventListener('click', eliminarCampoObjetivo));
+        document.querySelectorAll('.eliminarObjetivoBtn').forEach(btn => btn.addEventListener('click', eliminarCampoObjetivo));
     });
 </script>
 {% endblock %}

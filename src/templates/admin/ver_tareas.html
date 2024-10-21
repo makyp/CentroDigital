@@ -62,9 +62,7 @@ Ver Todas las Tareas
                     <td>{{ tarea.estado }}</td> 
                     <td>
                         <a href="{{ url_for('editar_tarea', id=tarea._id) }}" class="btn" style="background-color: #84BF04; color: white;">Editar</a>
-                        <form action="{{ url_for('eliminar_tarea', id=tarea._id) }}" method="post" style="display:inline;">
-                            <button type="submit" class="btn" style="background-color: #A52A2A; color: white;" onclick="return confirm('¿Estás seguro de que quieres eliminar esta tarea?')">Eliminar</button>
-                        </form>
+                        <button class="btn" style="background-color: #A52A2A; color: white;" onclick="confirmDelete('{{ tarea._id }}')">Eliminar</button>
                     </td>
                 </tr>
                 <!-- Fila adicional con información extra (oculta por defecto) -->
@@ -93,6 +91,27 @@ Ver Todas las Tareas
     </div>
 </div>
 
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="confirmModalDelete" tabindex="-1" role="dialog" aria-labelledby="modalLabelDelete" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabelDelete">Confirmar Eliminación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar esta tarea?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     // Función para mostrar/ocultar la información adicional
     function toggleInfo(id) {
@@ -103,5 +122,28 @@ Ver Todas las Tareas
             infoRow.style.display = 'none';
         }
     }
+
+    function confirmDelete(id) {
+        // Establecer el comportamiento del botón de confirmación en el modal
+        document.getElementById('confirmDeleteBtn').onclick = function() {
+            deleteTask(id);
+        };
+        $('#confirmModalDelete').modal('show');
+    }
+
+    function deleteTask(id) {
+        // Enviar una solicitud POST para eliminar la tarea
+        fetch(`/tarea/${id}/eliminar`, {
+            method: 'POST'
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload(); // Recargar la página para mostrar los cambios
+            } else {
+                alert('Error al eliminar la tarea.');
+            }
+        });
+    }
 </script>
+
 {% endblock %}

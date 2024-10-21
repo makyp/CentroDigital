@@ -20,7 +20,12 @@ Asignar Miembros y Líderes a Proyecto
                     {% for miembro in proyecto.miembros %}
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" name="eliminar_miembro" value="{{ miembro._id }}" id="miembro{{ miembro._id }}">
-                            <label class="form-check-label" for="miembro{{ miembro._id }}">{{ miembro.nombre }} {{ miembro.apellido }}</label>
+                            <label class="form-check-label" for="miembro{{ miembro._id }}">
+                                {{ miembro.nombre }}
+                                {% if miembro in proyecto.lideres %}
+                                    <span class="badge bg-info">Líder</span>
+                                {% endif %}
+                            </label>
                         </div>
                     {% endfor %}
                     <button type="submit" class="btn btn-danger mt-3">Eliminar Miembros Seleccionados</button>
@@ -28,7 +33,7 @@ Asignar Miembros y Líderes a Proyecto
             </div>
         </div>
     </div>
-    
+       
     <div class="col-md-6">
         <div class="card">
             <div class="card-body">
@@ -39,15 +44,15 @@ Asignar Miembros y Líderes a Proyecto
                             <div class="form-check mb-2 d-flex justify-content-between align-items-center">
                                 <div>
                                     <!-- Checkbox para agregar miembro -->
-                                    <input type="checkbox" class="form-check-input" name="agregar_miembro" value="{{ usuario._id }}" id="usuario{{ usuario._id }}">
+                                    <input type="checkbox" class="form-check-input agregar-miembro" name="agregar_miembro" value="{{ usuario._id }}" id="usuario{{ usuario._id }}">
                                     <label class="form-check-label" for="usuario{{ usuario._id }}">
                                         {{ usuario.nombre }} {{ usuario.apellido }}
                                     </label>
                                 </div>
-    
+        
                                 <div>
-                                    <!-- Checkbox para asignar como líder -->
-                                    <input type="checkbox" class="form-check-input" name="asignar_lider" value="{{ usuario._id }}" id="lider{{ usuario._id }}">
+                                    <!-- Checkbox para asignar como líder (deshabilitado por defecto) -->
+                                    <input type="checkbox" class="form-check-input asignar-lider" name="asignar_lider" value="{{ usuario._id }}" id="lider{{ usuario._id }}" disabled>
                                     <label class="form-check-label" for="lider{{ usuario._id }}">Asignar como líder</label>
                                 </div>
                             </div>
@@ -57,7 +62,25 @@ Asignar Miembros y Líderes a Proyecto
                 </form>
             </div>
         </div>
-    </div>       
+    </div>        
     
 </div>
+
+<!-- JavaScript para habilitar/deshabilitar el checkbox de líder -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxesMiembros = document.querySelectorAll('.agregar-miembro');
+        checkboxesMiembros.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const liderCheckbox = this.closest('.form-check').querySelector('.asignar-lider');
+                if (this.checked) {
+                    liderCheckbox.disabled = false; // Habilitar líder si el miembro está seleccionado
+                } else {
+                    liderCheckbox.disabled = true; // Deshabilitar líder si no está seleccionado
+                    liderCheckbox.checked = false; // Desmarcar líder si el miembro no está seleccionado
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

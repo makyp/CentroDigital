@@ -17,114 +17,123 @@ Lista de Proyectos
             {% endif %}
         {% endwith %}
         <h2>Lista de Proyectos</h2>
-        <table class="table table-bordered">
-            <thead style="background-color: #027333; color: white;">
-                <tr>
-                    <th>Nombre del Proyecto</th>
-                    <th>Nombre de la Empresa</th>
-                    <th>Nombre de la solicitud</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for proyecto in proyectos %}
-                <tr>
-                    <!-- Nombre como enlace para desplegar información adicional -->
-                    <td>
-                        <a href="#" class="nombre-proyecto" style="color: black;" onclick="toggleInfo('{{ proyecto._id }}'); return false;">
-                            {{ proyecto.nombre }}
-                        </a>
-                    </td>
-                    <td>{{ proyecto.nombre_empresa }}</td>
-                    <td>{{ proyecto.nombre_solicitud }}</td>
-                    <td>{{ proyecto.estado }}</td>
-                    <td>
-                        <a href="{{ url_for('editar_proyecto', id=proyecto._id) }}" class="btn" style="background-color: #84BF04; color: white;">Editar</a>
-                        <a href="#" data-url="{{ url_for('eliminar_proyecto', id=proyecto._id)}}" onclick="confirmarEliminacion(this);" class="btn" style="background-color: #A52A2A; color: white;">Eliminar</a>
-                        <a href="{{ url_for('asignar_miembros', id=proyecto._id) }}" class="btn btn-success">Administrar Integrantes</a>
-                    </td>
-                </tr>
-                <!-- Fila adicional con información extra (oculta por defecto) -->
-                <tr id="info-{{ proyecto._id }}" style="display: none;">
-                    <td colspan="5" style="padding: 15px; background-color: #f9f9f9;">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Campo</th>
-                                    <th>Información</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Objetivo General</strong></td>
-                                    <td>{{ proyecto.objetivoGeneral }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Objetivos Específicos</strong></td>
-                                    <td>
-                                        <ul style="margin-left: 20px;">
-                                            {% for objetivosEspecificos in proyecto.objetivosEspecificos %}
-                                                <li>{{ objetivosEspecificos.descripcion }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Descripción</strong></td>
-                                    <td>{{ proyecto.descripcion }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Fecha de Inicio</strong></td>
-                                    <td>{{ proyecto.fechainicio }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Fecha de Finalización</strong></td>
-                                    <td>{{ proyecto.fechafinal }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Miembros</strong></td>
-                                    <td>
-                                        <ul style="margin-left: 20px;">
-                                            {% for miembro in proyecto.miembros %}
-                                                <li>{{ miembro.nombre }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Lider</strong></td>
-                                    <td>
-                                        <ul style="margin-left: 20px;">
-                                            {% for lider in proyecto.lideres %}
-                                                <li>{{ lider.nombre }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Tareas</strong></td>
-                                    <td>
-                                        <ul style="margin-left: 20px;">
-                                            {% for tarea in proyecto.tareas %}
-                                                <li>Nombre de la tarea: {{ tarea.nombre }} <br> Descripción de la tarea: {{ tarea.descripcion }} <br> Responsable de la tarea: 
-                                                    {% if tarea.miembro_asignado %}
-                                                        {{ tarea.miembro_asignado }}
-                                                    {% else %}
-                                                        Sin asignar
-                                                    {% endif %}
-                                                </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>         
+        
+        {% if proyectos|length == 0 %}
+            <div class="alert alert-warning" role="alert">
+                No cuentas con ninguna solicitud probada.
+            </div>
+        {% else %}
+            <table class="table table-bordered">
+                <thead style="background-color: #027333; color: white;">
+                    <tr>
+                        <th>Nombre del Proyecto</th>
+                        <th>Nombre de la Empresa</th>
+                        <th>Nombre de la Solicitud</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for proyecto in proyectos %}
+                    <tr>
+                        <td>
+                            <a href="#" class="nombre-proyecto" style="color: black;" onclick="toggleInfo('{{ proyecto._id }}'); return false;">
+                                {{ proyecto.nombre }}
+                            </a>
+                        </td>
+                        <td>{{ proyecto.nombre_empresa }}</td>
+                        <td>{{ proyecto.nombre_solicitud }}</td>
+                        <td>{{ proyecto.estado }}</td>
+                        <td>
+                            {% if session.get('role') != 'empresa' %}
+                                <a href="{{ url_for('editar_proyecto', id=proyecto._id) }}" class="btn" style="background-color: #84BF04; color: white;">Editar</a>
+                                <a href="#" data-url="{{ url_for('eliminar_proyecto', id=proyecto._id)}}" onclick="confirmarEliminacion(this);" class="btn" style="background-color: #A52A2A; color: white;">Eliminar</a>
+                                <a href="{{ url_for('asignar_miembros', id=proyecto._id) }}" class="btn btn-success">Administrar Integrantes</a>
+                            {% endif %}
+                            <a href="{{ url_for('ver_indicadores', proyecto_id=proyecto._id) }}" class="btn btn-info">Ver Indicadores</a>
+                        </td>
+                    </tr>
+                    <!-- Fila adicional con información extra (oculta por defecto) -->
+                    <tr id="info-{{ proyecto._id }}" style="display: none;">
+                        <td colspan="5" style="padding: 15px; background-color: #f9f9f9;">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Campo</th>
+                                        <th>Información</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Objetivo General</strong></td>
+                                        <td>{{ proyecto.objetivoGeneral }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Objetivos Específicos</strong></td>
+                                        <td>
+                                            <ul style="margin-left: 20px;">
+                                                {% for objetivosEspecificos in proyecto.objetivosEspecificos %}
+                                                    <li>{{ objetivosEspecificos.descripcion }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Descripción</strong></td>
+                                        <td>{{ proyecto.descripcion }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Fecha de Inicio</strong></td>
+                                        <td>{{ proyecto.fechainicio }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Fecha de Finalización</strong></td>
+                                        <td>{{ proyecto.fechafinal }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Miembros</strong></td>
+                                        <td>
+                                            <ul style="margin-left: 20px;">
+                                                {% for miembro in proyecto.miembros %}
+                                                    <li>{{ miembro.nombre }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Líder</strong></td>
+                                        <td>
+                                            <ul style="margin-left: 20px;">
+                                                {% for lider in proyecto.lideres %}
+                                                    <li>{{ lider.nombre }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Tareas</strong></td>
+                                        <td>
+                                            <ul style="margin-left: 20px;">
+                                                {% for tarea in proyecto.tareas %}
+                                                    <li>Nombre de la tarea: {{ tarea.nombre }} <br> Descripción de la tarea: {{ tarea.descripcion }} <br> Responsable de la tarea: 
+                                                        {% if tarea.miembro_asignado %}
+                                                            {{ tarea.miembro_asignado }}
+                                                        {% else %}
+                                                            Sin asignar
+                                                        {% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>         
+        {% endif %}
     </div>
 </div>
 

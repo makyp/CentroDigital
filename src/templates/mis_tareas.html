@@ -5,6 +5,9 @@
 {% block content %}
 <h1 class="mt-4">Mis Tareas</h1>
 
+{% if not tareas %}
+    <h2 class="text-center mt-5">No tienes ninguna tarea asignada.</h2>
+{% else %}
 <table class="table table-bordered kanban-table">
     <thead>
         <tr>
@@ -98,9 +101,6 @@
         </tr>
     </tbody>
 </table>
-
-{% if not tareas %}
-    <p>No tienes ninguna tarea asignada.</p>
 {% endif %}
 
 {% endblock %}

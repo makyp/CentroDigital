@@ -40,17 +40,13 @@ proyectos_collection = db['proyectos']
 tareas_collection = db['tareas']
 solicitudes_collection = db['solicitudes']
 
+def es_lider_usuario():
+    return session.get('lider') == 'Si'
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
-
-@app.route('/home')
-def home():
-    if 'correo' in session:
-        usuario = usuarios_collection.find_one({'correo': session['correo']})
-        if usuario:
-            return render_template('perfil.html', usuario = usuario)
-    return redirect(url_for('login'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -67,12 +63,14 @@ def login():
             session['correo'] = usuario['correo']
             session['role'] = usuario['role']
             session['nombre'] = usuario['nombre']
+            session['lider'] = usuario.get('lider', False)
+            session['_id'] = str(usuario['_id'])
             
             # Si el usuario tiene el rol de empresa, almacenar el _id en la sesión
             if usuario['role'] == 'empresa':
                 session['empresa_id'] = str(usuario['_id'])  # Convertir ObjectId a string
             
-            return redirect(url_for('home'))
+            return redirect(url_for('perfil'))
         else:
             # Agregar mensaje flash de error
             flash('Correo o contraseña incorrectos.', 'danger')
@@ -91,21 +89,30 @@ def registro():
                 flash('El correo ya está registrado.')
             else:
                 try:
-                 VerificationCode = generar_contraseña()
-                 s = URLSafeTimedSerializer(app.secret_key)
-                 token=s.dumps(correo, salt='registro-usuario')
-                 nuevo_usuario = UserWithoutRegister(nombre, correo, VerificationCode, role)
-                 usuarios_collection.insert_one(nuevo_usuario.formato_doc())
-                 msg=enviar_correo_registro(correo,VerificationCode,token)
-                 mail.send(msg)
-                 flash('Registro exitoso. Se ha enviado un correo con tus credenciales.')
+                    VerificationCode = generar_contraseña()
+                    s = URLSafeTimedSerializer(app.secret_key)
+                    token = s.dumps(correo, salt='registro-usuario')
+                    # Agregar campo 'lider' con valor 'No' por defecto
+                    nuevo_usuario = {
+                        "nombre": nombre,
+                        "correo": correo,
+                        "role": role,
+                        "password": VerificationCode,  # Contraseña temporal generada
+                        "registroCompletado": False,
+                        "lider": "No"  # Por defecto, no es líder
+                    }
+                    usuarios_collection.insert_one(nuevo_usuario)
+
+                    msg = enviar_correo_registro(correo, VerificationCode, token)
+                    mail.send(msg)
+                    flash('Registro exitoso. Se ha enviado un correo con tus credenciales.')
                 except Exception as e:
                     flash(f'Error al enviar el correo: {str(e)}')
                 return redirect(url_for('admin_usuarios'))
         return render_template('inicio_sesion/registro.html')
     else:
         flash('No tienes permisos para acceder a esta página.')
-        return redirect(url_for('home'))
+        return redirect(url_for('login'))
 
 @app.route('/completar_registro/<token>', methods=['GET', 'POST'])
 def completar_registro(token):
@@ -116,7 +123,7 @@ def completar_registro(token):
 
         if not usuario:
             flash('Usuario no encontrado.')
-            return redirect(url_for('home'))
+            return redirect(url_for('login'))
         
         nombre_completo = usuario.get('nombre')  
         correo = usuario.get('correo')
@@ -166,7 +173,7 @@ def completar_registro(token):
                                nombre_completo=nombre_completo,correo=correo,token=token)
     except Exception as e:
         print('El enlace de registro ha expirado o es inválido. Error: {str(e)}')
-        return redirect(url_for('home'))
+        return redirect(url_for('login'))
     
 @app.route('/logout')
 def logout():
@@ -183,7 +190,7 @@ def admin_usuarios():
         return render_template('admin/admin_usuarios.html', usuarios=getusuarios)
     else:
         flash('No tienes permisos para acceder a esta página.')
-        return redirect(url_for('home'))
+        return redirect(url_for('login'))
 
 @app.route('/admin_empresas', methods=['GET', 'POST'])
 def admin_empresas():
@@ -194,7 +201,7 @@ def admin_empresas():
         return render_template('admin/admin_empresas.html', usuarios=getusuarios)
     else:
         flash('No tienes permisos para acceder a esta página.')
-        return redirect(url_for('home'))
+        return redirect(url_for('login'))
 
 @app.route('/usuario/<id>/editar', methods=['POST'])
 def editar_usuario(id):
@@ -241,69 +248,123 @@ def eliminar_usuario(id):
             flash('No se encontró el usuario.')
         return redirect(url_for('admin_usuarios'))
     flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 @app.route('/admin_proyectos', methods=['GET', 'POST'])
 def admin_proyectos():
     if 'correo' in session and session.get('role') == 'admin':
         # Obtener todos los proyectos
         proyectos = proyectos_collection.find()
-        # Convertir el cursor de proyectos en una lista para poder iterar sobre ella múltiples veces
-        lista_proyectos = list(proyectos)
-        # Iterar sobre cada proyecto para buscar la empresa y la solicitud asociadas
-        for proyecto in lista_proyectos:
-            # Buscar la empresa relacionada usando 'id_empresa'
-            empresa_id = proyecto.get('empresa_id')
-            if empresa_id:
-                empresa = usuarios_collection.find_one({'_id': ObjectId(empresa_id)}, {'nombre': 1})
-                if empresa:
-                    proyecto['nombre_empresa'] = empresa['nombre']
-                else:
-                    proyecto['nombre_empresa'] = "Empresa no encontrada"
-            else:
-                proyecto['nombre_empresa'] = "Sin empresa asignada"
+        lista_proyectos = list(proyectos)  # Convierte a lista aquí
+    elif 'correo' in session and session.get('lider') == 'Si':
+        lider_id = str(session['_id'])  # Asegúrate de que _id esté en el formato correcto
+        print(f'Líder ID en sesión: {lider_id}')  # Verifica el ID del líder
 
-            # Buscar la solicitud relacionada usando 'solicitud_id'
-            solicitud_id = proyecto.get('solicitud_id')
-            if solicitud_id:
-                solicitud = solicitudes_collection.find_one({'_id': ObjectId(solicitud_id)}, {'nombre': 1})
-                if solicitud:
-                    proyecto['nombre_solicitud'] = solicitud['nombre']
-                else:
-                    proyecto['nombre_solicitud'] = "Solicitud no encontrada"
-            else:
-                proyecto['nombre_solicitud'] = "Sin solicitud asignada"
+        # Buscar proyectos donde el líder está en la lista de líderes
+        proyectos = proyectos_collection.find({'lideres._id': ObjectId(lider_id)})
+        lista_proyectos = list(proyectos)  # Convierte a lista aquí
+        ##print(f'Proyectos encontrados para el líder {lider_id}: {lista_proyectos}')  # Imprime los proyectos encontrados
+    elif 'correo' in session and session.get('role') == 'empresa':
+            # Obtener proyectos donde el usuario es parte de la empresa
+            usuario_id = str(session['_id'])
+            print(f'Empresa ID en sesión: {usuario_id}')
+            proyectos = proyectos_collection.find({'empresa_id': ObjectId(usuario_id)})
+            print(f'Empresa ID en sesión: {proyectos}')
+            lista_proyectos = list(proyectos)
+    else:
+        flash('No tienes permisos para realizar esta acción.')
+        return redirect(url_for('login'))
 
-            # Opcional: Reemplazar el ID del miembro asignado por su nombre completo en las tareas
-            for tarea in proyecto.get('tareas', []):
-                miembro_id = tarea.get('miembro_asignado')  # el 'id' del miembro asignado
-                if miembro_id:
-                    miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)}, {'nombre': 1})
-                    if miembro:
-                        tarea['miembro_asignado'] = miembro['nombre']
-                    else:
-                        tarea['miembro_asignado'] = "Sin asignar"
+    print(f'Lista de proyectos: {lista_proyectos}')  # Imprime la lista de proyectos
+
+    for proyecto in lista_proyectos:
+        # Buscar la empresa relacionada usando 'id_empresa'
+        empresa_id = proyecto.get('empresa_id')
+        if empresa_id:
+            empresa = usuarios_collection.find_one({'_id': ObjectId(empresa_id)}, {'nombre': 1})
+            if empresa:
+                proyecto['nombre_empresa'] = empresa['nombre']
+            else:
+                proyecto['nombre_empresa'] = "Empresa no encontrada"
+        else:
+            proyecto['nombre_empresa'] = "Sin empresa asignada"
+
+        # Buscar la solicitud relacionada usando 'solicitud_id'
+        solicitud_id = proyecto.get('solicitud_id')
+        if solicitud_id:
+            solicitud = solicitudes_collection.find_one({'_id': ObjectId(solicitud_id)}, {'nombre': 1})
+            if solicitud:
+                proyecto['nombre_solicitud'] = solicitud['nombre']
+            else:
+                proyecto['nombre_solicitud'] = "Solicitud no encontrada"
+        else:
+            proyecto['nombre_solicitud'] = "Sin solicitud asignada"
+
+        # Opcional: Reemplazar el ID del miembro asignado por su nombre completo en las tareas
+        for tarea in proyecto.get('tareas', []):
+            miembro_id = tarea.get('miembro_asignado')  # el 'id' del miembro asignado
+            if miembro_id:
+                miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)}, {'nombre': 1})
+                if miembro:
+                    tarea['miembro_asignado'] = miembro['nombre']
                 else:
                     tarea['miembro_asignado'] = "Sin asignar"
+            else:
+                tarea['miembro_asignado'] = "Sin asignar"
 
-        return render_template('admin/admin_proyectos.html', proyectos=lista_proyectos)
+    return render_template('admin/admin_proyectos.html', proyectos=lista_proyectos)
 
-    flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('home'))
+
+@app.route('/indicadores/<proyecto_id>', methods=['GET'])
+def ver_indicadores(proyecto_id):
+    if 'correo' in session:
+        # Obtener el proyecto por ID
+        proyecto = proyectos_collection.find_one({'_id': ObjectId(proyecto_id)})
+        if not proyecto:
+            flash('Proyecto no encontrado.')
+            return redirect(url_for('admin_proyectos'))
+
+        # Obtener las tareas, si no existen, dejarlas como lista vacía
+        tareas = proyecto.get('tareas', [])  # Esto evita el KeyError si 'tareas' no está presente
+
+        # Contar las tareas y sus estados
+        total_tareas = len(tareas)
+        por_iniciar = sum(1 for tarea in tareas if tarea.get('estado') == 'Por iniciar')
+        en_progreso = sum(1 for tarea in tareas if tarea.get('estado') == 'En progreso')
+        completadas = sum(1 for tarea in tareas if tarea.get('estado') == 'Completado')
+
+        # Convertir ObjectId a cadena
+        proyecto['_id'] = str(proyecto['_id'])
+        for tarea in tareas:
+            tarea['_id'] = str(tarea['_id']) if '_id' in tarea else tarea.get('_id')  # Convierte el id de la tarea si existe
+
+        # Renderizar la plantilla de indicadores
+        return render_template('admin/indicadores.html', 
+                               proyecto=proyecto, 
+                               total_tareas=total_tareas, 
+                               por_iniciar=por_iniciar, 
+                               en_progreso=en_progreso, 
+                               completadas=completadas,
+                               tareas=tareas)  # Asegúrate de pasar `tareas` a la plantilla
+
+    flash('Debes iniciar sesión para ver los indicadores.')
+    return redirect(url_for('login'))
 
 @app.route('/proyecto/<id>/editar', methods=['GET', 'POST'])
 def editar_proyecto(id):
-    if 'correo' in session and session.get('role') == 'admin':
+    if 'correo' in session and (session.get('role') == 'admin' or session.get('lider') == 'Si'):
         proyecto = proyectos_collection.find_one({'_id': ObjectId(id)})
         
         if not proyecto:
             flash('No se encontró el proyecto.')
-            return redirect(url_for('ver_proyectos'))
+            return redirect(url_for('admin_proyectos'))
 
         if request.method == 'POST':
+            # Obtener información anterior del proyecto
+            proyecto_anterior = proyecto.copy()  # Hacer una copia para el correo
             nombre = request.form.get('nombre')
             descripcion = request.form.get('descripcion')
-            objetivoGeneral= request.form.get('objetivoGeneral')
+            objetivoGeneral = request.form.get('objetivoGeneral')
             fechainicio = request.form.get('fechainicio')
             fechafinal = request.form.get('fechafinal')
             estado = request.form.get('estado')
@@ -319,7 +380,7 @@ def editar_proyecto(id):
                     'fechainicio': fechainicio,
                     'fechafinal': fechafinal,
                     'estado': estado,
-                    'objetivoGeneral':objetivoGeneral
+                    'objetivoGeneral': objetivoGeneral
                 }}
             )
 
@@ -337,13 +398,45 @@ def editar_proyecto(id):
                 {'$set': {'objetivosEspecificos': nuevos_objetivos}}
             )
 
-            flash('Proyecto actualizado exitosamente.')
+            # Obtener los correos de los administradores
+            admins = usuarios_collection.find({'role': 'admin'}, {'correo': 1})
+            admin_emails = [admin['correo'] for admin in admins]
+            objetivos_antiguos = [obj['descripcion'] for obj in proyecto_anterior.get('objetivosEspecificos', [])]
+            objetivos_nuevos = [obj['descripcion'] for obj in nuevos_objetivos]
+
+            # Preparar el correo
+            msg = Message('Cambio en Proyecto', recipients=admin_emails)  # Usar la lista de correos
+            msg.body = f"""
+            Se han realizado cambios en el proyecto '{proyecto['nombre']}'.
+            
+            Información anterior:
+            Nombre: {proyecto_anterior['nombre']}
+            Descripción: {proyecto_anterior['descripcion']}
+            Fecha Inicio: {proyecto_anterior['fechainicio']}
+            Fecha Final: {proyecto_anterior['fechafinal']}
+            Estado: {proyecto_anterior['estado']}
+            Objetivos específicos: {objetivos_antiguos}
+            
+            Nueva información:
+            Nombre: {nombre}
+            Descripción: {descripcion}
+            Fecha Inicio: {fechainicio}
+            Fecha Final: {fechafinal}
+            Estado: {estado}
+            Objetivos específicos: {objetivos_nuevos}
+            """
+            mail.send(msg)
+
+            flash('Proyecto actualizado exitosamente y notificación enviada a los administradores.')
             return redirect(url_for('admin_proyectos'))
 
-        return render_template('admin/editar_proyecto.html', proyecto=proyecto)
+        # Aquí, carga los objetivos específicos en el contexto de la plantilla
+        objetivos_especificos = proyecto.get('objetivosEspecificos', [])
+        
+        return render_template('admin/editar_proyecto.html', proyecto=proyecto, objetivos_especificos=objetivos_especificos)
 
     flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 @app.route('/proyecto/<id>/eliminar')
 def eliminar_proyecto(id):
@@ -352,13 +445,21 @@ def eliminar_proyecto(id):
         flash('Proyecto eliminado exitosamente.')
         return redirect(url_for('admin_proyectos'))
     flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 @app.route('/proyecto/<id>/asignar_miembros', methods=['GET', 'POST'])
 def asignar_miembros(id):
-    if 'correo' in session and session.get('role') == 'admin':
+    if session.get('role') == 'admin' or session.get('lider') == 'Si':
         proyecto = proyectos_collection.find_one({'_id': ObjectId(id)})
         if proyecto:
+            # Inicializar la lista 'miembros' si no existe
+            if 'miembros' not in proyecto:
+                proyecto['miembros'] = []
+            
+            # Inicializar la lista 'lideres' si no existe
+            if 'lideres' not in proyecto:
+                proyecto['lideres'] = []
+
             if request.method == 'POST':
                 # Procesar la eliminación de miembros seleccionados
                 eliminar_miembros_seleccionados = request.form.getlist('eliminar_miembro')
@@ -398,13 +499,26 @@ def asignar_miembros(id):
                         if 'lideres' not in proyecto:
                             proyecto['lideres'] = []
                         proyecto['lideres'].append(lider)
+
+                        # Actualizar campo 'lider' del usuario a 'Si'
+                        usuarios_collection.update_one({'_id': ObjectId(lider_id)}, {'$set': {'lider': 'Si'}})
+
                         # Enviar notificación por correo
                         msg = Message(f'Asignado como líder en el proyecto: {proyecto["nombre"]}', 
                                       sender='CentroDigitalDeDesarrollo@gmail.com', 
                                       recipients=[lider['correo']])
                         msg.body = f"Has sido asignado como líder en el proyecto {proyecto['nombre']}."
                         mail.send(msg)
-                
+
+                # Verificar si el miembro removido es líder en otro proyecto
+                for miembro_id in eliminar_miembros_seleccionados:
+                    miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)})
+                    if miembro:
+                        # Comprobar si el miembro sigue siendo líder en otros proyectos
+                        otros_proyectos_count = proyectos_collection.count_documents({'lideres._id': ObjectId(miembro_id)})
+                        if otros_proyectos_count == 0:  # No es líder en ningún otro proyecto
+                            usuarios_collection.update_one({'_id': ObjectId(miembro_id)}, {'$set': {'lider': 'No'}})
+
                 # Actualizar el proyecto en la base de datos
                 proyectos_collection.update_one({'_id': ObjectId(id)}, {'$set': proyecto})
                 
@@ -418,75 +532,125 @@ def asignar_miembros(id):
             return redirect(url_for('admin_proyectos'))
     
     flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 @app.route('/seleccionar_proyecto', methods=['GET', 'POST'])
 def seleccionar_proyecto():
-    if 'correo' in session and session.get('role') == 'admin':
-        if request.method == 'POST':
-            proyecto_id = request.form.get('proyecto_id')
-            return redirect(url_for('agregar_tarea', proyecto_id=proyecto_id))
-        proyectos = proyectos_collection.find()
-        return render_template('admin/seleccionar_proyecto.html', proyectos=proyectos)
+    if 'correo' in session:
+        # Verificar si el usuario es admin o líder
+        if session.get('role') == 'admin' or session.get('lider') == 'Si':
+            if request.method == 'POST':
+                proyecto_id = request.form.get('proyecto_id')
+                if not proyecto_id:
+                    flash('Debes seleccionar un proyecto.')
+                    return redirect(url_for('seleccionar_proyecto'))
+                print(f'Proyecto seleccionado: {proyecto_id}')
+                return redirect(url_for('agregar_tarea', proyecto_id=proyecto_id))
+            
+            # Si es un GET, obtenemos los proyectos
+            proyectos = proyectos_collection.find()
+            return render_template('admin/seleccionar_proyecto.html', proyectos=proyectos)
+
+        # Si el usuario no es admin ni líder
+        flash('No tienes permisos para realizar esta acción.')
+        return redirect(url_for('login'))
     
-    flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('home'))
+    # Si no hay sesión
+    flash('Debes iniciar sesión.')
+    return redirect(url_for('login'))
+
 
 @app.route('/proyecto/<proyecto_id>/agregar_tarea/', methods=['GET', 'POST'])
 def agregar_tarea(proyecto_id):
-    if 'correo' in session and session.get('role') == 'admin':
+    if 'correo' in session:
+        # Verificación de admin
+        if session.get('role') == 'admin':
+            proyecto = proyectos_collection.find_one({'_id': ObjectId(proyecto_id)})
+        
+        # Verificación de líder
+        elif session.get('lider') == 'Si':
+            lider_id = str(session['_id'])  # Asegúrate de que _id esté en el formato correcto
+            print(f'Líder ID en sesión: {lider_id}') 
+            
+            # Encuentra el proyecto en el que el usuario es líder
+            proyecto = proyectos_collection.find_one({'_id': ObjectId(proyecto_id), 'lideres._id': ObjectId(lider_id)})
+            print(f'Proyecto encontrado para el líder {lider_id}: {proyecto}')  # Imprime el proyecto encontrado
 
-        proyecto_data = proyectos_collection.find_one({'_id': ObjectId(proyecto_id)})
+        else:
+            flash('No tienes permisos para realizar esta acción.')
+            return redirect(url_for('login'))
 
-        if proyecto_data:
+        # Si se encuentra el proyecto
+        if proyecto:
             if request.method == 'POST':
                 nombre = request.form['nombre']
                 descripcion = request.form['descripcion']
-                fechavencimiento = request.form['fechavencimiento']  # Fecha de vencimiento
-                miembro_asignado = request.form.get('miembro_asignado')  # Miembro asignado opcional
-                estado = request.form.get('estado')  # Estado de la tarea (por defecto: 'pendiente')
+                fechavencimiento = request.form['fechavencimiento']
+                miembro_asignado = request.form.get('miembro_asignado')
+                estado = request.form.get('estado')
                 objetivo_especifico_id = request.form['objetivo_especifico_id']
-               
-                objetivos_ids = [obj['id'] for obj in proyecto_data['objetivosEspecificos']]
-                if objetivo_especifico_id not in objetivos_ids:
+
+                # Validar que el objetivo específico pertenece al proyecto
+                if objetivo_especifico_id not in [obj['id'] for obj in proyecto.get('objetivosEspecificos', [])]:
                     raise ValueError("El ID del objetivo específico no es válido")
-                nueva_tarea_id = ObjectId()
+
                 nueva_tarea = {
-                    '_id':nueva_tarea_id,
+                    '_id': ObjectId(),
                     'nombre': nombre,
                     'descripcion': descripcion,
                     'fechavencimiento': fechavencimiento,
                     'miembro_asignado': miembro_asignado,
                     'estado': estado,
-                    'objetivo_especifico_id': objetivo_especifico_id,
+                    'objetivo_especifico_id': objetivo_especifico_id
                 }
 
                 proyectos_collection.update_one(
                     {'_id': ObjectId(proyecto_id)},
                     {'$push': {'tareas': nueva_tarea}}
                 )
+
                 return redirect(url_for('seleccionar_proyecto'))
-                
-            miembros_asignados_ids = [ObjectId(miembro['_id']) for miembro in proyecto_data['miembros']]
+
+            # Obtener miembros del proyecto
+            miembros_asignados_ids = [ObjectId(miembro['_id']) for miembro in proyecto['miembros']]
             miembros_asignados = list(usuarios_collection.find({'_id': {'$in': miembros_asignados_ids}}))
-            return render_template('admin/agregar_tarea.html', proyecto=proyecto_data, usuarios=miembros_asignados)
-        
-        flash('No se encontró el proyecto.')
+
+            return render_template('admin/agregar_tarea.html', proyecto=proyecto, usuarios=miembros_asignados)
+
+        # Si el proyecto no fue encontrado
+        flash('No tienes permiso para agregar tareas en este proyecto.')
         return redirect(url_for('admin_proyectos'))
+
+    # Si el usuario no tiene permisos
     flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('home'))
-
-
+    return redirect(url_for('login'))
 
 @app.route('/tareas', methods=['GET'])
 def ver_todas_las_tareas():
-    if 'correo' in session and session.get('role') == 'admin':
+    if 'correo' in session:
+        usuario_id = session.get('_id')
         filtro_proyecto = request.args.get('proyecto')  # Filtro de nombre de proyecto
         filtro_miembro = request.args.get('miembro')  # Filtro de miembro asignado
         
-        proyectos = proyectos_collection.find()
+        proyectos = []
+
+        # Verificación de si el usuario es admin
+        if session.get('role') == 'admin':
+            # Si es admin, puede ver todas las tareas de todos los proyectos
+            proyectos = proyectos_collection.find()
+
+        # Verificación de si el usuario es líder
+        elif session.get('lider') == 'Si':
+            # Si es líder, puede ver las tareas solo de los proyectos donde es líder
+            proyectos = proyectos_collection.find({'lideres._id': ObjectId(usuario_id)})
+
+        else:
+            flash('No tienes permisos para realizar esta acción.')
+            return redirect(url_for('login'))
+
+        # Procesar los proyectos y sus tareas
         tareas = []
-        
+
         for proyecto in proyectos:
             # Filtro de proyectos por nombre
             if filtro_proyecto and filtro_proyecto.lower() not in proyecto['nombre'].lower():
@@ -495,7 +659,7 @@ def ver_todas_las_tareas():
             for tarea in proyecto.get('tareas', []):
                 miembro_id = tarea.get('miembro_asignado')
                 miembro_nombre = "Sin asignar"
-                
+
                 # Buscar el nombre del miembro asignado
                 if miembro_id:
                     if isinstance(miembro_id, str):  
@@ -508,7 +672,7 @@ def ver_todas_las_tareas():
                 
                 tarea['miembro_nombre'] = miembro_nombre
                 tarea['proyecto_nombre'] = proyecto['nombre']
-                tarea['proyecto_id'] = proyecto['_id'] 
+                tarea['proyecto_id'] = proyecto['_id']
                 tarea['proyecto_objetivoGeneral'] = proyecto.get('objetivoGeneral', 'Sin objetivo general')
                 
                 # Buscar el nombre del objetivo específico relacionado
@@ -533,7 +697,7 @@ def ver_todas_las_tareas():
 
     # Redirigir si no tiene permisos
     flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 @app.route('/tareas_general')
 def ver_tareas_general():
@@ -582,7 +746,7 @@ def ver_tareas_general():
         return render_template('ver_todas_las_tareas.html', tareas=tareas)
 
     flash('Debes iniciar sesión para ver las tareas.')
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 @app.route('/proyecto/<proyecto_id>/tarea/<tarea_id>/comentar', methods=['POST'])
 def comentar_tarea(proyecto_id, tarea_id):
@@ -611,15 +775,36 @@ def comentar_tarea(proyecto_id, tarea_id):
 
 @app.route('/tarea/<id>/editar', methods=['GET', 'POST'])
 def editar_tarea(id):
-    if 'correo' in session and session.get('role') == 'admin':
-        proyecto = proyectos_collection.find_one({'tareas._id': ObjectId(id)})
+    if 'correo' in session:
+        usuario_id = session.get('_id')
         
+        # Buscar el proyecto que contiene la tarea
+        proyecto = None
+
+        # Verificar si es admin
+        if session.get('role') == 'admin':
+            # Si es admin, buscar el proyecto que contiene la tarea sin restricciones
+            proyecto = proyectos_collection.find_one({'tareas._id': ObjectId(id)})
+
+        # Verificar si es líder
+        elif session.get('lider') == 'Si':
+            # Si es líder, buscar el proyecto y verificar que el usuario es líder del proyecto
+            proyecto = proyectos_collection.find_one({
+                'tareas._id': ObjectId(id),
+                'lideres._id': ObjectId(usuario_id)  # Verifica si el usuario es líder del proyecto
+            })
+
+        # Si no es ni admin ni líder, denegar acceso
         if not proyecto:
-            flash('No se encontró la tarea.')
+            flash('No se encontró la tarea o no tienes permisos para editarla.')
             return redirect(url_for('ver_todas_las_tareas'))
-        
+
+        # Buscar la tarea dentro del proyecto
         tarea = next((t for t in proyecto['tareas'] if t['_id'] == ObjectId(id)), None)
         
+        # Convertir miembro_asignado a cadena
+        tarea['miembro_asignado'] = str(tarea['miembro_asignado']) if tarea['miembro_asignado'] else None
+
         if request.method == 'POST':
             nombre = request.form.get('nombre')
             descripcion = request.form.get('descripcion')
@@ -670,9 +855,12 @@ def editar_tarea(id):
             except Exception as e:
                 flash('Error al actualizar la tarea.', 'danger')
                 print(f'Error: {e}')
-                
+
+        # Obtener los miembros del proyecto y convertir sus ObjectId a cadenas
         miembros_asignados_ids = [ObjectId(miembro['_id']) for miembro in proyecto['miembros']]
         miembros_asignados = list(usuarios_collection.find({'_id': {'$in': miembros_asignados_ids}}))
+        for miembro in miembros_asignados:
+            miembro['_id'] = str(miembro['_id'])  # Convertir a cadena
 
         return render_template(
             'admin/editar_tarea.html', 
@@ -683,53 +871,72 @@ def editar_tarea(id):
         )
     
     flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 @app.route('/tarea/<id>/eliminar', methods=['POST'])
 def eliminar_tarea(id):
-    if 'correo' in session and session.get('role') == 'admin':
-        proyecto = proyectos_collection.find_one({'tareas._id': ObjectId(id)})
-        
-        if proyecto:
-            try:
-                proyectos_collection.update_one(
-                    {'_id': proyecto['_id']},
-                    {'$pull': {'tareas': {'_id': ObjectId(id)}}}
-                )
-                flash('Tarea eliminada exitosamente.')
-                
-                # Enviar notificación al miembro asignado
-                tarea = next((t for t in proyecto['tareas'] if t['_id'] == ObjectId(id)), None)
-                if tarea and tarea['miembro_asignado']:
-                    miembro = usuarios_collection.find_one({'_id': ObjectId(tarea['miembro_asignado'])})
-                    if miembro:
-                        msg = Message(
-                            subject=f'Eliminación de Tarea: {tarea["nombre"]}',
-                            sender='tu_email@gmail.com',
-                            recipients=[miembro['correo']]
-                        )
-                        msg.body = f"""
-                        Estimado(a) {miembro['nombre']},
+    if 'correo' in session:
+        usuario_id = session.get('_id')
 
-                        La tarea "{tarea["nombre"]}" ha sido eliminada.
+        # Buscar el proyecto que contiene la tarea
+        proyecto = None
 
-                        Si tienes alguna pregunta, no dudes en contactarnos.
+        # Verificar si es admin
+        if session.get('role') == 'admin':
+            # Si es admin, permitir eliminar sin restricciones
+            proyecto = proyectos_collection.find_one({'tareas._id': ObjectId(id)})
 
-                        Saludos,
-                        Tu Equipo
-                        """
-                        mail.send(msg)
+        # Verificar si es líder
+        elif session.get('lider') == 'Si':
+            # Si es líder, verificar que el usuario es líder del proyecto
+            proyecto = proyectos_collection.find_one({
+                'tareas._id': ObjectId(id),
+                'lideres._id': ObjectId(usuario_id)  # Verifica si el usuario es líder del proyecto
+            })
 
-            except Exception as e:
-                flash('Error al eliminar la tarea.', 'danger')
-                print(f'Error: {e}')
-        else:
-            flash('No se encontró la tarea.')
-        
+        # Si no es ni admin ni líder, denegar acceso
+        if not proyecto:
+            flash('No se encontró la tarea o no tienes permisos para eliminarla.')
+            return redirect(url_for('ver_todas_las_tareas'))
+
+        try:
+            # Eliminar la tarea del proyecto
+            proyectos_collection.update_one(
+                {'_id': proyecto['_id']},
+                {'$pull': {'tareas': {'_id': ObjectId(id)}}}
+            )
+            flash('Tarea eliminada exitosamente.')
+
+            # Enviar notificación al miembro asignado
+            tarea = next((t for t in proyecto['tareas'] if t['_id'] == ObjectId(id)), None)
+            if tarea and tarea['miembro_asignado']:
+                miembro = usuarios_collection.find_one({'_id': ObjectId(tarea['miembro_asignado'])})
+                if miembro:
+                    msg = Message(
+                        subject=f'Eliminación de Tarea: {tarea["nombre"]}',
+                        sender='centrodigitaldedesarrollotecno@gmail.com',
+                        recipients=[miembro['correo']]
+                    )
+                    msg.body = f"""
+                    Estimado(a) {miembro['nombre']},
+
+                    La tarea "{tarea["nombre"]}" ha sido eliminada.
+
+                    Si tienes alguna pregunta, no dudes en contactarnos.
+
+                    Saludos,
+                    Tu Equipo
+                    """
+                    mail.send(msg)
+
+        except Exception as e:
+            flash('Error al eliminar la tarea.', 'danger')
+            print(f'Error: {e}')
+
         return redirect(url_for('ver_todas_las_tareas'))
-    
+
     flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 @app.route('/perfil')
 def perfil():
@@ -760,7 +967,7 @@ def perfil():
             return render_template('perfil.html', usuario=usuario, proyectos=proyectos, tareas=tareas_asignadas)
 
     flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 @app.route('/editar_perfil', methods=['GET', 'POST'])
 def editar_perfil():
@@ -771,7 +978,7 @@ def editar_perfil():
     usuario = usuarios_collection.find_one({'correo': session['correo']})
     if not usuario:
         flash('Usuario no encontrado.', 'danger')
-        return redirect(url_for('home'))
+        return redirect(url_for('login'))
 
     if request.method == 'POST':
         # Recoger los datos del formulario
@@ -829,16 +1036,16 @@ def mis_tareas():
             tareas_asignadas = []
             # Iteramos sobre los proyectos para extraer las tareas asignadas al usuario
             for proyecto in proyectos:
-                for tarea in proyecto['tareas']:
-                    # Asegurarnos de comparar el ID del miembro asignado como string
+                tareas = proyecto.get('tareas', [])  # Usamos 'tareas' o array vacío si no existe
+                for tarea in tareas:  # Iteramos sobre la variable 'tareas', no 'proyecto['tareas']'
                     if str(tarea['miembro_asignado']) == str(usuario['_id']):
                         tarea_info = {
-                            '_id': tarea['_id'],  # ID de la tarea
-                            'nombre': tarea['nombre'],  # Nombre de la tarea
-                            'descripcion': tarea['descripcion'],  # Descripción de la tarea
-                            'estado': tarea['estado'],  # Estado de la tarea
-                            'fechavencimiento': tarea.get('fechavencimiento', 'No asignada'),  # Fecha de vencimiento (opcional)
-                            'proyecto': proyecto['nombre']  # Nombre del proyecto
+                            '_id': tarea['_id'],
+                            'nombre': tarea['nombre'],
+                            'descripcion': tarea['descripcion'],
+                            'estado': tarea['estado'],
+                            'fechavencimiento': tarea.get('fechavencimiento', 'No asignada'),
+                            'proyecto': proyecto['nombre']
                         }
                         tareas_asignadas.append(tarea_info)
             
@@ -846,8 +1053,7 @@ def mis_tareas():
             return render_template('mis_tareas.html', tareas=tareas_asignadas)
     
     flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('home'))
-
+    return redirect(url_for('login'))
 
 
 @app.route('/recuperacion', methods=['GET', 'POST'])
@@ -896,14 +1102,14 @@ def registro_empresa():
                         nuevo_usuario = Empresa(nombre_empresa, correo_empresa, nit, encargado, telefono, passwordHashed)
                         usuarios_collection.insert_one(nuevo_usuario.formato_doc())
                         flash('Empresa registrada exitosamente.')
-                        return redirect(url_for('home'))
+                        return redirect(url_for('login'))
                     else:
                         flash('Las contraseñas no coinciden')
                 else:
                     flash('Por favor, completa todos los campos.')
             except Exception as e:
                 flash(f'Error al registrar la empresa: {str(e)}')
-                return redirect(url_for('home'))
+                return redirect(url_for('login'))
 
     return render_template('empresa.html')
 
@@ -1059,7 +1265,7 @@ def ver_todas_solicitudes():
             solicitudes = []
     else:
         flash('No tienes permisos para acceder a esta página.')
-        return redirect(url_for('home'))
+        return redirect(url_for('login'))
     
     return render_template('admin/ver_solicitudes_empresas.html', proyectos=solicitudes)
 
@@ -1270,7 +1476,7 @@ def nuevo_proyecto():
             return redirect(url_for('admin_proyectos'))  # Redirigir de vuelta a la lista de proyectos
 
     flash('No tienes permisos para realizar esta acción.', 'danger')
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)

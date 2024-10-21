@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,18 +9,20 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/estilos_base.css') }}" rel="stylesheet">
 </head>
+
 <body>
     <!-- Barra superior -->
     <div class="navbar-custom">
-        <h2 class="mb-0">Centro Digital de Desarrollo Tecnológico</h2>
-        <div>
+        <h2>Centro Digital de Desarrollo Tecnológico</h2>
+        <div class="nav-buttons">
             <a class="btn-top" href="{{ url_for('perfil') }}">Perfil</a>
             <a class="btn-top" href="{{ url_for('logout') }}">Cerrar Sesión</a>
         </div>
+        <button id="menu-toggle" class="btn btn-outline-light">Menú</button>
     </div>
 
     <!-- Barra lateral -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         {% if session.get('role') == 'admin' %}
             <a href="{{ url_for('admin_proyectos') }}">Administrar Proyectos</a>
             <a href="{{ url_for('admin_usuarios') }}">Administrar Usuarios</a>
@@ -27,17 +30,25 @@
             <a href="{{ url_for('admin_empresas') }}">Ver empresas</a>
             <a href="{{ url_for('ver_todas_solicitudes') }}">Ver solicitudes de empresas</a>
             <a href="{{ url_for('seleccionar_proyecto') }}">Agregar Tarea</a>
-            <a href="{{ url_for('ver_todas_las_tareas') }}">Ver Tareas</a>
+            <a href="{{ url_for('ver_todas_las_tareas') }}">Administrar Tareas</a>
             <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
+            <a href="{{ url_for('mis_tareas') }}">Mis Tareas</a>  
         {% elif session.get('role') == 'miembro' %}
             <a href="{{ url_for('mis_tareas') }}">Mis Tareas</a>
             <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
+            
+            {% if session.get('lider') == 'Si' %}
+                <a href="{{ url_for('admin_proyectos') }}">Administrar Proyectos</a>
+                <a href="{{ url_for('ver_todas_las_tareas') }}">Administrar Tareas</a>
+                <a href="{{ url_for('seleccionar_proyecto') }}">Agregar Tarea</a>
+            {% endif %}
+            
         {% elif session.get('role') == 'empresa' %}
             <a href="{{ url_for('solicitar_proyecto') }}">Radicar Solicitud</a>
             <a href="{{ url_for('ver_solicitudes') }}">Ver solicitudes</a>
-            <a href="{{ url_for('ver_tareas_general') }}">Ver indicadores</a>
+            <a href="{{ url_for('admin_proyectos') }}">Ver Indicadores</a>
         {% endif %}
-    </div>
+    </div>    
 
     <!-- Área de contenido -->
     <div class="content">
@@ -45,9 +56,17 @@
         <!-- Contenido dinámico aquí -->
         {% endblock %}
     </div>
-
+    
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Script para manejar el toggle del menú
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            var sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        });
+    </script>
 </body>
+
 </html>

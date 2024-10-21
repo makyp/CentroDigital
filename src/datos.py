@@ -20,11 +20,9 @@ class Usuario:
     def formato_doc(self):
         return {
             'nombre': self.nombre,
-            'apellido': self.apellido,
             'correo': self.correo,
             'password': self.password,
             'role': self.role,
-            'cargo': self.cargo,
             'habilidades': self.habilidades,
         }
 
