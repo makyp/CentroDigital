@@ -5,18 +5,18 @@ Administrar Usuarios
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <h1 class="text-center">Administrar Usuarios</h1>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert alert-success" role="alert" id="flash-message">
-                    {% for message in messages %}
-                        {{ message }}<br>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
+<div class="container mt-4">
+    <h1 class="text-center text-success">Administrar Usuarios</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-success" role="alert" id="flash-message">
+                {% for message in messages %}
+                    {{ message }}<br>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <div class="table-responsive">
         <table class="table table-bordered">
             <thead style="background-color: #027333; color: white;">
                 <tr>
@@ -29,12 +29,12 @@ Administrar Usuarios
             <tbody>
                 {% for usuario in usuarios %}
                     <tr>
-                        <td>
+                        <td style="width: 40%;">
                             <a href="#" class="nombre-usuario" style="color: black;" onclick="toggleInfo('{{ usuario._id }}'); return false;">
                                 {{ usuario.nombre }}
                             </a>
                         </td>
-                        <td>
+                        <td style="width: 10%;">
                             <span id="role-display-{{ usuario._id }}">{{ usuario.role }}</span>
                             <div class="form-group">
                                 <select id="role-select-{{ usuario._id }}" style="display:none;">
@@ -43,15 +43,15 @@ Administrar Usuarios
                                 </select>
                             </div>
                         </td>
-                        <td>{{ usuario.programa if usuario.programa else 'Pendiente' }}</td>
-                        <td>
-                            <button class="btn" style="background-color: #84BF04; color: white;" id="edit-btn-{{ usuario._id }}" onclick="toggleEdit('{{ usuario._id }}');">Editar</button>
-                            <button class="btn" style="background-color: #84BF04; color: white; display:none;" id="apply-btn-{{ usuario._id }}" onclick="confirmApply('{{ usuario._id }}');">Aplicar</button>
-                            <button class="btn" style="background-color: #A52A2A; color: white;" onclick="confirmDelete('{{ usuario._id }}');">Eliminar</button>
+                        <td style="width: 40%;">{{ usuario.programa if usuario.programa else 'Pendiente' }}</td>
+                        <td class="action-buttons" style="width: 10%;">
+                            <button class="btn btn-success" id="edit-btn-{{ usuario._id }}" onclick="toggleEdit('{{ usuario._id }}');">Editar</button>
+                            <button class="btn btn-success" style="display:none;" id="apply-btn-{{ usuario._id }}" onclick="confirmApply('{{ usuario._id }}');">Aplicar</button>
+                            <button class="btn btn-danger" onclick="confirmDelete('{{ usuario._id }}');">Eliminar</button>
                         </td>
                     </tr>
                     <tr id="info-{{ usuario._id }}" style="display: none;">
-                        <td colspan="5" style="padding: 15px; background-color: #f9f9f9;">
+                        <td colspan="4" style="padding: 15px; background-color: #f9f9f9;">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
@@ -65,13 +65,11 @@ Administrar Usuarios
                                         <td>{{ usuario.correo if usuario.correo else 'Pendiente' }}</td>
                                     </tr>
                                     <tr>
-                                        <td><strong>Telefono:</strong></td>
+                                        <td><strong>Teléfono:</strong></td>
                                         <td>{{ usuario.telefono if usuario.telefono else 'Pendiente' }}</td>
                                     </tr>
                                     <tr>
-                                        <td>
-                                            <strong>Habilidades:</strong> 
-                                        </td>
+                                        <td><strong>Habilidades:</strong></td>
                                         <td>
                                             {% if usuario.habilidades %}
                                                 <ul>
@@ -151,11 +149,7 @@ Administrar Usuarios
 <script>
     function toggleInfo(id) {
         var infoRow = document.getElementById('info-' + id);
-        if (infoRow.style.display === 'none') {
-            infoRow.style.display = '';
-        } else {
-            infoRow.style.display = 'none';
-        }
+        infoRow.style.display = (infoRow.style.display === 'none') ? '' : 'none';
     }
 
     function toggleEdit(id) {
@@ -171,7 +165,6 @@ Administrar Usuarios
     }
 
     function confirmApply(id) {
-        // Almacenar el ID del usuario para usarlo en la confirmación
         document.getElementById('confirmApplyBtn').onclick = function() {
             updateUser(id);
         };
@@ -179,7 +172,6 @@ Administrar Usuarios
     }
 
     function confirmDelete(id) {
-        // Almacenar el ID del usuario para usarlo en la confirmación
         document.getElementById('confirmDeleteBtn').onclick = function() {
             deleteUser(id);
         };
@@ -189,8 +181,7 @@ Administrar Usuarios
     function updateUser(id) {
         var select = document.getElementById('role-select-' + id);
         var role = select.value;
-        
-        // Enviar los datos al servidor mediante AJAX
+
         fetch(`/usuario/${id}/editar`, {
             method: 'POST',
             headers: {
@@ -200,7 +191,7 @@ Administrar Usuarios
         })
         .then(response => {
             if (response.ok) {
-                location.reload(); // Recargar la página para mostrar el nuevo rol
+                location.reload();
             } else {
                 alert('Error al actualizar el usuario.');
             }
@@ -213,7 +204,7 @@ Administrar Usuarios
         })
         .then(response => {
             if (response.ok) {
-                location.reload(); // Recargar la página para mostrar los cambios
+                location.reload();
             } else {
                 alert('Error al eliminar el usuario.');
             }
@@ -225,8 +216,8 @@ Administrar Usuarios
     setTimeout(function() {
         var flashMessage = document.getElementById('flash-message');
         if (flashMessage) {
-            flashMessage.style.display = 'none';  // Oculta el mensaje
+            flashMessage.style.display = 'none';
         }
-    }, 3000);  // Tiempo en milisegundos (3000 ms = 3 segundos)
+    }, 3000);
 </script>
 {% endblock %}

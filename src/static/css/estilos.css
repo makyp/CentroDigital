@@ -1,56 +1,80 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
-*{
+
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body{
-    font-family: 'open sans';
+body {
+    font-family: 'Open Sans', sans-serif;
 }
-.contenedor{
-    padding: 60PX 0;
+
+.contenedor {
+    padding: 60px 0;
     width: 90%;
-    max-width: 1000PX;
+    max-width: 1000px; /* Cambiado a minúsculas */
     margin: auto;
     overflow: hidden;
 }
 
-.titulo{
+.table-responsive {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.titulo {
     color: #027333;
     font-size: 30px;
     text-align: center;
     margin-bottom: 60px;
 }
 
-header{
+.boton-llamada {
+    background-color: #D9A404; /* Color amarillo */
+    color: white; /* Color del texto del botón */
+    padding: 10px 20px; /* Espaciado interno */
+    border: none; /* Sin borde */
+    border-radius: 25px; /* Bordes redondeados */
+    text-decoration: none; /* Sin subrayado */
+    text-align: center; /* Centrado del texto */
+    display: inline-block; /* Para que se comporte como un botón */
+    transition: background-color 0.3s ease; /* Transición suave para el hover */
+}
+
+.boton-llamada:hover {
+    background-color: #c8a404; /* Color al pasar el mouse */
+}
+
+
+header {
     width: 100%;
     height: 600px;
     background: #027333;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #014023,#84BF04 );  
-    background: linear-gradient(to right,#014023 , #84BF04 ); 
-
+    background: -webkit-linear-gradient(to right, #014023, #84BF04);  
+    background: linear-gradient(to right, #014023, #84BF04); 
     background-size: cover;
     background-attachment: fixed;
     position: relative;
 }
 
-nav{
+nav {
     text-align: right;
     padding: 30px 50px 0 0;
 }
 
-nav > a{
+nav > a {
     color: #fff;
     font-weight: 300;
     text-decoration: none;
     margin-right: 30px;
 }
-nav > a:hover{
+
+nav > a:hover {
     text-decoration: underline;
 }
 
-header .textos-header{
+header .textos-header {
     display: flex;
     height: 430px;
     width: 100%;
@@ -60,41 +84,41 @@ header .textos-header{
     text-align: center;
 }
 
-.textos-header h1{
+.textos-header h1 {
     font-size: 50px;
     color: #fff;
 }
 
-.textos-header h2{
+.textos-header h2 {
     font-size: 30px;
     font-weight: 300;
     color: #fff;
 }
 
-.wave{
+.wave {
     position: absolute;
     bottom: 0;
     width: 100%;
 }
 
-.contenedor-sobre-nosotros{
+.contenedor-sobre-nosotros {
     display: flex;
     justify-content: space-evenly;   
 }
 
-.imagen-about-us{
+.imagen-about-us {
     width: 48%;
 }
 
-.sobre-nosotros .contenido-textos{
+.sobre-nosotros .contenido-textos {
     width: 48%;
 }
 
-.contenido-textos h3{
+.contenido-textos h3 {
     margin-bottom: 15px;
 }
 
-.contenido-textos h3 span{
+.contenido-textos h3 span {
     background: #D9A404;
     color: #fff;
     border-radius: 50%;
@@ -107,43 +131,43 @@ header .textos-header{
     margin-right: 7px;
 }
 
-.contenido-textos p{
+.contenido-textos p {
     padding: 0px 0px 30px 15px;
     font-weight: 300;
     text-align: justify;
 }
 
-.portafolio{
+.portafolio {
     background: #f2f2f2;
 }
 
-.imagen-port{
+.imagen-port {
     width: 24%;
     margin-bottom: 10px;
     height: 200px;
     overflow: hidden;
     position: relative;
     cursor: pointer;
-    box-shadow: 0 0 6px o rgba(0, 0, 0, .5);
+    box-shadow: 0 0 6px 0 rgba(0, 0, 0, .5);
 }
 
-.imagen-port > img{
+.imagen-port > img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
 
-.imagen-port:hover .hover-galeria{
+.imagen-port:hover .hover-galeria {
     transform: scale(1);
 }
 
-.cards{
+.cards {
     display: flex;
     justify-content: space-evenly;
 }
 
-.cards .card{
+.cards .card {
     background: #84BF04;
     display: flex;
     width: 46%;
@@ -154,7 +178,7 @@ header .textos-header{
     box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.6);
 }
 
-.cards .card img{
+.cards .card img {
     width: 100px;
     height: 100px;
     object-fit: cover;
@@ -163,52 +187,56 @@ header .textos-header{
     display: block;
 }
 
-.cards .card > .contenido-texto-card{
+.cards .card > .contenido-texto-card {
     width: 60%;
     color: #fff;
 }
 
-.cards .card > .contenido-texto-card p{
+.cards .card > .contenido-texto-card p {
     font-weight: 300;
     padding-top: 5px;
 }
 
-.about-services{
+.about-services {
     background: #f2f2f2;
     padding-bottom: 30px;
 }
 
-/**Barra inferior**/
-footer{
+/** Barra inferior **/
+footer {
     background: #414141;
     padding: 60px 0 30px 0;
     margin: auto;
     overflow: hidden;
+    width: 100%; /* Asegura que el footer ocupe el ancho completo */
 }
 
-.contenedor-footer{
+.contenedor-footer {
     display: flex;
-    width: 90%;
+    flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
     justify-content: space-evenly;
+    width: 90%;
     margin: auto;
-    padding-bottom: 20px;
+    padding-bottom: 50px;
     border-bottom: 1px solid #ccc;
 }
 
-.content-foo{
+.content-foo {
     text-align: center;
-    color: white;
+    flex: 1; /* Permite que los elementos ocupen espacio igual */
+    min-width: 150px; /* Asegura que los elementos no sean demasiado estrechos */
+    margin: 10px; /* Añade margen entre los elementos */
 }
 
 
-.content-foo h4{
+.content-foo h4 {
     color: #fff;
     border-bottom: 3px solid #D9A404;
     padding-bottom: 5px;
     margin-bottom: 10px;
 }
 
-.content-foo p{
+.content-foo p {
     color: #ccc;
 }
 
@@ -222,13 +250,72 @@ footer{
     color: #888;           
 }
 
-.titulo-final{
+.titulo-final {
     text-align: center;
     font-size: 24px;
     margin: 20px 0 0 0;
     color: #ffffff;
 }
 
-form{
+form {
     background-color: #027333;
+}
+
+@media (max-width: 768px) {
+    .contenedor-sobre-nosotros {
+        flex-direction: column; /* Cambia la dirección a columna */
+        align-items: center; /* Centra los elementos */
+    }
+
+    .imagen-about-us {
+        width: 100%; /* Imágenes ocupan el 100% del contenedor */
+        max-width: 300px; /* Tamaño máximo */
+    }
+
+    .cards {
+        flex-direction: column; /* Cambia la dirección a columna */
+        align-items: center; /* Centra las tarjetas */
+    }
+
+    .cards .card {
+        width: 90%; /* Tarjetas ocupan el 90% en pantallas pequeñas */
+        margin-bottom: 20px; /* Espaciado entre tarjetas */
+    }
+
+    nav {
+        text-align: center; /* Centra el texto en el menú */
+        padding: 10px 0; /* Reduce el padding */
+    }
+
+    nav > a {
+        display: block; /* Cambia a bloque para apilar enlaces */
+        margin: 5px 0; /* Espaciado vertical */
+    }
+
+    .titulo {
+        font-size: 24px; /* Reduce el tamaño del título */
+        margin-bottom: 30px; /* Reduce el margen inferior */
+    }
+
+    header .textos-header h1 {
+        font-size: 36px; /* Reduce el tamaño del título principal */
+    }
+
+    header .textos-header h2 {
+        font-size: 24px; /* Reduce el tamaño del subtítulo */
+    }
+
+    footer {
+        padding: 40px 0 20px 0; /* Reduce el padding en el footer */
+    }
+
+    .contenedor-footer {
+        flex-direction: column; /* Cambia a dirección de columna */
+        align-items: center; /* Centra los elementos */
+        padding: 20px 0; /* Padding adicional para la columna */
+    }
+
+    .content-foo {
+        margin: 10px 0; /* Espaciado vertical en el footer */
+    }
 }

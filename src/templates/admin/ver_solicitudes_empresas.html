@@ -9,14 +9,14 @@ Ver Todas las Solicitudes
     <div class="col-md-12">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="alert alert-success" role="alert">
+                <div class="alert alert-success text-center" role="alert">
                     {% for message in messages %} 
                         {{ message }}<br>
                     {% endfor %}
                 </div>
             {% endif %}
         {% endwith %}
-        <h2 class="text-center">Solicitudes de Proyectos</h2>
+        <h1 class="text-success text-center">Solicitudes de Proyectos</h1>
         {% if proyectos %}
         <div class="table-responsive">
             <table class="table table-bordered table-striped table-hover">
@@ -24,7 +24,7 @@ Ver Todas las Solicitudes
                     <tr>
                         <th>#</th>
                         <th>Nombre del Proyecto</th>
-                        <th>Estado</th> <!-- Solo se mostrará el nombre y el estado inicialmente -->
+                        <th>Estado</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,7 +39,7 @@ Ver Todas las Solicitudes
                         <td>{{ proyecto.estado }}</td>
                     </tr>
                     <tr id="info-{{ proyecto._id }}" style="display: none;">
-                        <td colspan="3" style="padding: 15px; background-color: #f9f9f9;">
+                        <td colspan="3" style="padding: 15px; background-color: #fdfdfd98;">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
@@ -68,27 +68,25 @@ Ver Todas las Solicitudes
                                         <td><strong>Correo del solicitante:</strong></td>
                                         <td>{{ proyecto.correo_soli }}</td>
                                     </tr>
-
                                     <tr>
                                         <td><strong>Teléfono del solicitante:</strong></td>
                                         <td>{{ proyecto.telefono_soli }}</td>
                                     </tr>
-
                                     <tr>
                                         <td><strong>Fecha de la solicitud:</strong></td>
-                                        <td>{{ proyecto.fecha_solicitud }}</td>
+                                        <td>{{ proyecto.fecha_solicitud.strftime('%d/%m/%Y') }}</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3">
+                                        <td colspan="2">
                                             {% if proyecto.estado == 'Pendiente' %}
                                             <!-- Botones para aprobar la solicitud -->
-                                            <form method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}">
+                                            <form method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}" class="d-inline-block">
                                                 <input type="hidden" name="estado" value="Aprobado">
                                                 <button type="submit" class="btn btn-success">Aprobar</button>
                                             </form>
 
                                             <!-- Botón para rechazar y mostrar el campo de comentario -->
-                                            <button class="btn btn-danger" onclick="mostrarComentarioRechazo('{{ proyecto._id }}')">Rechazar</button>
+                                            <button class="btn btn-danger" onclick="mostrarComentarioRechazo('{{ proyecto._id }}'); deshabilitarBotones('{{ proyecto._id }}')">Rechazar</button>
 
                                             <!-- Formulario para rechazar con comentario -->
                                             <form id="form-rechazo-{{ proyecto._id }}" method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}" style="display: none;">
@@ -107,7 +105,7 @@ Ver Todas las Solicitudes
                                                 <button type="submit" class="btn btn-warning">Aprobar con cambios</button>
                                             </form>
                                             {% else %}
-                                            <button class="btn btn-secondary" disabled>Acción tomada</button>
+                                            <button class="btn btn-secondary" disabled>Proyecto Radicado</button>
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -141,6 +139,17 @@ Ver Todas las Solicitudes
     function mostrarComentarioRechazo(id) {
         var form = document.getElementById('form-rechazo-' + id);
         form.style.display = 'block'; // Mostrar el formulario de rechazo
+    }
+
+    function deshabilitarBotones(id) {
+        var aprobarBtn = document.querySelector(`#info-${id} form button.btn-success`);
+        var rechazarBtn = document.querySelector(`#info-${id} button.btn-danger`);
+        if (aprobarBtn) {
+            aprobarBtn.disabled = true; // Deshabilitar el botón de aprobar
+        }
+        if (rechazarBtn) {
+            rechazarBtn.disabled = true; // Deshabilitar el botón de rechazar
+        }
     }
 </script>
 {% endblock %}

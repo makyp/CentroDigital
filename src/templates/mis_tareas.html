@@ -3,104 +3,136 @@
 {% block title %}Mis Tareas{% endblock %}
 
 {% block content %}
-<h1 class="mt-4">Mis Tareas</h1>
+<div class="container mt-4">
+    <h1 class="text-center text-success">Mis Tareas</h1>
 
-{% if not tareas %}
-    <h2 class="text-center mt-5">No tienes ninguna tarea asignada.</h2>
-{% else %}
-<table class="table table-bordered kanban-table">
-    <thead>
-        <tr>
-            <th>Por Hacer</th>
-            <th>En Progreso</th>
-            <th>Completada</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr class="kanban-column">
-            <!-- Columna "Por Hacer" -->
-            <td class="kanban-list">
-                {% for tarea in tareas %}
+    {% if not tareas %}
+    <div class="alert alert-info text-center mt-5" role="alert">
+        <p>No tienes ninguna tarea asignada.</p>
+    </div>
+    {% else %}
+    <table class="table table-bordered kanban-table">
+        <thead>
+            <tr>
+                <th class="text-center">Por Hacer</th>
+                <th class="text-center">En Progreso</th>
+                <th class="text-center">Completada</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="kanban-column">
+                <!-- Columna "Por Hacer" -->
+                <td class="kanban-list">
+                    {% for tarea in tareas %}
                     {% if tarea.estado == "Por iniciar" %}
-                        <div class="kanban-taskpi mb-3 p-2 border">
-                            <strong>Proyecto:</strong> {{ tarea.proyecto }}<br>
-                            <strong>Nombre:</strong> {{ tarea.nombre }}<br>
-                            <strong>Descripción:</strong> {{ tarea.descripcion }}<br>
-                            <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
-                            
-                            <!-- Formulario para cambiar el estado -->
-                            <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
-                                <div class="form-group mt-2">
-                                    <label for="estado">Cambiar estado:</label>
-                                    <select name="estado" class="form-control">
-                                        <option value="Por iniciar" {% if tarea.estado == "Por iniciar" %}selected{% endif %}>Por Hacer</option>
-                                        <option value="En progreso" {% if tarea.estado == "En progreso" %}selected{% endif %}>En Progreso</option>
-                                        <option value="Completado" {% if tarea.estado == "Completado" %}selected{% endif %}>Completada</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-sm btn-primary">Actualizar Estado</button>
-                            </form>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            </td>
+                    <div class="kanban-task pi mb-3 p-2 border">
+                        <strong>Proyecto:</strong> {{ tarea.proyecto }}<br>
+                        <strong>Nombre:</strong> {{ tarea.nombre }}<br>
+                        <strong>Descripción:</strong> {{ tarea.descripcion }}<br>
+                        <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
 
-            <!-- Columna "En Progreso" -->
-            <td class="kanban-list">
-                {% for tarea in tareas %}
+                        <!-- Formulario para cambiar el estado -->
+                        <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
+                            <div class="form-group mt-2">
+                                <label for="estado">Cambiar estado:</label>
+                                <select name="estado" class="form-control" onchange="toggleCommentField(this)">
+                                    <option value="Por iniciar" {% if tarea.estado=="Por iniciar" %}selected{% endif %}>
+                                        Por Hacer</option>
+                                    <option value="En progreso" {% if tarea.estado=="En progreso" %}selected{% endif %}>
+                                        En Progreso</option>
+                                    <option value="Completado" {% if tarea.estado=="Completado" %}selected{% endif %}>
+                                        Completada</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="commentField" style="display: none;">
+                                <label for="comentario">Comentario sobre la actividad realizada:</label>
+                                <textarea id="comentario" name="comentario" class="form-control" placeholder="Ingrese el comentario aquí"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-success">Actualizar Estado</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </td>
+
+                <!-- Columna "En Progreso" -->
+                <td class="kanban-list">
+                    {% for tarea in tareas %}
                     {% if tarea.estado == "En progreso" %}
-                        <div class="kanban-taskep mb-3 p-2 border">
-                            <strong>Proyecto:</strong> {{ tarea.proyecto }}<br>
-                            <strong>Nombre:</strong> {{ tarea.nombre }}<br>
-                            <strong>Descripción:</strong> {{ tarea.descripcion }}<br>
-                            <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
-                            
-                            <!-- Formulario para cambiar el estado -->
-                            <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
-                                <div class="form-group mt-2">
-                                    <label for="estado">Cambiar estado:</label>
-                                    <select name="estado" class="form-control">
-                                        <option value="Por iniciar" {% if tarea.estado == "Por iniciar" %}selected{% endif %}>Por Hacer</option>
-                                        <option value="En progreso" {% if tarea.estado == "En progreso" %}selected{% endif %}>En Progreso</option>
-                                        <option value="Completado" {% if tarea.estado == "Completado" %}selected{% endif %}>Completada</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-sm btn-primary">Actualizar Estado</button>
-                            </form>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            </td>
+                    <div class="kanban-task ep mb-3 p-2 border">
+                        <strong>Proyecto:</strong> {{ tarea.proyecto }}<br>
+                        <strong>Nombre:</strong> {{ tarea.nombre }}<br>
+                        <strong>Descripción:</strong> {{ tarea.descripcion }}<br>
+                        <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
 
-            <!-- Columna "Completada" -->
-            <td class="kanban-list">
-                {% for tarea in tareas %}
-                    {% if tarea.estado == "Completado" %}
-                        <div class="kanban-taskc mb-3 p-2 border">
-                            <strong>Proyecto:</strong> {{ tarea.proyecto }}<br>
-                            <strong>Nombre:</strong> {{ tarea.nombre }}<br>
-                            <strong>Descripción:</strong> {{ tarea.descripcion }}<br>
-                            <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
-                            
-                            <!-- Formulario para cambiar el estado -->
-                            <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
-                                <div class="form-group mt-2">
-                                    <label for="estado">Cambiar estado:</label>
-                                    <select name="estado" class="form-control">
-                                        <option value="Por iniciar" {% if tarea.estado == "Por iniciar" %}selected{% endif %}>Por Hacer</option>
-                                        <option value="En progreso" {% if tarea.estado == "En progreso" %}selected{% endif %}>En Progreso</option>
-                                        <option value="Completado" {% if tarea.estado == "Completado" %}selected{% endif %}>Completada</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-sm btn-primary">Actualizar Estado</button>
-                            </form>
-                        </div>
+                        <!-- Formulario para cambiar el estado -->
+                        <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
+                            <div class="form-group mt-2">
+                                <label for="estado">Cambiar estado:</label>
+                                <select name="estado" class="form-control" onchange="toggleCommentField(this)">
+                                    <option value="Por iniciar" {% if tarea.estado=="Por iniciar" %}selected{% endif %}>
+                                        Por Hacer</option>
+                                    <option value="En progreso" {% if tarea.estado=="En progreso" %}selected{% endif %}>
+                                        En Progreso</option>
+                                    <option value="Completado" {% if tarea.estado=="Completado" %}selected{% endif %}>
+                                        Completada</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="commentField" style="display: none;">
+                                <label for="comentario">Comentario sobre la actividad realizada:</label>
+                                <textarea id="comentario" name="comentario" class="form-control" placeholder="Ingrese el comentario aquí"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-success">Actualizar Estado</button>
+                        </form>
+                    </div>
                     {% endif %}
-                {% endfor %}
-            </td>
-        </tr>
-    </tbody>
-</table>
-{% endif %}
+                    {% endfor %}
+                </td>
+
+                <!-- Columna "Completada" -->
+                <td class="kanban-list">
+                    {% for tarea in tareas %}
+                    {% if tarea.estado == "Completado" %}
+                    <div class="kanban-task c mb-3 p-2 border">
+                        <strong>Proyecto:</strong> {{ tarea.proyecto }}<br>
+                        <strong>Nombre:</strong> {{ tarea.nombre }}<br>
+                        <strong>Descripción:</strong> {{ tarea.descripcion }}<br>
+                        <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
+
+                        <!-- Formulario para cambiar el estado -->
+                        <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
+                            <div class="form-group mt-2">
+                                <label for="estado">Cambiar estado:</label>
+                                <select name="estado" class="form-control" onchange="toggleCommentField(this)">
+                                    <option value="Por iniciar" {% if tarea.estado=="Por iniciar" %}selected{% endif %}>
+                                        Por Hacer</option>
+                                    <option value="En progreso" {% if tarea.estado=="En progreso" %}selected{% endif %}>
+                                        En Progreso</option>
+                                    <option value="Completado" {% if tarea.estado=="Completado" %}selected{% endif %}>
+                                        Completada</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="commentField" style="display: none;">
+                                <label for="comentario">Comentario sobre la actividad realizada:</label>
+                                <textarea id="comentario" name="comentario" class="form-control" placeholder="Ingrese el comentario aquí"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-success">Actualizar Estado</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+
+<script>
+    function toggleCommentField(select) {
+        const commentField = select.closest('form').querySelector('#commentField');
+        commentField.style.display = select.value === 'Completado' ? 'block' : 'none';
+    }
+</script>
 
 {% endblock %}

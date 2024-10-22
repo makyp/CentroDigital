@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container mt-4">
     <div class="text-center">
-        <h1>Perfil de {{ usuario.nombre }}</h1>
+        <h1 class="text-success">Perfil del {{ usuario.role }} {{ usuario.nombre }}</h1> <!-- Título verde -->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <div class="alert alert-info" role="alert">
@@ -17,11 +17,10 @@
                 </div>
             {% endif %}
         {% endwith %}
-        
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
+    <div class="card mb-4 mx-auto shadow-lg" style="max-width: 600px; background-color: #f8f9fa;"> <!-- Tarjeta centrada -->
+        <div class="card-body text-center"> <!-- Texto centrado -->
             <!-- Campos comunes para todos los roles -->
             <p><strong>Nombre completo:</strong> {{ usuario.nombre }} {{ usuario.apellido }}</p>
             <p><strong>Correo:</strong> {{ usuario.correo }}</p>
@@ -44,21 +43,22 @@
         </div>
         <!-- Botón para editar perfil -->
         <div class="text-center mb-4">
-            <a href="{{ url_for('editar_perfil') }}" class="btn btn-primary">Editar Perfil</a>
+            <a href="{{ url_for('editar_perfil') }}" class="btn btn-success">Editar Perfil</a> <!-- Botón verde -->
         </div>
     </div>
 
     <!-- Sección de Proyectos -->
-    <h2>Proyectos a los que pertenece</h2>
-    <ul class="list-group mb-4">
-        {% if proyectos %}
-        {% for proyecto in proyectos %}
-        <li class="list-group-item">{{ proyecto.nombre }}</li>
-        {% endfor %}
-        {% else %}
-        <li class="list-group-item">No tienes proyectos asignados.</li>
-        {% endif %}
-    </ul>
-
+    <div class="text-center">
+        <h2 class="text-success">Proyectos a los que pertenece</h2> <!-- Título verde -->
+        <ul class="list-group mb-4 mx-auto" style="max-width: 600px;"> <!-- Lista centrada -->
+            {% if proyectos %}
+            {% for proyecto in proyectos %}
+            <li class="list-group-item bg-warning text-dark text-center">{{ proyecto.nombre }}</li>
+            {% endfor %}
+            {% else %}
+            <li class="list-group-item bg-warning text-dark text-center">No tienes proyectos asignados.</li>
+            {% endif %}
+        </ul>
+    </div>
 </div>
 {% endblock %}

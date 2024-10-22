@@ -7,10 +7,10 @@ Proyectos Solicitados
 {% block content %}
 <div class="row">
     <div class="col-md-8 offset-md-2">
-        <h2 class="text-center">Solicitudes de Proyectos</h2>
+        <h1 class="text-success text-center">Solicitudes de Proyectos</h1> <!-- Estilo del título -->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="alert alert-success" role="alert">
+                <div class="alert alert-success text-center" role="alert">
                     {% for message in messages %} 
                         {{ message }}<br>
                     {% endfor %}
@@ -68,12 +68,10 @@ Proyectos Solicitados
                                         <td><strong>Correo del solicitante:</strong></td>
                                         <td>{{ proyecto.correo_soli }}</td>
                                     </tr>
-
                                     <tr>
                                         <td><strong>Teléfono del solicitante:</strong></td>
                                         <td>{{ proyecto.telefono_soli }}</td>
                                     </tr>
-
                                     <tr>
                                         <td><strong>Fecha de la solicitud:</strong></td>
                                         <td>{{ proyecto.fecha_solicitud }}</td>
@@ -90,7 +88,9 @@ Proyectos Solicitados
             <p class="text-center">No hay proyectos solicitados por el momento.</p>
         {% endif %}
         
-        <a href="{{ url_for('solicitar_proyecto') }}" class="btn btn-primary mt-3">Solicitar Nuevo Proyecto</a>
+        <div class="text-center">
+            <a href="{{ url_for('solicitar_proyecto') }}" class="btn btn-primary mt-3">Solicitar Nuevo Proyecto</a>
+        </div>
     </div>
 </div>
 

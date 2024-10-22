@@ -1,7 +1,9 @@
-body, html {
+body,
+html {
     height: 100%;
     margin: 0;
     font-family: Arial, sans-serif;
+    background-color: #d6f7db;
 }
 
 /* Estilos para la barra superior */
@@ -42,7 +44,8 @@ body, html {
 }
 
 .navbar-custom .btn-top:hover {
-    background-color: #5c5c5c; /* Cambio de color al pasar el ratón */
+    background-color: #5c5c5c;
+    /* Cambio de color al pasar el ratón */
 }
 
 /* Botón de menú */
@@ -55,10 +58,12 @@ body, html {
     border-radius: 3px;
     transition: background-color 0.3s;
     order: 3;
+    font-size: 12px; 
 }
 
 #menu-toggle:hover {
-    background-color: #5c5c5c; /* Cambio de color al pasar el ratón */
+    background-color: #5c5c5c;
+    /* Cambio de color al pasar el ratón */
 }
 
 /* Estilos para la barra lateral */
@@ -88,8 +93,33 @@ body, html {
     transition: background-color 0.3s;
 }
 
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    table-layout: fixed;
+    border: 1px solid #027333
+}
+
+/* Asegurar que no haya espacios vacíos innecesarios */
+.container {
+    padding: 15px;
+}
+
+.row {
+    margin: 0;
+}
+
+.col-md-12 {
+    padding: 0;
+}
+
+
 .sidebar a:hover {
-    background-color: #D9A404; /* Cambio de color al pasar el ratón */
+    background-color: #D9A404;
+    /* Cambio de color al pasar el ratón */
 }
 
 /* Estilo para el área de contenido */
@@ -98,6 +128,19 @@ body, html {
     padding: 20px;
     height: calc(100vh - 70px);
     overflow-y: auto;
+}
+
+/* Colores para las tareas según su estado */
+.kanban-task.pi {
+    background-color: #f5594b86; /* Rojo para "Por iniciar" */
+}
+
+.kanban-task.ep {
+    background-color: #d9a40467; /* Amarillo para "En progreso" */
+}
+
+.kanban-task.c {
+    background-color: #02733356; /* Verde para "Completado" */
 }
 
 /* Kanban */
@@ -137,7 +180,88 @@ body, html {
     margin-bottom: 5px;
 }
 
-@media (max-width: 768px) {
+.text-success {
+    color: #055e2b;
+    /* Verde para los títulos */
+}
+
+.bg-warning {
+    background-color: #ffc10734 !important;
+    /* Fondo amarillo para la tarjeta */
+    border: none;
+}
+
+.table th {
+    background-color: #027333; /* Color de fondo para los encabezados */
+    color: white; /* Color del texto para los encabezados */
+    text-align: center; /* Centrar el texto */
+    padding: 10px; /* Espaciado dentro de las celdas de encabezado */
+    border: 1px solid #027333; /* Borde de las celdas de encabezado */
+    word-break: break-word; /* Permitir el ajuste de línea para texto largo */
+}
+
+.table td {
+    background-color: #fdfdfd98; /* Color de fondo para el contenido */
+    color: black; /* Color del texto para el contenido */
+    padding: 10px; /* Espaciado dentro de las celdas */
+    text-align: center; /* Centrar el texto */
+    border: 1px solid #027333; /* Borde de las celdas */
+    word-break: break-word; /* Permitir el ajuste de línea para texto largo */
+}
+
+
+.text-dark {
+    color: #343a40 !important;
+    /* Texto oscuro */
+}
+
+.btn-success {
+    background-color: #027333;
+    /* Verde para los botones */
+    border-color: #027333;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: #D9A404;
+    /* Cambia a amarillo en hover */
+    border-color: #D9A404;
+}
+
+.list-group-item {
+    background-color: #ffc10734;
+    /* Fondo amarillo para los proyectos */
+    color: #343a40;
+    /* Texto oscuro */
+    border: none;
+}
+
+.list-group-item:hover {
+    background-color: #FFD54F;
+    /* Un amarillo más claro al pasar el ratón */
+    color: #343a40;
+}
+
+
+.action-buttons .btn {
+    padding: 5px 10px;
+    text-decoration: none;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+}
+
+@media (max-width: 900px) {
     .navbar-custom {
         flex-direction: column;
         align-items: stretch;
@@ -180,9 +304,37 @@ body, html {
     .content {
         margin-left: 0;
     }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .action-buttons .btn {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+
+    .table th,
+    .table td {
+        font-size: 14px;
+    }
+
+    .d-none {
+        display: none;
+    }
+
+    .navbar-custom .btn-top, 
+    .action-buttons .btn {
+        font-size: 12px; /* Reducir el tamaño de letra en pantallas pequeñas */
+    }
+
+    .table th, .table td {
+        font-size: 12px; /* Reducir el tamaño de texto en las celdas de la tabla */
+    }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 900px) {
     .navbar-custom {
         flex-wrap: nowrap;
     }
@@ -194,5 +346,37 @@ body, html {
 
     .navbar-custom .nav-buttons {
         order: 2;
+    }
+
+    .action-buttons {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+
+    .action-buttons .btn {
+        width: auto;
+    }
+
+    .table {
+        width: 100%;
+    }
+
+    /* Ajustar el tamaño de letra en los botones */
+    .navbar-custom .btn-top, 
+    .action-buttons .btn {
+        font-size: 14px; /* Tamaño normal de los botones en pantallas grandes */
+    }
+
+    /* Asegurar que la tabla no se desborde */
+    table {
+        table-layout: fixed;
+        width: 100%;
+        word-wrap: break-word;
+    }
+
+    table td,
+    table th {
+        text-align: center;
+        font-size: 14px;
     }
 }

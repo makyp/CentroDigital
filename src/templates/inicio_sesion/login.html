@@ -60,8 +60,13 @@
 
                                 <button class="btn btn-primary w-100 py-2" type="submit">Iniciar Sesión</button>
                                 <br><br>
-                                <p>¿Olvidaste tu contraseña? <a
-                                        href="{{ url_for('recuperacion') }}">Recuperar contraseña</a></p>
+                                <p>¿Olvidaste tu contraseña? 
+                                    <a href="{{ url_for('recuperacion') }}" style="color: #027333; text-decoration: none;" 
+                                       onmouseover="this.style.color='#D9A404'" 
+                                       onmouseout="this.style.color='#027333'">
+                                        Recuperar contraseña
+                                    </a>
+                                </p>                                
                             </form>
 
                         </div>

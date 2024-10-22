@@ -7,44 +7,30 @@ Registro
 {% block content %}
 <div class="row">
     <div class="col-md-6 offset-md-3">
-        <h2 class="text-center">Registro</h2>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert alert-info" role="alert" id="flash-message">
-                    <ul>
-                        {% for message in messages %}
-                            <li>{{ message }}</li>
-                        {% endfor %}
-                    </ul>
+        
+        <div class="p-4 border rounded shadow" style="background-color: #fdfdfd98;"> <!-- Contenedor amarillo -->
+            <h2 class="text-success text-center">Registro</h2> <!-- Estilo del título -->
+            <form method="POST" action="{{ url_for('registro') }}">
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo:</label>
+                    <input type="text" name="nombre" class="form-control" required>
                 </div>
-                <script>
-                    setTimeout(function() {
-                        var flashMessage = document.getElementById('flash-message');
-                        if (flashMessage) {
-                            flashMessage.style.display = 'none';  // Oculta el mensaje
-                        }
-                    }, 3000);  // Tiempo en milisegundos (3000 ms = 3 segundos)
-                </script>
-            {% endif %}
-        {% endwith %}
-        <form method="POST" action="{{ url_for('registro') }}">
-            <div class="form-group">
-                <label for="nombre">Nombre Completo :</label>
-                <input type="text" name="nombre" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="correo">E-mail:</label>
-                <input type="email" name="correo" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="role">Rol:</label>
-                <select name="role" class="form-control" required>
-                    <option value="admin">Administrador</option>
-                    <option value="miembro">Miembro</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Registrar</button>
-        </form>
+                <div class="form-group">
+                    <label for="correo">Correo:</label>
+                    <input type="email" name="correo" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">Rol:</label>
+                    <select name="role" class="form-control" required>
+                        <option value="admin">Administrador</option>
+                        <option value="miembro">Miembro</option>
+                    </select>
+                </div>
+                <div class="text-center"> <!-- Centro el botón -->
+                    <button type="submit" class="btn btn-success">Registrar</button> <!-- Botón verde -->
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}

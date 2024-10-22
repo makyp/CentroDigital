@@ -5,39 +5,39 @@ Ver Todas las Tareas
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-10 offset-md-1">
-        <h2 class="text-center">Todas las Tareas</h2>
-        
-        <!-- Formulario de filtros -->
-        <form method="GET" action="{{ url_for('ver_todas_las_tareas') }}">
-            <div class="form-row">
-                <div class="form-group col-md-5">
-                    <label for="proyecto">Filtrar por Proyecto</label>
-                    <input type="text" name="proyecto" class="form-control" placeholder="Nombre del Proyecto" value="{{ request.args.get('proyecto', '') }}">
-                </div>
-                <div class="form-group col-md-5">
-                    <label for="miembro">Filtrar por Miembro</label>
-                    <input type="text" name="miembro" class="form-control" placeholder="Nombre del Miembro" value="{{ request.args.get('miembro', '') }}">
-                </div>
-                <div class="form-group col-md-2 align-self-end">
-                    <button type="submit" class="btn btn-success">Filtrar</button>
-                </div>
+<div class="container mt-4">
+    <h2 class="text-center text-success">Panel de administración de las tareas</h2>
+    
+    <!-- Formulario de filtros -->
+    <form method="GET" action="{{ url_for('ver_todas_las_tareas') }}">
+        <div class="form-row">
+            <div class="form-group col-md-5">
+                <label for="proyecto">Filtrar por Proyecto</label>
+                <input type="text" name="proyecto" class="form-control" placeholder="Nombre del Proyecto" value="{{ request.args.get('proyecto', '') }}">
             </div>
-        </form>
+            <div class="form-group col-md-5">
+                <label for="miembro">Filtrar por Miembro</label>
+                <input type="text" name="miembro" class="form-control" placeholder="Nombre del Miembro" value="{{ request.args.get('miembro', '') }}">
+            </div>
+            <div class="form-group col-md-2 align-self-end">
+                <button type="submit" class="btn btn-success">Filtrar</button>
+            </div>
+        </div>
+    </form>
 
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert alert-info" role="alert">
-                    <ul>
-                        {% for message in messages %}
-                            <li>{{ message }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-        {% endwith %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-info" role="alert">
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% endwith %}
 
+    <div class="table-responsive">
         <table class="table">
             <thead style="background-color: #027333; color: white;">
                 <tr>
@@ -61,9 +61,11 @@ Ver Todas las Tareas
                     <td>{{ tarea.miembro_nombre }}</td>
                     <td>{{ tarea.estado }}</td> 
                     <td>
-                        <a href="{{ url_for('editar_tarea', id=tarea._id) }}" class="btn" style="background-color: #84BF04; color: white;">Editar</a>
-                        <button class="btn" style="background-color: #A52A2A; color: white;" onclick="confirmDelete('{{ tarea._id }}')">Eliminar</button>
-                    </td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('editar_tarea', id=tarea._id) }}" class="btn btn-success mb-2">Editar</a>
+                            <button class="btn btn-danger mb-2" onclick="confirmDelete('{{ tarea._id }}')">Eliminar</button>    
+                        </div>
+                        </td>
                 </tr>
                 <!-- Fila adicional con información extra (oculta por defecto) -->
                 <tr id="info-{{ tarea._id }}" style="display: none;">
@@ -87,8 +89,8 @@ Ver Todas las Tareas
                 {% endfor %}
             </tbody>
         </table>
-        <br>
     </div>
+    <br>
 </div>
 
 <!-- Modal de confirmación para eliminar -->

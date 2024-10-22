@@ -7,7 +7,8 @@ Agregar Tarea
 {% block content %}
 <div class="row">
     <div class="col-md-6 offset-md-3">
-        <h2 class="text-center">Agregar Tarea al Proyecto: {{ proyecto.nombre }}</h2>
+        <h2 class="text-success text-center">Agregar Tarea al Proyecto:</h2>
+        <h2 class="text-success text-center">{{ proyecto.nombre }}</h2>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <div class="alert alert-info" role="alert">
@@ -19,7 +20,7 @@ Agregar Tarea
                 </div>
             {% endif %}
         {% endwith %}
-        <form method="POST" >
+        <form method="POST" class="p-4 border rounded shadow" style="background-color: #fdfdfd98;">
             <div class="form-group">
                 <label for="nombre">Nombre:</label>
                 <input type="text" id="nombre" name="nombre" class="form-control" required>
@@ -41,8 +42,8 @@ Agregar Tarea
                 </select>
             </div>
             <div class="form-group">
-                <label for="miembroasignado">Asignar a:</label>
-                <select id="miembroasignado" name="miembro_asignado" class="form-control" required>
+                <label for="miembro_asignado">Asignar a:</label>
+                <select id="miembro_asignado" name="miembro_asignado" class="form-control" required>
                     {% for miembro in usuarios %}
                         <option value="{{ miembro._id }}">{{ miembro.nombre }} {{ miembro.apellido }}</option>
                     {% endfor %}
@@ -56,10 +57,11 @@ Agregar Tarea
                     <option value="Completado">Completado</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">Agregar Tarea</button>
+            <div class="text-center">
+                <button type="submit" class="btn btn-success">Agregar Tarea</button>
+            </div>
             <p></p>
         </form>
-        <a href="{{ url_for('ver_todas_las_tareas') }}" class="btn btn-secondary">Volver a Tareas</a>
     </div>
 </div>
 {% endblock %}

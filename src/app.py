@@ -609,7 +609,7 @@ def agregar_tarea(proyecto_id):
                     {'$push': {'tareas': nueva_tarea}}
                 )
 
-                return redirect(url_for('seleccionar_proyecto'))
+                return redirect(url_for('ver_todas_las_tareas'))
 
             # Obtener miembros del proyecto
             miembros_asignados_ids = [ObjectId(miembro['_id']) for miembro in proyecto['miembros']]
@@ -1117,6 +1117,7 @@ def registro_empresa():
 @app.route('/cambiar_estado_tarea/<id>', methods=['POST'])
 def cambiar_estado_tarea(id):
     nuevo_estado = request.form['estado']  # Obtiene el nuevo estado del formulario
+    comentario = request.form.get('comentario')  # Obtiene el comentario, si hay uno
     usuario = usuarios_collection.find_one({'correo': session['correo']})
 
     if usuario:
@@ -1130,13 +1131,86 @@ def cambiar_estado_tarea(id):
                         {'_id': proyecto['_id'], 'tareas._id': ObjectId(id)},
                         {'$set': {'tareas.$.estado': nuevo_estado}}
                     )
+
+                    # Si el nuevo estado es "Completado", agrega el comentario
+                    if nuevo_estado == "Completado" and comentario:
+                        agregar_comentario(proyecto['_id'], tarea['_id'], comentario)
+
                     flash('El estado de la tarea ha sido actualizado.')
+
+                    # Enviar correo a líder y administrador
+                    send_notification_email(proyecto, tarea, nuevo_estado)
+
                     return redirect(url_for('mis_tareas'))
     
     flash('No se pudo actualizar el estado de la tarea.')
     return redirect(url_for('mis_tareas'))
 
+def send_notification_email(proyecto, tarea, nuevo_estado, comentario):
+    # Obtener correos del líder del proyecto
+    lideres = proyecto.get('lideres', [])  # Obtiene la lista de líderes
+    admin = usuarios_collection.find_one({'role': 'admin'})  # Encuentra al administrador
 
+    # Crear mensaje para el líder
+    if lideres:  # Verifica que haya al menos un líder
+        lider = lideres[0]  # Accede al primer líder
+        msg_lider = Message(
+            subject=f'Notificación de Actualización de Tarea: {tarea["nombre"]}',
+            recipients=[lider['correo']]
+        )
+        msg_lider.body = f"""
+        Estimado(a) {lider['nombre']},
+
+        El estado de la tarea "{tarea['nombre']}" ha sido actualizado a "{nuevo_estado}" en el proyecto "{proyecto['nombre']}". 
+
+        Detalles:
+        - Descripción: {tarea['descripcion']}
+        - Fecha de vencimiento: {tarea['fechavencimiento']}
+        - Comentario: {comentario}
+        
+        Si tienes alguna pregunta, no dudes en contactarnos.
+
+        Saludos,
+        Tu Equipo
+        """
+        mail.send(msg_lider)
+
+    # Crear mensaje para el administrador
+    if admin:  # Verifica que se encontró un administrador
+        msg_admin = Message(
+            subject=f'Notificación de Actualización de Tarea: {tarea["nombre"]}',
+            recipients=[admin['correo']]
+        )
+        msg_admin.body = f"""
+        Estimado(a) {admin['nombre']},
+
+        El estado de la tarea "{tarea['nombre']}" ha sido actualizado a "{nuevo_estado}" en el proyecto "{proyecto['nombre']}". 
+
+        Detalles:
+        - Descripción: {tarea['descripcion']}
+        - Fecha de vencimiento: {tarea['fechavencimiento']}
+        - Comentario: {comentario}
+        
+        Si tienes alguna pregunta, no dudes en contactarnos.
+
+        Saludos,
+        Tu Equipo
+        """
+        mail.send(msg_admin)
+
+
+def agregar_comentario(proyecto_id, tarea_id, contenido):
+    autor = session['nombre']
+    comentario = {'nombre_autor': autor, 'texto': contenido, 'fecha': datetime.now().isoformat()}
+
+    # Encuentra el proyecto correspondiente
+    proyecto = proyectos_collection.find_one({'_id': ObjectId(proyecto_id)})
+    if proyecto:
+        # Agrega el comentario a la tarea
+        proyectos_collection.update_one(
+            {'_id': ObjectId(proyecto_id), 'tareas._id': ObjectId(tarea_id)},
+            {'$push': {'tareas.$.comentarios': comentario}}
+        )
 @app.route('/validar_codigo/<correo>', methods=['GET', 'POST'])
 def validar_codigo(correo):
     usuario = usuarios_collection.find_one({'correo': correo})
