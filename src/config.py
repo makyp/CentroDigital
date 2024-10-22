@@ -3,7 +3,6 @@ import certifi
 
 MONGO='mongodb+srv://makyp:Pacho040321@cluster0.yjkbst6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 
-
 certificado = certifi.where()
 
 def Conexion():
