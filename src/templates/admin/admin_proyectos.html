@@ -54,15 +54,15 @@ Proyectos
                                         Editar
                                     </a>
                                     <a href="#" data-url="{{ url_for('eliminar_proyecto', id=proyecto._id) }}"
-                                        onclick="confirmarEliminacion(this);" class="btn btn-danger mb-2">
+                                        onclick="confirmarEliminacion(this);" class="btn btn-success mb-2">
                                         Eliminar
                                     </a>
-                                    <a href="{{ url_for('asignar_miembros', id=proyecto._id) }}" class="btn btn-warning mb-2">
+                                    <a href="{{ url_for('asignar_miembros', id=proyecto._id) }}" class="btn btn-success mb-2">
                                         Miembros
                                     </a>
                                     {% endif %}
                                     <a href="{{ url_for('ver_indicadores', proyecto_id=proyecto._id) }}"
-                                        class="btn btn-info">
+                                        class="btn btn-success">
                                         Indicadores
                                     </a>
                                 </div>
