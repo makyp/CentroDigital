@@ -5,25 +5,22 @@ Solicitud de Proyecto
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 offset-md-3">
-        <h2 class="text-center">Solicitar Nuevo Proyecto</h2>
+<div class="container mt-5">
+    <div class="col-md-8 offset-md-2">
+        <h2 class="text-center" style="color: #027333;">Solicitar Nuevo Proyecto</h2>
         
-        <!-- Mensajes flash de retroalimentación -->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="alert alert-info" role="alert">
-                    <ul>
-                        {% for message in messages %}
-                            <li>{{ message }}</li>
-                        {% endfor %}
-                    </ul>
+                <div class="alert alert-success" role="alert">
+                    {% for message in messages %} 
+                        {{ message }}<br>
+                    {% endfor %}
                 </div>
             {% endif %}
         {% endwith %}
         
         <!-- Formulario de solicitud -->
-        <form method="POST" action="{{ url_for('solicitar_proyecto') }}">
+        <form id="projectRequestForm" method="POST" action="{{ url_for('solicitar_proyecto') }}" class="border p-4 rounded shadow-sm" style="background-color: #f8f9fa;">
             <div class="form-group">
                 <label for="nombre_proyecto">Nombre del Proyecto:</label>
                 <input type="text" id="nombre_proyecto" name="nombre_proyecto" class="form-control" placeholder="Ingrese el nombre del proyecto" required>
@@ -40,12 +37,85 @@ Solicitud de Proyecto
             </div>
             
             <div class="form-group">
-                <label for="tiempo_estimado">Tiempo Estimado (en semanas):</label>
+                <label for="tiempo_estimado">Tiempo Estimado en que Requiere la Solución (en semanas):</label>
                 <input type="number" id="tiempo_estimado" name="tiempo_estimado" class="form-control" placeholder="Ingrese el tiempo estimado en semanas" required min="1">
             </div>
-            
-            <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
+
+            <div class="form-group">
+                <label for="nombre_soli">Nombre de quien radica la solicitud:</label>
+                <input type="text" id="nombre_soli" name="nombre_soli" class="form-control" placeholder="Ingrese el nombre de la persona solicitante" required>
+            </div>
+
+            <div class="form-group">
+                <label for="correo_soli">Correo de contacto:</label>
+                <input type="email" id="correo_soli" name="correo_soli" class="form-control" placeholder="Ingrese el correo de la persona solicitante" required>
+            </div>
+
+            <div class="form-group">
+                <label for="telefono_soli">Teléfono de contacto:</label>
+                <input type="number" id="telefono_soli" name="telefono_soli" class="form-control" placeholder="Ingrese el número de teléfono" required>
+            </div>
+
+            <div class="text-center">
+                <button type="button" class="btn btn-success" onclick="confirmRequest()">Enviar Solicitud</button>
+            </div>
         </form>
     </div>
 </div>
+
+<!-- Modal de confirmación para enviar la solicitud -->
+<div class="modal fade" id="confirmModalRequest" tabindex="-1" role="dialog" aria-labelledby="modalLabelRequest" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabelRequest">Confirmar Solicitud</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas enviar esta solicitud de proyecto?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="confirmRequestBtn">Enviar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmRequest() {
+        // Obtener los campos del formulario
+        var nombreProyecto = document.getElementById('nombre_proyecto').value;
+        var descripcion = document.getElementById('descripcion').value;
+        var requerimientos = document.getElementById('requerimientos').value;
+        var tiempoEstimado = document.getElementById('tiempo_estimado').value;
+        var nombreSoli = document.getElementById('nombre_soli').value;
+        var correoSoli = document.getElementById('correo_soli').value;
+        var telefonoSoli = document.getElementById('telefono_soli').value;
+
+        // Validar campos
+        if (!nombreProyecto || !descripcion || !requerimientos || !tiempoEstimado || !nombreSoli || !correoSoli || !telefonoSoli) {
+            alert('Por favor, complete todos los campos requeridos.');
+            return;
+        }
+
+        // Validar formato de correo electrónico
+        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(correoSoli)) {
+            alert('Por favor, ingrese un correo electrónico válido.');
+            return;
+        }
+
+        // Muestra el modal de confirmación
+        $('#confirmModalRequest').modal('show');
+
+        // Establece el comportamiento del botón de confirmación en el modal
+        document.getElementById('confirmRequestBtn').onclick = function() {
+            document.getElementById('projectRequestForm').submit(); // Envía el formulario
+        };
+    }
+</script>
+
 {% endblock %}

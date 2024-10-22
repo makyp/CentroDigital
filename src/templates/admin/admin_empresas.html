@@ -1,45 +1,94 @@
 {% extends "base.html" %}
 
 {% block title %}
-Administrar Usuarios
+Administrar Empresas
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <h1 class="text-center">Administrar Empresas</h1>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert alert-success" role="alert">
-                    {% for message in messages %}
-                        {{ message }}<br>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-        <table class="table">
-            <thead style="background-color: #027333; color: white;">
-                <tr>
-                    <th>Nombre de la empresa</th>
-                    <th>Correo</th>
-                    <th>Rol</th>
-                    <th>Nit</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for usuario in usuarios %}
-                    <tr>
-                        <td>{{ usuario.nombre }}</td>
-                        <td>{{ usuario.correo }}</td>
-                        <td>{{ usuario.role }}</td>
-                        <td>{{ usuario.NIT }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <a href="{{ url_for('home') }}" class="btn btn-secondary">Volver a Inicio</a>
+<div class="container-fluid">
+    <h1 class=" text-success text-center">Administrar Empresas</h1>
+    <div class="row">
+        <div class="col-md-12">
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-success" role="alert" id="flash-message">
+                        {% for message in messages %}
+                            {{ message }}<br>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead style="background-color: #027333; color: white;">
+                        <tr>
+                            <th>Nombre de la empresa</th>
+                            <th>Correo</th>
+                            <th>Encargado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                            <tr>
+                                <td>
+                                    <a href="#" class="nombre-usuario" style="color: black;" onclick="toggleInfo('{{ usuario._id }}'); return false;">
+                                        {{ usuario.nombre }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {{ usuario.correo }}
+                                </td>
+                                <td>{{ usuario.encargado }}</td>
+                            </tr>
+                            <tr id="info-{{ usuario._id }}" style="display: none;">
+                                <td colspan="3" style="padding: 15px; background-color: #f9f9f9;">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Campo</th>
+                                                <th>Información</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><strong>Nit:</strong></td>
+                                                <td>{{ usuario.nit }}{{ usuario.NIT }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Telefono:</strong></td>
+                                                <td>{{ usuario.telefono }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
-{% endblock %}
 
+<script>
+    function toggleInfo(id) {
+        var infoRow = document.getElementById('info-' + id);
+        if (infoRow.style.display === 'none') {
+            infoRow.style.display = '';
+        } else {
+            infoRow.style.display = 'none';
+        }
+    }
+
+</script>
+
+<script>
+    setTimeout(function() {
+        var flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';  // Oculta el mensaje
+        }
+    }, 3000);  // Tiempo en milisegundos (3000 ms = 3 segundos)
+</script>
+{% endblock %}

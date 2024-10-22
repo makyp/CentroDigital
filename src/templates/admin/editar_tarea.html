@@ -6,8 +6,8 @@ Editar Tarea
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Editar Tarea: {{ tarea.nombre }} del Proyecto: {{ proyecto.nombre }}</h2>
-    <form method="post">
+    <h2 class="mb-4 text-center" style="color: #027333;">Editar Tarea: {{ tarea.nombre }} del proyecto {{ proyecto.nombre }}</h2>
+    <form id="editTaskForm" method="post" class="border p-4 rounded shadow-sm" style="background-color: #f8f9fa;">
         <div class="form-group">
             <label for="nombre">Nombre:</label>
             <input type="text" id="nombre" name="nombre" value="{{ tarea.nombre }}" class="form-control" required>
@@ -22,6 +22,7 @@ Editar Tarea
             <label for="fechavencimiento">Fecha de Vencimiento:</label>
             <input type="date" id="fechavencimiento" name="fechavencimiento" value="{{ tarea.fechavencimiento }}" class="form-control" required>
         </div>
+
         <div class="form-group">
             <label for="objetivo_especifico">Objetivo Específico:</label>
             <select id="objetivo_especifico" name="objetivo_especifico" class="form-control" required>
@@ -38,12 +39,12 @@ Editar Tarea
             <select id="miembroasignado" name="miembro_asignado" class="form-control" required>
                 <option value="" {% if tarea.miembro_asignado is none %}selected{% endif %}>Asignar miembro</option>
                 {% for miembro in miembros %}
-                <option value="{{ miembro._id }}" {% if miembro._id == tarea.miembro_asignado %}selected{% endif %}>
-                    {{ miembro.nombre }}
-                </option>
+                    <option value="{{ miembro._id }}" {% if miembro._id == tarea.miembro_asignado %}selected{% endif %}>
+                        {{ miembro.nombre }}
+                    </option>
                 {% endfor %}
             </select>
-        </div>
+        </div>               
 
         <div class="form-group">
             <label for="estado">Estado:</label>
@@ -53,10 +54,44 @@ Editar Tarea
                 <option value="Completado" {% if tarea.estado == 'Completado' %}selected{% endif %}>Completado</option>
             </select>
         </div>
-
-        <button type="submit" class="btn btn-primary">Actualizar Tarea</button>
-    </form>
-    <br>
-    <a href="{{ url_for('ver_todas_las_tareas') }}" class="btn btn-secondary">Volver a Tareas</a>
+        <div class="text-center">
+            <button type="button" class="btn btn-success" onclick="confirmEdit()">Actualizar Tarea</button>
+        </div>
+        </form>
+    
 </div>
+
+<!-- Modal de confirmación para editar -->
+<div class="modal fade" id="confirmModalEdit" tabindex="-1" role="dialog" aria-labelledby="modalLabelEdit" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabelEdit">Confirmar Actualización</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas actualizar esta tarea?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="confirmEditBtn">Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmEdit() {
+        // Muestra el modal de confirmación
+        $('#confirmModalEdit').modal('show');
+
+        // Establece el comportamiento del botón de confirmación en el modal
+        document.getElementById('confirmEditBtn').onclick = function() {
+            document.getElementById('editTaskForm').submit(); // Envía el formulario
+        };
+    }
+</script>
+
 {% endblock %}

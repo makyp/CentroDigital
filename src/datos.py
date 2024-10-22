@@ -4,13 +4,11 @@ import uuid
 from datetime import datetime
 
 class Usuario:
-    def __init__(self, nombre, apellido, correo, password, role, cargo, habilidades):
+    def __init__(self, nombre, correo, password, role, habilidades):
         self.nombre = nombre
-        self.apellido = apellido
         self.correo = correo
         self.password = password
         self.role = role
-        self.cargo = cargo
 
         if isinstance(habilidades, str):
             self.habilidades = [h.strip() for h in re.split(r'\s*,\s*', habilidades)]  # regex para crear lista
@@ -22,28 +20,30 @@ class Usuario:
     def formato_doc(self):
         return {
             'nombre': self.nombre,
-            'apellido': self.apellido,
             'correo': self.correo,
             'password': self.password,
             'role': self.role,
-            'cargo': self.cargo,
             'habilidades': self.habilidades,
         }
 
 class Empresa:
-    def __init__(self, nombre_empresa, correo_empresa, NIT, password):
-        self.nombre_empresa = nombre_empresa
-        self.correo_empresa = correo_empresa
-        self.NIT = NIT
+    def __init__(self, nombre, correo, nit, encargado, telefono, password):
+        self.nombre = nombre
+        self.correo = correo
+        self.nit = nit
+        self.encargado = encargado
+        self.telefono = telefono
         self.password = password
 
     def formato_doc(self):
         return {
-            'nombre': self.nombre_empresa,
-            'correo': self.correo_empresa,
+            'nombre': self.nombre,
+            'correo': self.correo,
             'role': 'empresa',
-            'NIT': self.NIT,
-            'password': self.password,
+            'nit': self.nit,
+            'encargado': self.encargado,
+            'telefono': self.telefono,
+            'password': self.password
         }
 
 class UserWithoutRegister:
@@ -86,7 +86,7 @@ class Comentario:
             'fecha': self.fecha.isoformat()  # Convierte la fecha a formato ISO para almacenamiento
         }
 class Proyecto:
-    def __init__(self, nombre, descripcion, fechainicio, fechafinal, estado, objetivoGeneral, objetivosEspecificos):
+    def __init__(self, nombre, descripcion, fechainicio, fechafinal, estado, objetivoGeneral, objetivosEspecificos,empresa_id,solicitud_id ):
         self.nombre = nombre
         self.descripcion = descripcion
         self.fechainicio = fechainicio
@@ -94,8 +94,11 @@ class Proyecto:
         self.estado = estado
         self.objetivoGeneral = objetivoGeneral
         self.objetivosEspecificos = self.generar_objetivos_con_id(objetivosEspecificos)
+        self.empresa_id= empresa_id
+        self.solicitud_id= solicitud_id
         self.tareas = []  # Lista de tareas
         self.miembros = []  # Lista de miembros
+        self.lideres = []
 
     def generar_objetivos_con_id(self, descripciones_objetivos):
         return [ObjetivoEspecifico(descripcion) for descripcion in descripciones_objetivos]
@@ -135,5 +138,6 @@ class Proyecto:
             'objetivoGeneral': self.objetivoGeneral,
             'objetivosEspecificos': [objeto.to_dict() for objeto in self.objetivosEspecificos],
             'tareas': self.tareas,
-            'miembros': self.miembros
+            'miembros': self.miembros,
+            'lideres': self.lideres 
         }

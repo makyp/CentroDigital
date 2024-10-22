@@ -7,30 +7,78 @@ Proyectos Solicitados
 {% block content %}
 <div class="row">
     <div class="col-md-8 offset-md-2">
-        <h2 class="text-center">Solicitudes de Proyectos</h2>
-        
+        <h1 class="text-success text-center">Solicitudes de Proyectos</h1> <!-- Estilo del título -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-success text-center" role="alert">
+                    {% for message in messages %} 
+                        {{ message }}<br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}  
         {% if proyectos %}
         <div class="table-responsive">
             <table class="table table-bordered table-striped table-hover">
-                <thead>
+                <thead style="background-color: #027333; color: white;">
                     <tr>
                         <th>#</th>
                         <th>Nombre del Proyecto</th>
-                        <th>Descripción</th>
-                        <th>Requerimientos</th>
-                        <th>Tiempo Estimado (semanas)</th>
-                        <th>Estado</th>
+                        <th>Estado</th> <!-- Solo se mostrará el nombre y el estado inicialmente -->
                     </tr>
                 </thead>
                 <tbody>
                     {% for proyecto in proyectos %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td>{{ proyecto.nombre }}</td>
-                        <td>{{ proyecto.descripcion }}</td>
-                        <td>{{ proyecto.requerimientos }}</td>
-                        <td>{{ proyecto.tiempo_estimado }}</td>
-                        <td>{{ proyecto.estado}}</td>
+                        <td>
+                            <a href="#" style="color: black;" onclick="toggleInfo('{{ proyecto._id }}'); return false;">
+                                {{ proyecto.nombre }}
+                            </a>
+                        </td>
+                        <td>{{ proyecto.estado }}</td>
+                    </tr>
+                    <tr id="info-{{ proyecto._id }}" style="display: none;">
+                        <td colspan="3" style="padding: 15px; background-color: #f9f9f9;">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Campo</th>
+                                        <th>Información</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Descripción:</strong></td>
+                                        <td>{{ proyecto.descripcion }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Requerimientos:</strong></td>
+                                        <td>{{ proyecto.requerimientos }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Tiempo estimado en semanas:</strong></td>
+                                        <td>{{ proyecto.tiempo_estimado }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Nombre del solicitante:</strong></td>
+                                        <td>{{ proyecto.nombre_soli }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Correo del solicitante:</strong></td>
+                                        <td>{{ proyecto.correo_soli }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Teléfono del solicitante:</strong></td>
+                                        <td>{{ proyecto.telefono_soli }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Fecha de la solicitud:</strong></td>
+                                        <td>{{ proyecto.fecha_solicitud }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -40,7 +88,22 @@ Proyectos Solicitados
             <p class="text-center">No hay proyectos solicitados por el momento.</p>
         {% endif %}
         
-        <a href="{{ url_for('solicitar_proyecto') }}" class="btn btn-primary mt-3">Solicitar Nuevo Proyecto</a>
+        <div class="text-center">
+            <a href="{{ url_for('solicitar_proyecto') }}" class="btn btn-primary mt-3">Solicitar Nuevo Proyecto</a>
+        </div>
     </div>
 </div>
+
+<script>
+    function toggleInfo(id) {
+        var infoRow = document.getElementById('info-' + id);
+        if (infoRow) {
+            if (infoRow.style.display === 'none' || infoRow.style.display === '') {
+                infoRow.style.display = 'table-row';
+            } else {
+                infoRow.style.display = 'none';
+            }
+        }
+    }
+</script>
 {% endblock %}

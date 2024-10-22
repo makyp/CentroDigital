@@ -1,79 +1,190 @@
 {% extends "base.html" %}
 
 {% block title %}
-Lista de Proyectos
+Proyectos
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        {% with messages = get_flashed_messages() %}
+<div class="container-fluid mt-4">
+    <h1 class="text-success text-center">Proyectos</h1>
+    <div class="row">
+        <div class="col-md-12">
+            {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="alert alert-success" role="alert">
-                    {% for message in messages %}
-                        {{ message }}<br>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-        <h2>Lista de Proyectos</h2>
-        <table class="table table-bordered">
-            <thead style="background-color: #027333; color: white;">
-                <tr>
-                    <th>Nombre</th>
-                    <th>Objetivo General</th>
-                    <th>Descripción</th>
-                    <th>Fecha de Inicio</th>
-                    <th>Fecha de Finalización</th>
-                    <th>Miembros</th>
-                    <th>Tareas</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for proyecto in proyectos %}
-                <tr>
-                    <td>{{ proyecto.nombre }}</td>
-                    <td>{{ proyecto.objetivoGeneral }}</td>
-                    <td>{{ proyecto.descripcion }}</td>
-                    <td>{{ proyecto.fechainicio }}</td>
-                    <td>{{ proyecto.fechafinal }}</td>
-                    <td>
-                        {% for miembro in proyecto.miembros %}
-                            {{ miembro.nombre }} {{ miembro.apellido }}{% if not loop.last %}, {% endif %}
-                        {% endfor %}
-                    </td>
-                    <td>
-                        <ul>
-                            {% for tarea in proyecto.tareas %}
-                                <li>Nombre: {{ tarea.nombre }} <br> Descripción: {{ tarea.descripcion }} <br> Responsable: 
-                                    {% if tarea.miembro_asignado %}
-                                        {{ tarea.miembro_asignado }}
-                                    {% else %}
-                                        Sin asignar
-                                    {% endif %}
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </td>
-                    <td>{{ proyecto.estado }}</td>
-                    <td>
-                        <a href="{{ url_for('editar_proyecto', id=proyecto._id) }}" class="btn" style="background-color: #84BF04; color: white;">Editar</a>
-                        <a href="{{ url_for('eliminar_proyecto', id=proyecto._id) }}" class="btn" style="background-color: #A52A2A; color: white;">Eliminar</a>
-                        <a href="{{ url_for('asignar_miembros', id=proyecto._id) }}" class="btn btn-success">Administrar Integrantes</a>
-                    </td>
-                </tr>
+            <div class="alert alert-success" role="alert">
+                {% for message in messages %}
+                {{ message }}<br>
                 {% endfor %}
-            </tbody>
-        </table>         
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {% if proyectos|length == 0 %}
+            <div class="alert alert-warning" role="alert">
+                No cuentas con ninguna solicitud probada.
+            </div>
+            {% else %}
+            <div class="table-responsive">
+                <table class="table table-bordered w-100">
+                    <thead style="background-color: #027333; color: white;">
+                        <tr>
+                            <th>Proyecto</th>
+                            <th>Empresa</th>
+                            <th class="d-none d-md-table-cell">Solicitud</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for proyecto in proyectos %}
+                        <tr>
+                            <td>
+                                <a href="#" class="nombre-proyecto" style="color: black;"
+                                    onclick="toggleInfo('{{ proyecto._id }}'); return false;">
+                                    {{ proyecto.nombre }}
+                                </a>
+                            </td>
+                            <td>{{ proyecto.nombre_empresa }}</td>
+                            <td class="d-none d-md-table-cell">{{ proyecto.nombre_solicitud }}</td>
+                            <td>{{ proyecto.estado }}</td>
+                            <td>
+                                <div class="action-buttons" style="display: flex; flex-direction: column;">
+                                    {% if session.get('role') != 'empresa' %}
+                                    <a href="{{ url_for('editar_proyecto', id=proyecto._id) }}" class="btn btn-success mb-2">
+                                        Editar
+                                    </a>
+                                    <a href="#" data-url="{{ url_for('eliminar_proyecto', id=proyecto._id) }}"
+                                        onclick="confirmarEliminacion(this);" class="btn btn-danger mb-2">
+                                        Eliminar
+                                    </a>
+                                    <a href="{{ url_for('asignar_miembros', id=proyecto._id) }}" class="btn btn-warning mb-2">
+                                        Miembros
+                                    </a>
+                                    {% endif %}
+                                    <a href="{{ url_for('ver_indicadores', proyecto_id=proyecto._id) }}"
+                                        class="btn btn-info">
+                                        Indicadores
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr id="info-{{ proyecto._id }}" style="display: none;">
+                            <td colspan="5" style="padding: 15px; background-color: #f9f9f9;">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Campo</th>
+                                            <th>Información</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Objetivo General</strong></td>
+                                            <td>{{ proyecto.objetivoGeneral }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Objetivos Específicos</strong></td>
+                                            <td>
+                                                <ul style="margin-left: 20px;">
+                                                    {% for objetivosEspecificos in proyecto.objetivosEspecificos %}
+                                                    <li>{{ objetivosEspecificos.descripcion }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Descripción</strong></td>
+                                            <td>{{ proyecto.descripcion }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Fecha de Inicio</strong></td>
+                                            <td>{{ proyecto.fechainicio }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Fecha de Finalización</strong></td>
+                                            <td>{{ proyecto.fechafinal }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Miembros</strong></td>
+                                            <td>
+                                                <ul style="margin-left: 20px;">
+                                                    {% for miembro in proyecto.miembros %}
+                                                    <li>{{ miembro.nombre }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Líder</strong></td>
+                                            <td>
+                                                <ul style="margin-left: 20px;">
+                                                    {% for lider in proyecto.lideres %}
+                                                    <li>{{ lider.nombre }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Tareas</strong></td>
+                                            <td>
+                                                <ul style="margin-left: 20px;">
+                                                    {% for tarea in proyecto.tareas %}
+                                                    <li>Nombre de la tarea: {{ tarea.nombre }} <br> Descripción de la tarea:
+                                                        {{ tarea.descripcion }} <br> Responsable de la tarea:
+                                                        {% if tarea.miembro_asignado %}
+                                                        {{ tarea.miembro_asignado }}
+                                                        {% else %}
+                                                        Sin asignar
+                                                        {% endif %}
+                                                    </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
     </div>
 </div>
 
-<!-- Botón para mostrar el formulario de agregar proyecto -->
-<div class="row">
-    <div class="col-md-12">
-        <a href="{{ url_for('nuevo_proyecto') }}" class="btn btn-success">Agregar Nuevo Proyecto</a>
-    </div>
-</div>
+<!-- JavaScript para manejar la confirmación de eliminación -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmarEliminacion(element) {
+        url = element.getAttribute('data-url'); // Obtener la URL del atributo data-url
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "No podrás revertir esta acción",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url; // Redirigir a la URL proporcionada
+            }
+        });
+    }
+
+    // Función para mostrar/ocultar la información adicional
+    function toggleInfo(id) {
+        var infoRow = document.getElementById('info-' + id);
+        if (infoRow.style.display === 'none') {
+            infoRow.style.display = 'table-row';
+            infoRow.style.transition = 'all 0.3s ease'; // Agregar una transición
+        } else {
+            infoRow.style.display = 'none';
+        }
+    }
+
+</script>
 {% endblock %}

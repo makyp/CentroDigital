@@ -5,62 +5,77 @@ Agregar Nuevo Proyecto
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <h2 class="mt-4">Agregar Nuevo Proyecto</h2>
-            <form method="POST" action="{{ url_for('nuevo_proyecto') }}" id="proyectoForm">
-                
-                <div class="form-group">
-                    <label for="nombre">Nombre:</label>
-                    <input type="text" id="nombre" name="nombre" class="form-control" required>
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h2 class="text-success text-center">Agregar Nuevo Proyecto</h2>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info" role="alert">
+                    <ul>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
-                
-                <div class="form-group">
-                    <label for="descripcion">Descripción:</label>
-                    <input type="text" id="descripcion" name="descripcion" class="form-control" required>
-                </div>
-                
-                <div class="form-group">
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('nuevo_proyecto') }}" class="p-4 border rounded shadow" style="background-color: #fdfdfd98;">
+            <input type="hidden" name="solicitud_id" value="{{ solicitud_id }}">
+            <input type="hidden" name="empresa_id" value="{{ empresa_id }}">
+
+            <div class="form-group">
+                <label for="nombre">Nombre del Proyecto:</label>
+                <input type="text" id="nombre" name="nombre" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="descripcion">Descripción:</label>
+                <textarea id="descripcion" name="descripcion" class="form-control" required></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6">
                     <label for="fechainicio">Fecha de Inicio:</label>
                     <input type="date" id="fechainicio" name="fechainicio" class="form-control" required>
                 </div>
-                
-                <div class="form-group">
+                <div class="form-group col-md-6">
                     <label for="fechafinal">Fecha de Finalización:</label>
                     <input type="date" id="fechafinal" name="fechafinal" class="form-control" required>
                 </div>
-                
-                <div class="form-group">
-                    <label for="objetivo_general">Objetivo General:</label>
-                    <textarea id="objetivo_general" name="objetivo_general" class="form-control" rows="3" required></textarea>
-                </div>
-                
-                <h4>Objetivos Específicos</h4>
-                <div id="objetivosEspecificosContainer">
-                    <div class="form-group objetivo-especifico">
-                        <label for="objetivo_especifico1">Objetivo Específico 1:</label>
-                        <input type="text" id="objetivo_especifico1" name="objetivos_especificos" class="form-control" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <button type="button" id="agregarObjetivoBtn" class="btn btn-secondary">Agregar otro objetivo específico</button>
-                </div>
-                
-                <div class="form-group">
-                    <label for="estado">Estado:</label>
-                    <select id="estado" name="estado" class="form-control" required>
-                        <option value="" disabled selected>Selecciona el estado</option>
-                        <option value="Por iniciar">Por iniciar</option>
-                        <option value="En proceso">En proceso</option>
-                        <option value="Completado">Completado</option>
-                    </select>
-                </div>
+            </div>
 
+            <div class="form-group">
+                <label for="objetivo_general">Objetivo General:</label>
+                <textarea id="objetivo_general" name="objetivo_general" class="form-control" rows="3" required></textarea>
+            </div>
+
+            <h4 class="text-success">Objetivos Específicos</h4>
+            <div id="objetivosEspecificosContainer">
+                <div class="form-group objetivo-especifico">
+                    <label for="objetivo_especifico1">Objetivo Específico 1:</label>
+                    <input type="text" id="objetivo_especifico1" name="objetivos_especificos" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button type="button" id="agregarObjetivoBtn" class="btn btn-warning btn-sm">Agregar otro objetivo específico</button>
+            </div>
+
+            <div class="form-group">
+                <label for="estado">Estado:</label>
+                <select id="estado" name="estado" class="form-control" required>
+                    <option value="Por iniciar">Por iniciar</option>
+                    <option value="En proceso">En proceso</option>
+                    <option value="Completado">Completado</option>
+                </select>
+            </div>
+
+            <div class="text-center">
                 <button type="submit" class="btn btn-success">Agregar Proyecto</button>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -70,7 +85,7 @@ Agregar Nuevo Proyecto
         const container = document.getElementById('objetivosEspecificosContainer');
         const agregarBtn = document.getElementById('agregarObjetivoBtn');
         let objetivoCount = 1; 
-        const maxObjetivos = 5;
+        const maxObjetivos = 4;
 
         function agregarCampoObjetivo() {
             if (objetivoCount < maxObjetivos) {

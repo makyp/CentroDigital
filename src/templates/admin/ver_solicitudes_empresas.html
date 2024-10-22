@@ -7,43 +7,110 @@ Ver Todas las Solicitudes
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <h2 class="text-center">Solicitudes de Proyectos</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-success text-center" role="alert">
+                    {% for message in messages %} 
+                        {{ message }}<br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <h1 class="text-success text-center">Solicitudes de Proyectos</h1>
         {% if proyectos %}
         <div class="table-responsive">
             <table class="table table-bordered table-striped table-hover">
-                <thead>
+                <thead style="background-color: #027333; color: white;">
                     <tr>
                         <th>#</th>
                         <th>Nombre del Proyecto</th>
-                        <th>Descripción</th>
-                        <th>Requerimientos</th>
-                        <th>Tiempo Estimado (semanas)</th>
                         <th>Estado</th>
-                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for proyecto in proyectos %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td>{{ proyecto.nombre }}</td>
-                        <td>{{ proyecto.descripcion }}</td>
-                        <td>{{ proyecto.requerimientos }}</td>
-                        <td>{{ proyecto.tiempo_estimado }}</td>
-                        <td>{{ proyecto.estado }}</td>
                         <td>
-                            {% if proyecto.estado == 'Pendiente' %}
-                            <form method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}">
-                                <input type="hidden" name="estado" value="Aprobado">
-                                <button type="submit" class="btn btn-success" {% if proyecto.estado != 'Pendiente' %} disabled {% endif %}>Aprobar</button>
-                            </form>
-                            <form method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}">
-                                <input type="hidden" name="estado" value="Rechazado">
-                                <button type="submit" class="btn btn-danger" {% if proyecto.estado != 'Pendiente' %} disabled {% endif %}>Rechazar</button>
-                            </form>
-                            {% else %}
-                            <button class="btn btn-secondary" disabled>Acción tomada</button>
-                            {% endif %}
+                            <a href="#" style="color: black;" onclick="toggleInfo('{{ proyecto._id }}'); return false;">
+                                {{ proyecto.nombre }}
+                            </a>
+                        </td>
+                        <td>{{ proyecto.estado }}</td>
+                    </tr>
+                    <tr id="info-{{ proyecto._id }}" style="display: none;">
+                        <td colspan="3" style="padding: 15px; background-color: #fdfdfd98;">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Campo</th>
+                                        <th>Información</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Descripción:</strong></td>
+                                        <td>{{ proyecto.descripcion }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Requerimientos:</strong></td>
+                                        <td>{{ proyecto.requerimientos }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Tiempo estimado en semanas:</strong></td>
+                                        <td>{{ proyecto.tiempo_estimado }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Nombre del solicitante:</strong></td>
+                                        <td>{{ proyecto.nombre_soli }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Correo del solicitante:</strong></td>
+                                        <td>{{ proyecto.correo_soli }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Teléfono del solicitante:</strong></td>
+                                        <td>{{ proyecto.telefono_soli }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Fecha de la solicitud:</strong></td>
+                                        <td>{{ proyecto.fecha_solicitud.strftime('%d/%m/%Y') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            {% if proyecto.estado == 'Pendiente' %}
+                                            <!-- Botones para aprobar la solicitud -->
+                                            <form method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}" class="d-inline-block">
+                                                <input type="hidden" name="estado" value="Aprobado">
+                                                <button type="submit" class="btn btn-success">Aprobar</button>
+                                            </form>
+
+                                            <!-- Botón para rechazar y mostrar el campo de comentario -->
+                                            <button class="btn btn-danger" onclick="mostrarComentarioRechazo('{{ proyecto._id }}'); deshabilitarBotones('{{ proyecto._id }}')">Rechazar</button>
+
+                                            <!-- Formulario para rechazar con comentario -->
+                                            <form id="form-rechazo-{{ proyecto._id }}" method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}" style="display: none;">
+                                                <input type="hidden" name="estado" value="Rechazado">
+                                                <div class="form-group">
+                                                    <label for="comentario_rechazo">Comentario sobre el rechazo:</label>
+                                                    <textarea name="comentario_rechazo" class="form-control" rows="3" required></textarea>
+                                                </div>
+                                                <button type="submit" class="btn btn-danger">Confirmar Rechazo</button>
+                                            </form>
+
+                                            {% elif proyecto.estado == 'Rechazado' %}
+                                            <!-- Botón para aprobar con cambios después del rechazo -->
+                                            <form method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}">
+                                                <input type="hidden" name="estado" value="Aprobado con cambios">
+                                                <button type="submit" class="btn btn-warning">Aprobar con cambios</button>
+                                            </form>
+                                            {% else %}
+                                            <button class="btn btn-secondary" disabled>Proyecto Radicado</button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </td>
                     </tr>
                     {% endfor %}
@@ -53,8 +120,36 @@ Ver Todas las Solicitudes
         {% else %}
             <p class="text-center">No hay proyectos solicitados por el momento.</p>
         {% endif %}
-        
-        <a href="{{ url_for('home') }}" class="btn btn-primary mt-3">Volver a Inicio</a>
     </div>
 </div>
+
+<!-- Script para mostrar y ocultar información adicional -->
+<script>
+    function toggleInfo(id) {
+        var infoRow = document.getElementById('info-' + id);
+        if (infoRow) {
+            if (infoRow.style.display === 'none' || infoRow.style.display === '') {
+                infoRow.style.display = 'table-row';
+            } else {
+                infoRow.style.display = 'none';
+            }
+        }
+    }
+
+    function mostrarComentarioRechazo(id) {
+        var form = document.getElementById('form-rechazo-' + id);
+        form.style.display = 'block'; // Mostrar el formulario de rechazo
+    }
+
+    function deshabilitarBotones(id) {
+        var aprobarBtn = document.querySelector(`#info-${id} form button.btn-success`);
+        var rechazarBtn = document.querySelector(`#info-${id} button.btn-danger`);
+        if (aprobarBtn) {
+            aprobarBtn.disabled = true; // Deshabilitar el botón de aprobar
+        }
+        if (rechazarBtn) {
+            rechazarBtn.disabled = true; // Deshabilitar el botón de rechazar
+        }
+    }
+</script>
 {% endblock %}

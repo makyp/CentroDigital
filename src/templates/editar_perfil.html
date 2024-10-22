@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}
+Editar Perfil
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center" style="color: #027333;">Editar Perfil: {{ usuario.nombre }}</h2>
+    <form id="editProfileForm" method="POST" class="border p-4 rounded shadow-sm" style="background-color: #f8f9fa;">
+        <!-- Nombre y Teléfono para todos los roles -->
+        <div class="form-group">
+            <label for="nombre">Nombre Completo:</label>
+            <input type="text" id="nombre" name="nombre" value="{{ usuario.nombre }}" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="telefono">Teléfono:</label>
+            <input type="text" id="telefono" name="telefono" value="{{ usuario.telefono }}" class="form-control" required>
+        </div>
+
+        <!-- Campos adicionales para Miembro o Admin -->
+        {% if usuario.role == 'miembro' or usuario.role == 'admin' %}
+            <div class="form-group">
+                <label for="estudios">Estudios:</label>
+                <input type="text" id="estudios" name="estudios" value="{{ usuario.estudios }}" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="profesion">Profesión:</label>
+                <input type="text" id="profesion" name="profesion" value="{{ usuario.profesion }}" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="programa">Programa:</label>
+                <input type="text" id="programa" name="programa" value="{{ usuario.programa }}" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="habilidades">Habilidades (separadas por comas):</label>
+                <input type="text" id="habilidades" name="habilidades" value="{{ ', '.join(usuario.habilidades) }}" class="form-control">
+            </div>
+        {% endif %}
+
+        <!-- Campos adicionales para Empresa -->
+        {% if usuario.role == 'empresa' %}
+            <div class="form-group">
+                <label for="nit">NIT:</label>
+                <input type="text" id="nit" name="nit" value="{{ usuario.nit }}" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="encargado">Encargado:</label>
+                <input type="text" id="encargado" name="encargado" value="{{ usuario.encargado }}" class="form-control" required>
+            </div>
+        {% endif %}
+
+        <div class="text-center">
+            <button type="button" class="btn btn-success" onclick="confirmEdit()">Guardar Cambios</button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal de confirmación para editar perfil -->
+<div class="modal fade" id="confirmModalEdit" tabindex="-1" role="dialog" aria-labelledby="modalLabelEdit" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabelEdit">Confirmar Cambios</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas actualizar tu perfil?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="confirmEditBtn">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmEdit() {
+        // Muestra el modal de confirmación
+        $('#confirmModalEdit').modal('show');
+
+        // Establece el comportamiento del botón de confirmación en el modal
+        document.getElementById('confirmEditBtn').onclick = function() {
+            document.getElementById('editProfileForm').submit(); // Envía el formulario
+        };
+    }
+</script>
+
+{% endblock %}

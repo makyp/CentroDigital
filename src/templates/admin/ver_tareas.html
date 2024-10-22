@@ -5,48 +5,44 @@ Ver Todas las Tareas
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-10 offset-md-1">
-        <h2 class="text-center">Todas las Tareas</h2>
-        
-        <!-- Formulario de filtros -->
-        <form method="GET" action="{{ url_for('ver_todas_las_tareas') }}">
-            <div class="form-row">
-                <div class="form-group col-md-5">
-                    <label for="proyecto">Filtrar por Proyecto</label>
-                    <input type="text" name="proyecto" class="form-control" placeholder="Nombre del Proyecto" value="{{ request.args.get('proyecto', '') }}">
-                </div>
-                <div class="form-group col-md-5">
-                    <label for="miembro">Filtrar por Miembro</label>
-                    <input type="text" name="miembro" class="form-control" placeholder="Nombre del Miembro" value="{{ request.args.get('miembro', '') }}">
-                </div>
-                <div class="form-group col-md-2 align-self-end">
-                    <button type="submit" class="btn btn-success">Filtrar</button>
-                </div>
+<div class="container mt-4">
+    <h2 class="text-center text-success">Panel de administración de las tareas</h2>
+    
+    <!-- Formulario de filtros -->
+    <form method="GET" action="{{ url_for('ver_todas_las_tareas') }}">
+        <div class="form-row">
+            <div class="form-group col-md-5">
+                <label for="proyecto">Filtrar por Proyecto</label>
+                <input type="text" name="proyecto" class="form-control" placeholder="Nombre del Proyecto" value="{{ request.args.get('proyecto', '') }}">
             </div>
-        </form>
+            <div class="form-group col-md-5">
+                <label for="miembro">Filtrar por Miembro</label>
+                <input type="text" name="miembro" class="form-control" placeholder="Nombre del Miembro" value="{{ request.args.get('miembro', '') }}">
+            </div>
+            <div class="form-group col-md-2 align-self-end">
+                <button type="submit" class="btn btn-success">Filtrar</button>
+            </div>
+        </div>
+    </form>
 
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert alert-info" role="alert">
-                    <ul>
-                        {% for message in messages %}
-                            <li>{{ message }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-        {% endwith %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-info" role="alert">
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% endwith %}
 
-        <table class="table table-bordered">
+    <div class="table-responsive">
+        <table class="table">
             <thead style="background-color: #027333; color: white;">
                 <tr>
-                    <th>Proyecto</th>
-                    <th>Objetivo General</th>
-                    <th>Objetivo especifico</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Fecha de Vencimiento</th>
+                    <th>Nombre del Proyecto</th>
+                    <th>Nombre de la Tarea</th>
                     <th>Responsable</th>
                     <th>Estado</th>
                     <th>Acciones</th>
@@ -56,26 +52,100 @@ Ver Todas las Tareas
                 {% for tarea in tareas %}
                 <tr>
                     <td>{{ tarea.proyecto_nombre }}</td>
-                    <td>{{ tarea.proyecto_objetivoGeneral }}</td>
-                    <td>{{ tarea.objetivo_especifico_nombre }}</td>
-                    <td>{{ tarea.nombre }}</td>
-                    <td>{{ tarea.descripcion }}</td>
-                    <td>{{ tarea.fechavencimiento }}</td>
+                    <td>
+                        <!-- Nombre de la tarea como enlace para mostrar información adicional -->
+                        <a href="#" style="color: black;" onclick="toggleInfo('{{ tarea._id }}'); return false;">
+                            {{ tarea.nombre }}
+                        </a>
+                    </td>
                     <td>{{ tarea.miembro_nombre }}</td>
                     <td>{{ tarea.estado }}</td> 
                     <td>
-                        <a href="{{ url_for('editar_tarea', id=tarea._id) }}" class="btn" style="background-color: #84BF04; color: white;">Editar</a>
-                        <form action="{{ url_for('eliminar_tarea', id=tarea._id) }}" method="post" style="display:inline;">
-                            <button type="submit" class="btn" style="background-color: #A52A2A; color: white;">Eliminar</button>
-                        </form>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('editar_tarea', id=tarea._id) }}" class="btn btn-success mb-2">Editar</a>
+                            <button class="btn btn-danger mb-2" onclick="confirmDelete('{{ tarea._id }}')">Eliminar</button>    
+                        </div>
+                        </td>
+                </tr>
+                <!-- Fila adicional con información extra (oculta por defecto) -->
+                <tr id="info-{{ tarea._id }}" style="display: none;">
+                    <td colspan="5" style="padding: 15px; background-color: #f9f9f9;">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Descripción:</strong> {{ tarea.descripcion }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fecha de Vencimiento:</strong> {{ tarea.fechavencimiento }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Objetivo General:</strong> {{ tarea.proyecto_objetivoGeneral }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Objetivo Específico:</strong> {{ tarea.objetivo_especifico_nombre }}</td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <br>
-        <a href="{{ url_for('admin_proyectos') }}" class="btn btn-secondary">Volver a Proyectos</a>
+    </div>
+    <br>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="confirmModalDelete" tabindex="-1" role="dialog" aria-labelledby="modalLabelDelete" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabelDelete">Confirmar Eliminación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar esta tarea?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+            </div>
+        </div>
     </div>
 </div>
-{% endblock %}
 
+<script>
+    // Función para mostrar/ocultar la información adicional
+    function toggleInfo(id) {
+        var infoRow = document.getElementById('info-' + id);
+        if (infoRow.style.display === 'none') {
+            infoRow.style.display = '';
+        } else {
+            infoRow.style.display = 'none';
+        }
+    }
+
+    function confirmDelete(id) {
+        // Establecer el comportamiento del botón de confirmación en el modal
+        document.getElementById('confirmDeleteBtn').onclick = function() {
+            deleteTask(id);
+        };
+        $('#confirmModalDelete').modal('show');
+    }
+
+    function deleteTask(id) {
+        // Enviar una solicitud POST para eliminar la tarea
+        fetch(`/tarea/${id}/eliminar`, {
+            method: 'POST'
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload(); // Recargar la página para mostrar los cambios
+            } else {
+                alert('Error al eliminar la tarea.');
+            }
+        });
+    }
+</script>
+
+{% endblock %}

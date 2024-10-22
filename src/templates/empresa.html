@@ -18,16 +18,35 @@
             <div class="row gx-lg-5 align-items-center mb-5">
                 <div class="col-lg-6 mb-5 mb-lg-0" style="z-index: 10">
                     <h1 class="my-5 display-5 fw-bold ls-tight" style="color: hsl(120, 81%, 95%)"> Centro Digital de
-                        Desarrollo Tecnologico <br />
+                        Desarrollo Tecnológico <br />
                     </h1>
                 </div>
                 <div class="col-lg-6 mb-5 mb-lg-0 position-relative">
                     <div class="card bg-glass">
                         <div class="card-body px-4 py-5 px-md-5">
                             <h1 class="h3 mb-3" style="color: black;">Registro empresa</h1>
-                            <form method="POST" action="{{ url_for('registro_empresa') }}">
+                            {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                            <div class="alert alert-info" role="alert" id="flash-message">
+                                <ul>
+                                    {% for message in messages %}
+                                    <li>{{ message }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <script>
+                                setTimeout(function () {
+                                    var flashMessage = document.getElementById('flash-message');
+                                    if (flashMessage) {
+                                        flashMessage.style.display = 'none';  // Oculta el mensaje
+                                    }
+                                }, 3000);  // Tiempo en milisegundos (3000 ms = 3 segundos)
+                            </script>
+                            {% endif %}
+                            {% endwith %}
+                            <form method="POST" action="{{ url_for('registro_empresa') }}" onsubmit="return validarContraseñas();">
                                 <div class="form-group">
-                                    <label for="nombre">Nombre empresa</label>
+                                    <label for="nombre">Nombre empresa:</label>
                                     <input type="text" name="empresa" class="form-control" required>
                                 </div>
                                 <div class="form-group">
@@ -35,8 +54,16 @@
                                     <input type="email" name="correo_empresa" class="form-control" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="cargo">NIT</label>
+                                    <label for="NIT">NIT:</label>
                                     <input type="text" name="NIT" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="encargado">Nombre persona encargada:</label>
+                                    <input type="text" name="encargado" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="telefono">Telefono de contacto:</label>
+                                    <input type="text" name="telefono" class="form-control" required>
                                 </div>
                                 <label for="password" class="form-label">Contraseña</label>
                                 <div class="input-group">
@@ -52,7 +79,7 @@
                                         <i id="eyeIcon2" class="fas fa-eye"></i>
                                     </span>
                                 </div>
-
+                                <div id="passwordHelpBlock" class="form-text" style="color:red;"></div>
                                 <br>
                                 <button type="submit" class="btn btn-primary">Registrar</button>
                             </form>
@@ -71,7 +98,7 @@
             </div>
             <div class="content-foo">
                 <h4>Correo de contacto</h4>
-                <p></p>
+                <p>centrodigitaldedesarrollotecno@gmail.com</p>
             </div>
             <div class="content-foo">
                 <h4>Ubicación</h4>
@@ -84,7 +111,7 @@
                 <p><label>Segundo Leonardo Cortes Lopez</label></p>
             </div>
         </div>
-        <h2 class="titulo-final">&copy; CDDT | Centro Digital de Desarrollo Tecnologico</h2>
+        <h2 class="titulo-final">&copy; CDDT | Centro Digital de Desarrollo Tecnológico</h2>
     </footer>
 
     <!-- Scripts de Bootstrap y JQuery -->
@@ -97,7 +124,7 @@
         function togglePassword(inputId, iconId) {
             var passwordField = document.getElementById(inputId);
             var eyeIcon = document.getElementById(iconId);
-            
+
             if (passwordField.type === "password") {
                 passwordField.type = "text";
                 eyeIcon.classList.remove("fa-eye");
@@ -107,6 +134,32 @@
                 eyeIcon.classList.remove("fa-eye-slash");
                 eyeIcon.classList.add("fa-eye");
             }
+        }
+
+        // Validar la contraseña según los requisitos
+        function validarContraseñas() {
+            var passwordField = document.getElementById("password");
+            var confirmPasswordField = document.getElementById("Confirm_password");
+            var passwordHelpBlock = document.getElementById("passwordHelpBlock");
+
+            var newPassword = passwordField.value;
+            var confirmPassword = confirmPasswordField.value;
+
+            // Requisitos de la contraseña
+            var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[.*\/%$#+-;])[A-Za-z\d.*\/%$#+-;]{8,}$/;
+
+            if (!regex.test(newPassword)) {
+                passwordHelpBlock.textContent = "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y uno de los siguientes caracteres especiales: * . / % $ + # - ;";
+                return false;  // Impide el envío del formulario si la nueva contraseña no es válida
+            }
+
+            if (newPassword !== confirmPassword) {
+                passwordHelpBlock.textContent = "Las contraseñas no coinciden.";
+                return false;  // Impide el envío del formulario si las contraseñas no coinciden
+            }
+
+            passwordHelpBlock.textContent = "";  // Si la contraseña es válida, limpia el mensaje de error
+            return true;  // Permite el envío del formulario
         }
     </script>
 </body>

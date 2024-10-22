@@ -3,9 +3,11 @@ body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    display: block;
+    display: flex; /* Cambiado a flex para facilitar la alineación */
     flex-direction: column;
+    min-height: 100vh; /* Asegura que el cuerpo ocupe toda la altura de la ventana */
 }
+
 .background-radial-gradient {
     background-size: 100%;
     background-color: #014023; 
@@ -33,50 +35,112 @@ body {
     text-align: center;
 }
 
-footer{
+footer {
     background: #414141;
     padding: 60px 0 30px 0;
     margin: auto;
     overflow: hidden;
+    width: 100%; /* Asegura que el footer ocupe el ancho completo */
 }
 
-.contenedor-footer{
+.contenedor-footer {
     display: flex;
-    width: 90%;
+    flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
     justify-content: space-evenly;
+    width: 90%;
     margin: auto;
     padding-bottom: 50px;
     border-bottom: 1px solid #ccc;
 }
 
-.content-foo{
-    text-align: center;
+footer a {
+    color: #fff !important; /* Blanco para los enlaces en el footer */
+    text-decoration: none !important; /* Sin subrayado */
 }
 
-.content-foo a:hover{
+footer a:hover {
+    color: #D9A404 !important; /* Color amarillo al pasar el mouse en el footer */
+    text-decoration: none !important; /* Mantiene sin subrayado */
+}
+
+
+p a:hover {
+    color: #D9A404 !important;   /* Cambia a amarillo al pasar el mouse */
+    text-decoration: none !important; /* Mantiene el subrayado eliminado */
+}
+
+button[type="submit"] {
+    display: block; /* Asegura que el botón sea un bloque para centrarlo */
+    margin: 0 auto; /* Margen automático a los lados para centrar */
+    background-color: #027333; /* Color de fondo verde */
+    border: none; /* Sin borde */
+    color: white; /* Color del texto */
+    padding: 10px 20px; /* Espaciado interno */
+    font-size: 16px; /* Tamaño de fuente */
+    cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+    transition: background-color 0.3s; /* Transición suave para el cambio de color */
+}
+
+button[type="submit"]:hover {
+    background-color:  #D9A404; /* Color de fondo amarillo al pasar el mouse */
+}
+
+.content-foo {
+    text-align: center;
+    flex: 1; /* Permite que los elementos ocupen espacio igual */
+    min-width: 150px; /* Asegura que los elementos no sean demasiado estrechos */
+    margin: 10px; /* Añade margen entre los elementos */
+}
+
+.content-foo a:hover {
     text-decoration: underline;
 }
-.content-foo a{
+
+.content-foo a {
     color: #fff;
     font-weight: 300;
     text-decoration: none;
-    margin-right: 10px;
 }
 
-.content-foo h4{
+.content-foo h4 {
     color: #fff;
-    border-bottom: 3px solid #84BF04;
+    border-bottom: 3px solid #D9A404;
     padding-bottom: 5px;
     margin-bottom: 10px;
 }
 
-.content-foo p{
+.content-foo p {
     color: #ccc;
 }
 
-.titulo-final{
+.titulo-final {
     text-align: center;
     font-size: 24px;
     margin: 20px 0 0 0;
     color: #9e9797;
+}
+
+.card {
+    padding: 50px; /* Aumenta el padding de la tarjeta */
+}
+
+.card-body h1 {
+    margin-bottom: 50px; /* Añade margen inferior al título */
+}
+
+/* Responsividad para pantallas pequeñas */
+@media (max-width: 768px) {
+    .contenedor-footer {
+        flex-direction: column; /* Cambia a columna en pantallas pequeñas */
+        align-items: center; /* Centra los elementos */
+    }
+
+    .content-foo {
+        min-width: 100%; /* Asegura que los elementos ocupen el ancho completo en pantallas pequeñas */
+        margin: 5px 0; /* Ajusta el margen para que sea más compacto */
+    }
+
+    .card {
+        padding: 30px; /* Reduce el padding de la tarjeta en pantallas pequeñas */
+    }
 }

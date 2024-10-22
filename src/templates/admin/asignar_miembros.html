@@ -1,51 +1,153 @@
 {% extends "base.html" %}
 
 {% block title %}
-Asignar Miembros a Proyecto
+Asignar Miembros y Líderes a Proyecto
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <h2 class="text-center">Administrar Miembros del Proyecto: {{ proyecto.nombre }}</h2>
+<div class="container mt-4">
+    <h2 class="text-center text-success mb-4">Administrar Miembros del Proyecto: {{ proyecto.nombre }}</h2>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Miembros Asignados:</h3>
+                    <form id="formEliminar" method="POST">
+                        {% for miembro in proyecto.miembros %}
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="eliminar_miembro" value="{{ miembro._id }}" id="miembro{{ miembro._id }}">
+                                <label class="form-check-label" for="miembro{{ miembro._id }}">
+                                    {{ miembro.nombre }}
+                                    {% if miembro in proyecto.lideres %}
+                                        <span class="badge bg-info">Líder</span>
+                                    {% endif %}
+                                </label>
+                            </div>
+                        {% endfor %}
+                        <button type="button" id="btnEliminar" class="btn btn-danger mt-3" disabled>Eliminar Miembros Seleccionados</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Miembros Disponibles para Agregar:</h3>
+                    <form id="formAgregar" method="POST">
+                        {% for usuario in usuarios %}
+                            {% if usuario not in proyecto.miembros %}
+                                <div class="form-check mb-2 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <input type="checkbox" class="form-check-input agregar-miembro" name="agregar_miembro" value="{{ usuario._id }}" id="usuario{{ usuario._id }}">
+                                        <label class="form-check-label" for="usuario{{ usuario._id }}">
+                                            {{ usuario.nombre }} {{ usuario.apellido }}
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" class="form-check-input asignar-lider" name="asignar_lider" value="{{ usuario._id }}" id="lider{{ usuario._id }}" disabled>
+                                        <label class="form-check-label" for="lider{{ usuario._id }}">Líder</label>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        <button type="button" id="btnAgregar" class="btn btn-success mt-3" disabled>Agregar Miembros y Líderes</button>
+                    </form>
+                </div>
+            </div>
+        </div>        
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h3 class="card-title">Miembros Asignados:</h3>
-                <form method="POST">
-                    {% for miembro in proyecto.miembros %}
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" name="eliminar_miembro" value="{{ miembro._id }}" id="miembro{{ miembro._id }}">
-                            <label class="form-check-label" for="miembro{{ miembro._id }}">{{ miembro.nombre }} {{ miembro.apellido }}</label>
-                        </div>
-                    {% endfor %}
-                    <button type="submit" class="btn btn-danger mt-3">Eliminar Miembros Seleccionados</button>
-                </form>
+<!-- Modal de confirmación para eliminar miembros -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h3 class="card-title">Miembros Disponibles para Agregar:</h3>
-                <form method="POST">
-                    {% for usuario in usuarios %}
-                        {% if usuario not in proyecto.miembros %}
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" name="agregar_miembro" value="{{ usuario._id }}" id="usuario{{ usuario._id }}">
-                                <label class="form-check-label" for="usuario{{ usuario._id }}">{{ usuario.nombre }} {{ usuario.apellido }}</label>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                    <button type="submit" class="btn btn-primary mt-3">Agregar Miembros</button>
-                </form>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar los miembros seleccionados?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Eliminar</button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modal de confirmación para agregar miembros y líderes -->
+<div class="modal fade" id="confirmAddModal" tabindex="-1" role="dialog" aria-labelledby="confirmAddModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmAddModalLabel">Confirmar Agregar Miembros y Líderes</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas agregar los miembros y líderes seleccionados?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="confirmAdd">Agregar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript para habilitar/deshabilitar los botones y la confirmación -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxesMiembros = document.querySelectorAll('.agregar-miembro');
+        const btnEliminar = document.getElementById('btnEliminar');
+        const btnAgregar = document.getElementById('btnAgregar');
+
+        checkboxesMiembros.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const liderCheckbox = this.closest('.form-check').querySelector('.asignar-lider');
+                liderCheckbox.disabled = !this.checked;
+                if (!this.checked) {
+                    liderCheckbox.checked = false;
+                }
+                toggleButtons();
+            });
+        });
+
+        const eliminarCheckboxes = document.querySelectorAll('input[name="eliminar_miembro"]');
+        eliminarCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', toggleButtons);
+        });
+
+        function toggleButtons() {
+            const hasSelected = [...eliminarCheckboxes].some(checkbox => checkbox.checked);
+            btnEliminar.disabled = !hasSelected;
+
+            const hasAdding = [...checkboxesMiembros].some(checkbox => checkbox.checked);
+            btnAgregar.disabled = !hasAdding;
+        }
+
+        btnEliminar.addEventListener('click', function() {
+            $('#confirmDeleteModal').modal('show');
+        });
+
+        document.getElementById('confirmDelete').addEventListener('click', function() {
+            document.getElementById('formEliminar').submit();
+        });
+
+        btnAgregar.addEventListener('click', function() {
+            $('#confirmAddModal').modal('show');
+        });
+
+        document.getElementById('confirmAdd').addEventListener('click', function() {
+            document.getElementById('formAgregar').submit();
+        });
+    });
+</script>
 {% endblock %}

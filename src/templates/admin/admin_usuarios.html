@@ -5,59 +5,219 @@ Administrar Usuarios
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <h1 class="text-center">Administrar Usuarios</h1>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert alert-success" role="alert">
-                    {% for message in messages %}
-                        {{ message }}<br>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-        <table class="table">
+<div class="container mt-4">
+    <h1 class="text-center text-success">Administrar Usuarios</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-success" role="alert" id="flash-message">
+                {% for message in messages %}
+                    {{ message }}<br>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <div class="table-responsive">
+        <table class="table table-bordered">
             <thead style="background-color: #027333; color: white;">
                 <tr>
                     <th>Nombre</th>
-                    <th>Correo</th>
                     <th>Rol</th>
-                    <th>Programa academico</th>
-                    <th>Habilidades</th>
-                    <th>Estado Registro</th>
+                    <th>Programa Académico</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for usuario in usuarios %}
                     <tr>
-                        <td>{{ usuario.nombre }}</td>
-                        <td>{{ usuario.correo }}</td>
-                        <td>{{ usuario.role }}</td>
-                        <td>{{ usuario.programa }}</td>
-                        <td>
-                            <ul>
-                                {% for habilidad in usuario.habilidades %}
-                                    <li>{{ habilidad }}</li>
-                                {% endfor %}
-                            </ul>
+                        <td style="width: 40%;">
+                            <a href="#" class="nombre-usuario" style="color: black;" onclick="toggleInfo('{{ usuario._id }}'); return false;">
+                                {{ usuario.nombre }}
+                            </a>
                         </td>
-                        <td>
-                            {% if usuario.registroCompletado %}Completado{% else %}Pendiente{% endif %}
+                        <td style="width: 10%;">
+                            <span id="role-display-{{ usuario._id }}">{{ usuario.role }}</span>
+                            <div class="form-group">
+                                <select id="role-select-{{ usuario._id }}" style="display:none;">
+                                    <option value="admin" {% if usuario.role == 'admin' %}selected{% endif %}>Admin</option>
+                                    <option value="miembro" {% if usuario.role == 'miembro' %}selected{% endif %}>Miembro</option>
+                                </select>
+                            </div>
                         </td>
-                        <td>
-                            <a href="{{ url_for('editar_usuario', id=usuario._id) }}" class="btn" style="background-color: #84BF04; color: white;">Editar</a>
-                            <form action="{{ url_for('eliminar_usuario', id=usuario._id) }}" method="post" style="display:inline;">
-                                <button type="submit" class="btn" style="background-color: #A52A2A; color: white;" onclick="return confirm('¿Estás seguro de que quieres eliminar este usuario?')">Eliminar</button>
-                            </form>
+                        <td style="width: 40%;">{{ usuario.programa if usuario.programa else 'Pendiente' }}</td>
+                        <td class="action-buttons" style="width: 10%;">
+                            <button class="btn btn-success" id="edit-btn-{{ usuario._id }}" onclick="toggleEdit('{{ usuario._id }}');">Editar</button>
+                            <button class="btn btn-success" style="display:none;" id="apply-btn-{{ usuario._id }}" onclick="confirmApply('{{ usuario._id }}');">Aplicar</button>
+                            <button class="btn btn-danger" onclick="confirmDelete('{{ usuario._id }}');">Eliminar</button>
+                        </td>
+                    </tr>
+                    <tr id="info-{{ usuario._id }}" style="display: none;">
+                        <td colspan="4" style="padding: 15px; background-color: #f9f9f9;">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Campo</th>
+                                        <th>Información</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Correo:</strong></td>
+                                        <td>{{ usuario.correo if usuario.correo else 'Pendiente' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Teléfono:</strong></td>
+                                        <td>{{ usuario.telefono if usuario.telefono else 'Pendiente' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Habilidades:</strong></td>
+                                        <td>
+                                            {% if usuario.habilidades %}
+                                                <ul>
+                                                    {% for habilidad in usuario.habilidades %}
+                                                        <li>{{ habilidad }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                Pendiente
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Experiencia:</strong></td>
+                                        <td>{{ usuario.experiencia if usuario.experiencia else 'Pendiente' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Profesión:</strong></td>
+                                        <td>{{ usuario.profesion if usuario.profesion else 'Pendiente' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Estado Registro:</strong></td>
+                                        <td>{% if usuario.registroCompletado %}Completado{% else %}Pendiente{% endif %}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <a href="{{ url_for('home') }}" class="btn btn-secondary">Volver a Inicio</a>
     </div>
 </div>
-{% endblock %}
 
+<!-- Modal de confirmación para aplicar -->
+<div class="modal fade" id="confirmModalApply" tabindex="-1" role="dialog" aria-labelledby="modalLabelApply" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabelApply">Confirmar Aplicar Cambios</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas aplicar los cambios al usuario?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmApplyBtn">Aplicar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="confirmModalDelete" tabindex="-1" role="dialog" aria-labelledby="modalLabelDelete" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabelDelete">Confirmar Eliminación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar este usuario?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleInfo(id) {
+        var infoRow = document.getElementById('info-' + id);
+        infoRow.style.display = (infoRow.style.display === 'none') ? '' : 'none';
+    }
+
+    function toggleEdit(id) {
+        var display = document.getElementById('role-display-' + id);
+        var select = document.getElementById('role-select-' + id);
+        var editBtn = document.getElementById('edit-btn-' + id);
+        var applyBtn = document.getElementById('apply-btn-' + id);
+
+        display.style.display = 'none';
+        select.style.display = 'block';
+        editBtn.style.display = 'none';
+        applyBtn.style.display = 'inline';
+    }
+
+    function confirmApply(id) {
+        document.getElementById('confirmApplyBtn').onclick = function() {
+            updateUser(id);
+        };
+        $('#confirmModalApply').modal('show');
+    }
+
+    function confirmDelete(id) {
+        document.getElementById('confirmDeleteBtn').onclick = function() {
+            deleteUser(id);
+        };
+        $('#confirmModalDelete').modal('show');
+    }
+
+    function updateUser(id) {
+        var select = document.getElementById('role-select-' + id);
+        var role = select.value;
+
+        fetch(`/usuario/${id}/editar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ role: role })
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error al actualizar el usuario.');
+            }
+        });
+    }
+
+    function deleteUser(id) {
+        fetch(`/usuario/${id}/eliminar`, {
+            method: 'POST'
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error al eliminar el usuario.');
+            }
+        });
+    }
+</script>
+
+<script>
+    setTimeout(function() {
+        var flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';
+        }
+    }, 3000);
+</script>
+{% endblock %}
