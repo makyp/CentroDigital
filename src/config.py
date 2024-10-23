@@ -1,17 +1,29 @@
+import os
 from pymongo import MongoClient
 import certifi
+from dotenv import load_dotenv
 
-MONGO='mongodb+srv://makyp:Pacho040321@cluster0.yjkbst6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+# Cargar variables de entorno desde un archivo .env en local
+if os.path.exists('.env'):
+    load_dotenv()
 
+# Obtener la URI de MongoDB desde las variables de entorno
+MONGO_URI = os.getenv('MONGO_URI')
+
+# Archivo de certificados SSL
 certificado = certifi.where()
 
 def Conexion():
     try:
-        client = MongoClient(MONGO, tlsCAFile=certificado)
+        if not MONGO_URI:
+            raise ValueError("La variable de entorno MONGO_URI no está definida.")
+
+        client = MongoClient(MONGO_URI, tlsCAFile=certificado)
         print('Conexión Exitosa')
-        return client["bd_AdminProyectos"]
-    except ConnectionError:
-        print('Error de conexión con la base de datos')
+        return client["bd_AdminProyectos"]  # Nombre de la base de datos
+    except Exception as e:
+        print(f'Error de conexión con la base de datos: {e}')
         return None
 
-Conexion();#Inicializarla
+# Inicializar la conexión
+db = Conexion()
