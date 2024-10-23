@@ -1,6 +1,7 @@
 .venv/
 env/
 /src/__pycache__/
+src/.env
 src/__pycache__/config.cpython-312.pyc
 src/__pycache__/datos.cpython-312.pyc
 src/__pycache__/functions.cpython-312.pyc

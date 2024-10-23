@@ -16,22 +16,27 @@ from functions import *
 from datetime import datetime
 from operator import itemgetter
 from werkzeug.security import check_password_hash
+import os
+from dotenv import load_dotenv
+
+if os.path.exists('.env'):
+    load_dotenv()
 
 app = Flask(__name__)
 
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'centrodigitaldedesarrollotecno@gmail.com' 
-app.config['MAIL_PASSWORD'] = 'cvtilrczainmijku'    
-app.config['MAIL_DEFAULT_SENDER'] = 'centrodigitaldedesarrollotecno@gmail.com' 
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_SUPPRESS_SEND'] = False  # Para evitar que supriman el envío de correos en modo debug
-app.config['MAIL_ASCII_ATTACHMENTS'] = False
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')  # Valor por defecto 'smtp.gmail.com'
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))  # Convertir a entero
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'  # Convertir a booleano
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')  # Usuario de correo desde las variables de entorno
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')  # Contraseña del correo
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', app.config['MAIL_USERNAME'])  # Remitente
+app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'False').lower() == 'true'  # Convertir a booleano
+app.config['MAIL_SUPPRESS_SEND'] = os.getenv('MAIL_SUPPRESS_SEND', 'False').lower() == 'true'
+app.config['MAIL_ASCII_ATTACHMENTS'] = os.getenv('MAIL_ASCII_ATTACHMENTS', 'False').lower() == 'true'
 
 # Inicializamos Mail
 mail = Mail(app)
-app.secret_key = 'uhggjghlñhu'
+app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 
 # Conexión a la base de datos
 db = Conexion()
@@ -469,7 +474,7 @@ def asignar_miembros(id):
                         if miembro:
                             # Enviar notificación por correo
                             msg = Message(f'Removido del proyecto: {proyecto["nombre"]}', 
-                                          sender='CentroDigitalDeDesarrollo@gmail.com', 
+                                          sender=app.config['MAIL_DEFAULT_SENDER'], 
                                           recipients=[miembro['correo']])
                             msg.body = f"Has sido eliminado del proyecto {proyecto['nombre']}."
                             mail.send(msg)
@@ -486,7 +491,7 @@ def asignar_miembros(id):
                         proyecto['miembros'].append(miembro)
                         # Enviar notificación por correo
                         msg = Message(f'Asignado al proyecto: {proyecto["nombre"]}', 
-                                      sender='CentroDigitalDeDesarrollo@gmail.com', 
+                                      sender=app.config['MAIL_DEFAULT_SENDER'], 
                                       recipients=[miembro['correo']])
                         msg.body = f"Has sido agregado al proyecto {proyecto['nombre']}."
                         mail.send(msg)
@@ -505,7 +510,7 @@ def asignar_miembros(id):
 
                         # Enviar notificación por correo
                         msg = Message(f'Asignado como líder en el proyecto: {proyecto["nombre"]}', 
-                                      sender='CentroDigitalDeDesarrollo@gmail.com', 
+                                      sender=app.config['MAIL_DEFAULT_SENDER'], 
                                       recipients=[lider['correo']])
                         msg.body = f"Has sido asignado como líder en el proyecto {proyecto['nombre']}."
                         mail.send(msg)
@@ -1070,7 +1075,7 @@ def recuperacion():
                 {'$set': {'codigo_validacion': codigo_validacion}}
             )
             # Enviar el código de validación por correo
-            msg = Message('Recuperación de Contraseña', sender='CentroDigitalDeDesarrollo@gmail.com', recipients=[correo])
+            msg = Message('Recuperación de Contraseña', sender=app.config['MAIL_DEFAULT_SENDER'], recipients=[correo])
             msg.body = f"Tu código de validación es: {codigo_validacion}"
             mail.send(msg)
             
