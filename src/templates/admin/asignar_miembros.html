@@ -8,6 +8,16 @@ Asignar Miembros y Líderes a Proyecto
 <div class="container mt-4">
     <h2 class="text-center text-success mb-4">Administrar Miembros del Proyecto: {{ proyecto.nombre }}</h2>
 
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-success" role="alert" id="flash-message">
+                {% for message in messages %}
+                    {{ message }}<br>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
     <div class="row">
         <div class="col-md-6">
             <div class="card mb-4">
@@ -112,16 +122,22 @@ Asignar Miembros y Líderes a Proyecto
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const checkboxesMiembros = document.querySelectorAll('.agregar-miembro');
-        const btnEliminar = document.getElementById('btnEliminar');
         const btnAgregar = document.getElementById('btnAgregar');
 
         checkboxesMiembros.forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 const liderCheckbox = this.closest('.form-check').querySelector('.asignar-lider');
-                liderCheckbox.disabled = !this.checked;
+                
+                // Deshabilitar el checkbox de líder si ya hay un líder
+                if (document.querySelectorAll('.asignar-lider:enabled').length === 0) {
+                    liderCheckbox.disabled = true;
+                } else {
+                    liderCheckbox.disabled = !this.checked;
+                }
+                // Si el miembro se deselecciona, desmarcar también el checkbox de líder
                 if (!this.checked) {
                     liderCheckbox.checked = false;
-                }
+                }               
                 toggleButtons();
             });
         });

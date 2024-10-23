@@ -3,7 +3,7 @@ import secrets
 import random
 from itsdangerous import URLSafeTimedSerializer
 import string
-from flask import request, session, flash, redirect, url_for, render_template
+from flask import jsonify, request, session, flash, redirect, url_for, render_template
 from bson.objectid import ObjectId
 from flask_mail import Mail, Message 
 from bson import ObjectId, errors as bson_errors
@@ -65,23 +65,26 @@ def login():
         
         # Verificar si el usuario existe
         if usuario:
-            # Verificar si el registro está completo
-            if not usuario.get('registroCompletado', False):
-                flash('Debes completar tu registro antes de iniciar sesión.', 'warning')
-                return redirect(url_for('login'))
-
             # Verificar si la contraseña es correcta
             if usuario['password'] and password.strip() and check_password_hash(usuario['password'], password):
+                # Guardar datos de usuario en sesión
                 session['correo'] = usuario['correo']
                 session['role'] = usuario['role']
                 session['nombre'] = usuario['nombre']
                 session['lider'] = usuario.get('lider', False)
                 session['_id'] = str(usuario['_id'])
                 
-                # Si el usuario tiene el rol de empresa, almacenar el _id en la sesión
+                # Si el usuario tiene el rol de 'empresa'
                 if usuario['role'] == 'empresa':
                     session['empresa_id'] = str(usuario['_id'])  # Convertir ObjectId a string
-                
+                    return redirect(url_for('perfil'))  # Redirigir al perfil
+
+                # Verificar si el registro está completo para roles distintos de 'empresa'
+                if not usuario.get('registroCompletado', False):
+                    flash('Debes completar tu registro antes de iniciar sesión.', 'warning')
+                    return redirect(url_for('login')) # Generar token y redirigir
+
+                # Si el registro está completo, redirigir al perfil
                 return redirect(url_for('perfil'))
             else:
                 # Agregar mensaje flash de error si la contraseña es incorrecta
@@ -118,7 +121,7 @@ def registro():
                     }
                     usuarios_collection.insert_one(nuevo_usuario)
 
-                    msg = enviar_correo_registro(correo, VerificationCode, token)
+                    msg = enviar_correo_registro(nombre, correo, VerificationCode, token)
                     mail.send(msg)
                     flash('Registro exitoso. Se ha enviado un correo con tus credenciales.')
                 except Exception as e:
@@ -158,13 +161,13 @@ def completar_registro(token):
             if not check_password_hash(verificationCode, temp_Password):
                 flash('La contraseña temporal no coincide.')
                 return redirect(url_for('completar_registro', token=token))
-            
 
             if habilidades:
                 habilidades_lista = [h.strip() for h in re.split(r'\s*,\s*', habilidades)]
             else:
                 habilidades_lista = []
 
+            # Actualizar la información del usuario en la base de datos
             usuarios_collection.update_one(
                 {'correo': correo},
                 {
@@ -181,6 +184,9 @@ def completar_registro(token):
                 }
             )
 
+            # Enviar notificaciones a los administradores y al propietario
+            notificar_administradores_y_propietario_confirmacionregistro(nombre_completo, correo, mail, usuarios_collection)
+
             flash('Registro completado exitosamente.')
             return redirect(url_for('login'))
             
@@ -189,7 +195,7 @@ def completar_registro(token):
     except Exception as e:
         flash('El enlace de registro ha expirado o es inválido. Comuníquese con el administrador.')
         return redirect(url_for('login'))
-    
+
 @app.route('/logout')
 def logout():
     session.pop('correo', None)
@@ -222,32 +228,62 @@ def admin_empresas():
 def editar_usuario(id):
     if 'correo' in session and session.get('role') == 'admin':
         data = request.get_json()  # Obtener los datos en formato JSON
-        role = data.get('role')  # Extraer el nuevo rol
+        nuevo_role = data.get('role')  # Extraer el nuevo rol
 
-        if role:
-            # Actualizar la base de datos
+        if nuevo_role:
+            # Buscar al usuario a actualizar
+            usuario = usuarios_collection.find_one({'_id': ObjectId(id)})
+            if not usuario:
+                return 'Usuario no encontrado', 404
+
+            rol_anterior = usuario.get('role')  # Guardar el rol actual antes de la actualización
+            nombre_completo_usuario = usuario.get('nombre')
+            correo_usuario = usuario.get('correo')
+            
+            # Actualizar la base de datos con el nuevo rol
             usuarios_collection.update_one(
                 {'_id': ObjectId(id)},
-                {'$set': {'role': role}}
+                {'$set': {'role': nuevo_role}}
             )
+
+            # Obtener el nombre del administrador que realizó el cambio
+            nombre_admin = session.get('nombre')
+
+            # Enviar notificación de cambio de rol
+            notificar_cambio_rol(nombre_completo_usuario, correo_usuario, nombre_admin, rol_anterior, nuevo_role, mail, usuarios_collection)
+
             flash('Usuario actualizado exitosamente.')
-            return '', 200  # Responder con un código 200 OK
+            return jsonify({"mensaje": "Usuario actualizado exitosamente."}), 200
         
         return 'Faltan datos', 400  # Responder con un error si no hay rol
     else:
         return 'No tienes permisos', 403  # Responder con un error de permiso
 
-
 @app.route('/usuario/<id>/eliminar', methods=['POST'])
 def eliminar_usuario(id):
     if 'correo' in session and session.get('role') == 'admin':
+        # Buscar al usuario a eliminar
         usuario = usuarios_collection.find_one({'_id': ObjectId(id)})
         if usuario:
+            nombre_completo = usuario.get('nombre')
+            correo_usuario = usuario.get('correo')
+
+            # Eliminar al usuario de la colección 'usuarios'
             usuarios_collection.delete_one({'_id': ObjectId(id)})
+
+            # Remover al usuario de la lista de miembros en los proyectos
             proyectos_collection.update_many(
                 {'miembros._id': ObjectId(id)},
                 {'$pull': {'miembros': {'_id': ObjectId(id)}}}
             )
+
+            # Remover al usuario de la lista de líderes si aplica
+            proyectos_collection.update_many(
+                {'lideres._id': ObjectId(id)},
+                {'$pull': {'lideres': {'_id': ObjectId(id)}}}
+            )
+
+            # Actualizar las tareas asignadas al usuario en los proyectos (desasignarlas)
             proyectos = proyectos_collection.find({'tareas.miembroasignado': ObjectId(id)})
             for proyecto in proyectos:
                 for tarea in proyecto['tareas']:
@@ -258,10 +294,19 @@ def eliminar_usuario(id):
                     {'_id': proyecto['_id']},
                     {'$set': {'tareas': proyecto['tareas']}}
                 )
+
+            # Obtener el nombre del administrador que está realizando la acción
+            nombre_admin = session.get('nombre')
+
+            # Enviar las notificaciones correspondientes
+            notificar_eliminacion_usuario(nombre_completo, correo_usuario, nombre_admin, mail, usuarios_collection)
+
             flash('Usuario eliminado exitosamente.')
         else:
             flash('No se encontró el usuario.')
+
         return redirect(url_for('admin_usuarios'))
+    
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('login'))
 
@@ -369,7 +414,7 @@ def ver_indicadores(proyecto_id):
 def editar_proyecto(id):
     if 'correo' in session and (session.get('role') == 'admin' or session.get('lider') == 'Si'):
         proyecto = proyectos_collection.find_one({'_id': ObjectId(id)})
-        
+
         if not proyecto:
             flash('No se encontró el proyecto.')
             return redirect(url_for('admin_proyectos'))
@@ -413,102 +458,94 @@ def editar_proyecto(id):
                 {'$set': {'objetivosEspecificos': nuevos_objetivos}}
             )
 
-            # Obtener los correos de los administradores
-            admins = usuarios_collection.find({'role': 'admin'}, {'correo': 1})
-            admin_emails = [admin['correo'] for admin in admins]
-            objetivos_antiguos = [obj['descripcion'] for obj in proyecto_anterior.get('objetivosEspecificos', [])]
-            objetivos_nuevos = [obj['descripcion'] for obj in nuevos_objetivos]
+            # Obtener el nombre del administrador que realizó la acción
+            nombre_admin = session.get('nombre')
 
-            # Preparar el correo
-            msg = Message('Cambio en Proyecto', recipients=admin_emails)  # Usar la lista de correos
-            msg.body = f"""
-            Se han realizado cambios en el proyecto '{proyecto['nombre']}'.
-            
-            Información anterior:
-            Nombre: {proyecto_anterior['nombre']}
-            Descripción: {proyecto_anterior['descripcion']}
-            Fecha Inicio: {proyecto_anterior['fechainicio']}
-            Fecha Final: {proyecto_anterior['fechafinal']}
-            Estado: {proyecto_anterior['estado']}
-            Objetivos específicos: {objetivos_antiguos}
-            
-            Nueva información:
-            Nombre: {nombre}
-            Descripción: {descripcion}
-            Fecha Inicio: {fechainicio}
-            Fecha Final: {fechafinal}
-            Estado: {estado}
-            Objetivos específicos: {objetivos_nuevos}
-            """
-            mail.send(msg)
+            # Enviar notificación de cambio de proyecto
+            notificar_cambio_proyecto(proyecto_anterior, proyecto, nombre_admin, mail, usuarios_collection)
 
-            flash('Proyecto actualizado exitosamente y notificación enviada a los administradores.')
+            flash('Proyecto actualizado exitosamente y notificación enviada.')
             return redirect(url_for('admin_proyectos'))
 
         # Aquí, carga los objetivos específicos en el contexto de la plantilla
         objetivos_especificos = proyecto.get('objetivosEspecificos', [])
-        
+
         return render_template('admin/editar_proyecto.html', proyecto=proyecto, objetivos_especificos=objetivos_especificos)
 
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('login'))
 
-@app.route('/proyecto/<id>/eliminar')
+@app.route('/proyecto/<id>/eliminar', methods=['POST'])
 def eliminar_proyecto(id):
     if 'correo' in session and session.get('role') == 'admin':
-        proyectos_collection.delete_one({'_id': ObjectId(id)})
-        flash('Proyecto eliminado exitosamente.')
-        return redirect(url_for('admin_proyectos'))
-    flash('No tienes permisos para realizar esta acción.')
+        proyecto = proyectos_collection.find_one({'_id': ObjectId(id)})
+        if proyecto:
+            # Eliminar el proyecto
+            proyectos_collection.delete_one({'_id': ObjectId(id)})
+
+            # Notificar por correo a los administradores sobre la eliminación
+            nombre_admin = session.get('nombre')  # Obtener el nombre del administrador
+            notificar_eliminacion_proyecto(proyecto, nombre_admin, usuarios_collection, mail)
+
+            flash('Proyecto eliminado exitosamente.')
+            return redirect(url_for('admin_proyectos'))
+        
+        flash('No se encontró el proyecto.')
+    else:
+        flash('No tienes permisos para realizar esta acción.')
+    
     return redirect(url_for('login'))
 
 @app.route('/proyecto/<id>/asignar_miembros', methods=['GET', 'POST'])
 def asignar_miembros(id):
     if session.get('role') == 'admin' or session.get('lider') == 'Si':
         proyecto = proyectos_collection.find_one({'_id': ObjectId(id)})
+        # Obtener todos los correos de los administradores
+        correos_admin = [admin['correo'] for admin in usuarios_collection.find({'role': 'admin'})]
+        
         if proyecto:
-            # Inicializar la lista 'miembros' si no existe
+            # Inicializar la lista 'miembros' y 'lideres' si no existen
             if 'miembros' not in proyecto:
                 proyecto['miembros'] = []
-            
-            # Inicializar la lista 'lideres' si no existe
             if 'lideres' not in proyecto:
                 proyecto['lideres'] = []
 
             if request.method == 'POST':
+                # Inicializar listas para miembros agregados y eliminados
+                miembros_agregados = []
+                miembros_eliminados = []
+
                 # Procesar la eliminación de miembros seleccionados
                 eliminar_miembros_seleccionados = request.form.getlist('eliminar_miembro')
                 if eliminar_miembros_seleccionados:
                     for miembro_id in eliminar_miembros_seleccionados:
                         miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)})
                         if miembro:
-                            # Enviar notificación por correo
-                            msg = Message(f'Removido del proyecto: {proyecto["nombre"]}', 
-                                          sender=app.config['MAIL_DEFAULT_SENDER'], 
-                                          recipients=[miembro['correo']])
-                            msg.body = f"Has sido eliminado del proyecto {proyecto['nombre']}."
-                            mail.send(msg)
-                    
-                    # Actualizar la lista de miembros del proyecto
-                    proyecto['miembros'] = [miembro for miembro in proyecto['miembros'] if str(miembro['_id']) not in eliminar_miembros_seleccionados]
-                    proyecto['lideres'] = [lider for lider in proyecto.get('lideres', []) if str(lider['_id']) not in eliminar_miembros_seleccionados]  # Eliminar también de líderes
-                
+                            # Comprobar si el miembro es líder del proyecto
+                            if miembro_id in [str(lider['_id']) for lider in proyecto['lideres']]:
+                                flash('No puedes eliminarte a ti mismo como líder.')
+                                return redirect(url_for('asignar_miembros', id=id))
+                            
+                            # Agregar a la lista de miembros eliminados
+                            miembros_eliminados.append(miembro)
+
+                            # Actualizar la lista de miembros del proyecto
+                            proyecto['miembros'] = [miembro for miembro in proyecto['miembros'] if str(miembro['_id']) not in eliminar_miembros_seleccionados]
+                            proyecto['lideres'] = [lider for lider in proyecto.get('lideres', []) if str(lider['_id']) not in eliminar_miembros_seleccionados]
+
                 # Procesar la adición de miembros seleccionados
                 agregar_miembros_seleccionados = request.form.getlist('agregar_miembro')
                 for miembro_id in agregar_miembros_seleccionados:
                     miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)})
                     if miembro:
-                        proyecto['miembros'].append(miembro)
-                        # Enviar notificación por correo
-                        msg = Message(f'Asignado al proyecto: {proyecto["nombre"]}', 
-                                      sender=app.config['MAIL_DEFAULT_SENDER'], 
-                                      recipients=[miembro['correo']])
-                        msg.body = f"Has sido agregado al proyecto {proyecto['nombre']}."
-                        mail.send(msg)
-                
+                        # Agregar miembro solo si no está ya asignado
+                        if miembro not in proyecto['miembros']:
+                            proyecto['miembros'].append(miembro)
+                            miembros_agregados.append(miembro)  # Agregar a la lista de agregados
+
                 # Procesar la asignación de líderes seleccionados
                 lideres_seleccionados = request.form.getlist('asignar_lider')
-                
+
                 # Verificar si ya hay un líder asignado
                 if proyecto['lideres'] and lideres_seleccionados:
                     flash('Ya existe un líder asignado a este proyecto. No se puede asignar otro líder.')
@@ -523,13 +560,6 @@ def asignar_miembros(id):
                             # Actualizar campo 'lider' del usuario a 'Si'
                             usuarios_collection.update_one({'_id': ObjectId(lider_id)}, {'$set': {'lider': 'Si'}})
 
-                        # Enviar notificación por correo
-                        msg = Message(f'Asignado como líder en el proyecto: {proyecto["nombre"]}', 
-                                      sender=app.config['MAIL_DEFAULT_SENDER'], 
-                                      recipients=[lider['correo']])
-                        msg.body = f"Has sido asignado como líder en el proyecto {proyecto['nombre']}."
-                        mail.send(msg)
-
                 # Verificar si el miembro removido es líder en otro proyecto
                 for miembro_id in eliminar_miembros_seleccionados:
                     miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)})
@@ -541,12 +571,25 @@ def asignar_miembros(id):
 
                 # Actualizar el proyecto en la base de datos
                 proyectos_collection.update_one({'_id': ObjectId(id)}, {'$set': proyecto})
-                
+
+                # Enviar notificaciones por correo
+                if miembros_agregados:
+                    notificar_asignacion_miembros(proyecto, miembros_agregados, correos_admin, proyecto['lideres'], mail)
+                    notificar_cambios_miembros(proyecto, miembros_agregados, miembros_eliminados, mail)
+                if  miembros_eliminados:
+                    notificar_cambios_miembros(proyecto, miembros_agregados, miembros_eliminados, mail)
+                    notificar_eliminacion_miembros_admin(proyecto, miembros_eliminados, correos_admin, mail)
+                    notificar_eliminacion_miembros_lider(proyecto, miembros_eliminados, proyecto['lideres'], mail)
+
                 flash('Acciones de asignación de miembros y líderes realizadas exitosamente.')
                 return redirect(url_for('admin_proyectos'))
             
+            # Filtrar los usuarios disponibles que no están ya asignados
             usuarios = usuarios_collection.find({"registroCompletado": True})
-            return render_template('admin/asignar_miembros.html', proyecto=proyecto, usuarios=usuarios)
+            miembros_asignados = [str(miembro['_id']) for miembro in proyecto['miembros']]
+            usuarios_disponibles = [usuario for usuario in usuarios if str(usuario['_id']) not in miembros_asignados]
+
+            return render_template('admin/asignar_miembros.html', proyecto=proyecto, usuarios=usuarios_disponibles)
         else:
             flash('No se encontró el proyecto.')
             return redirect(url_for('admin_proyectos'))
@@ -555,28 +598,32 @@ def asignar_miembros(id):
     return redirect(url_for('login'))
 
 
-
 @app.route('/seleccionar_proyecto', methods=['GET', 'POST'])
 def seleccionar_proyecto():
     if 'correo' in session:
         # Verificar si el usuario es admin o líder
-        if session.get('role') == 'admin' or session.get('lider') == 'Si':
-            if request.method == 'POST':
-                proyecto_id = request.form.get('proyecto_id')
-                if not proyecto_id:
-                    flash('Debes seleccionar un proyecto.')
-                    return redirect(url_for('seleccionar_proyecto'))
-                print(f'Proyecto seleccionado: {proyecto_id}')
-                return redirect(url_for('agregar_tarea', proyecto_id=proyecto_id))
-            
-            # Si es un GET, obtenemos los proyectos
+        if session.get('role') == 'admin':
+            # Los administradores pueden ver todos los proyectos
             proyectos = proyectos_collection.find()
-            return render_template('admin/seleccionar_proyecto.html', proyectos=proyectos)
+        elif session.get('lider') == 'Si':
+            # Los líderes solo ven los proyectos donde son responsables
+            lider_id = str(session['_id'])
+            proyectos = proyectos_collection.find({'lideres._id': ObjectId(lider_id)})
+        else:
+            flash('No tienes permisos para realizar esta acción.')
+            return redirect(url_for('login'))
 
-        # Si el usuario no es admin ni líder
-        flash('No tienes permisos para realizar esta acción.')
-        return redirect(url_for('login'))
-    
+        if request.method == 'POST':
+            proyecto_id = request.form.get('proyecto_id')
+            if not proyecto_id:
+                flash('Debes seleccionar un proyecto.')
+                return redirect(url_for('seleccionar_proyecto'))
+            print(f'Proyecto seleccionado: {proyecto_id}')
+            return redirect(url_for('agregar_tarea', proyecto_id=proyecto_id))
+
+        # Renderizar la plantilla con los proyectos correspondientes
+        return render_template('admin/seleccionar_proyecto.html', proyectos=proyectos)
+
     # Si no hay sesión
     flash('Debes iniciar sesión.')
     return redirect(url_for('login'))
@@ -626,10 +673,20 @@ def agregar_tarea(proyecto_id):
                     'objetivo_especifico_id': objetivo_especifico_id
                 }
 
+                # Actualizar el proyecto con la nueva tarea
                 proyectos_collection.update_one(
                     {'_id': ObjectId(proyecto_id)},
                     {'$push': {'tareas': nueva_tarea}}
                 )
+
+                # Enviar notificaciones por correo
+                miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_asignado)})
+                if miembro:
+                    correos_admin = [admin['correo'] for admin in usuarios_collection.find({'role': 'admin'})]
+                    lider = usuarios_collection.find_one({'_id': ObjectId(session['_id'])})  # Obtener líder de la sesión
+
+                    # Enviar correos
+                    notificar_nueva_tarea(proyecto, nueva_tarea, miembro, correos_admin, lider, mail)
 
                 return redirect(url_for('ver_todas_las_tareas'))
 
@@ -736,7 +793,7 @@ def ver_tareas_general():
                 tarea['proyecto_objetivoGeneral'] = proyecto.get('objetivoGeneral', 'Sin objetivo general')
 
                 # Añadir el nombre del miembro asignado
-                miembro_id = tarea.get('miembroasignado')  # Corrige la clave de acceso a 'miembroasignado'
+                miembro_id = tarea.get('miembroasignado') 
                 miembro_nombre = "Sin asignar"
                 if miembro_id:
                     try:
@@ -802,7 +859,6 @@ def editar_tarea(id):
         
         # Buscar el proyecto que contiene la tarea
         proyecto = None
-
         # Verificar si es admin
         if session.get('role') == 'admin':
             # Si es admin, buscar el proyecto que contiene la tarea sin restricciones
