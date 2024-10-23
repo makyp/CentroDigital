@@ -46,12 +46,18 @@ Asignar Miembros y Líderes a Proyecto
                                         </label>
                                     </div>
                                     <div>
-                                        <input type="checkbox" class="form-check-input asignar-lider" name="asignar_lider" value="{{ usuario._id }}" id="lider{{ usuario._id }}" disabled>
+                                        <input type="checkbox" class="form-check-input asignar-lider" name="asignar_lider" value="{{ usuario._id }}" id="lider{{ usuario._id }}" 
+                                            {% if proyecto.lideres|length > 0 %} disabled {% endif %}>
                                         <label class="form-check-label" for="lider{{ usuario._id }}">Líder</label>
                                     </div>
                                 </div>
                             {% endif %}
                         {% endfor %}
+                        {% if proyecto.lideres|length > 0 %}
+                            <div class="alert alert-warning" role="alert">
+                                Ya hay un líder asignado a este proyecto. No se puede asignar otro líder.
+                            </div>
+                        {% endif %}
                         <button type="button" id="btnAgregar" class="btn btn-success mt-3" disabled>Agregar Miembros y Líderes</button>
                     </form>
                 </div>

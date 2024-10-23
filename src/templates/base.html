@@ -44,18 +44,9 @@
             {% endif %}
             
         {% elif session.get('role') == 'empresa' %}
-<<<<<<< HEAD
-            <a href="{{ url_for('mis_tareas') }}">Radicar solicitud</a>
-            <a href="{{ url_for('ver_tareas_general') }}">Ver solicitudes</a>
-=======
             <a href="{{ url_for('solicitar_proyecto') }}">Radicar Solicitud</a>
             <a href="{{ url_for('ver_solicitudes') }}">Ver solicitudes</a>
-<<<<<<< HEAD
->>>>>>> 8f5f17d291e0aceb389111432fe4de0b4546ab5e
-            <a href="{{ url_for('ver_tareas_general') }}">Ver indicadores</a>
-=======
             <a href="{{ url_for('admin_proyectos') }}">Ver Indicadores</a>
->>>>>>> 7c0dbf2f4d53c4b112b5ae12c0be4a3fb70421a1
         {% endif %}
     </div>    
 

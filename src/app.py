@@ -493,22 +493,27 @@ def asignar_miembros(id):
                 
                 # Procesar la asignación de líderes seleccionados
                 lideres_seleccionados = request.form.getlist('asignar_lider')
-                for lider_id in lideres_seleccionados:
-                    lider = usuarios_collection.find_one({'_id': ObjectId(lider_id)})
-                    if lider and lider not in proyecto.get('lideres', []):
-                        if 'lideres' not in proyecto:
-                            proyecto['lideres'] = []
-                        proyecto['lideres'].append(lider)
+                
+                # Verificar si ya hay un líder asignado
+                if proyecto['lideres'] and lideres_seleccionados:
+                    flash('Ya existe un líder asignado a este proyecto. No se puede asignar otro líder.')
+                else:
+                    for lider_id in lideres_seleccionados:
+                        lider = usuarios_collection.find_one({'_id': ObjectId(lider_id)})
+                        if lider and lider not in proyecto.get('lideres', []):
+                            if 'lideres' not in proyecto:
+                                proyecto['lideres'] = []
+                            proyecto['lideres'].append(lider)
 
-                        # Actualizar campo 'lider' del usuario a 'Si'
-                        usuarios_collection.update_one({'_id': ObjectId(lider_id)}, {'$set': {'lider': 'Si'}})
+                            # Actualizar campo 'lider' del usuario a 'Si'
+                            usuarios_collection.update_one({'_id': ObjectId(lider_id)}, {'$set': {'lider': 'Si'}})
 
-                        # Enviar notificación por correo
-                        msg = Message(f'Asignado como líder en el proyecto: {proyecto["nombre"]}', 
-                                      sender='CentroDigitalDeDesarrollo@gmail.com', 
-                                      recipients=[lider['correo']])
-                        msg.body = f"Has sido asignado como líder en el proyecto {proyecto['nombre']}."
-                        mail.send(msg)
+                            # Enviar notificación por correo
+                            msg = Message(f'Asignado como líder en el proyecto: {proyecto["nombre"]}', 
+                                          sender='CentroDigitalDeDesarrollo@gmail.com', 
+                                          recipients=[lider['correo']])
+                            msg.body = f"Has sido asignado como líder en el proyecto {proyecto['nombre']}."
+                            mail.send(msg)
 
                 # Verificar si el miembro removido es líder en otro proyecto
                 for miembro_id in eliminar_miembros_seleccionados:
@@ -533,6 +538,8 @@ def asignar_miembros(id):
     
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('login'))
+
+
 
 @app.route('/seleccionar_proyecto', methods=['GET', 'POST'])
 def seleccionar_proyecto():

@@ -11,12 +11,14 @@
             Aún no cuenta con tareas creadas.
         </div>
     {% else %}
-        <div class="d-flex flex-column align-items-center">
-            <div class="bg-warning p-4 rounded mb-4" style="width: 100%; max-width: 600px; height: 400px;">
+        <div class="d-flex">
+            <!-- Gráfica a la izquierda -->
+            <div class="bg-warning p-4 rounded me-4" style="width: 100%; max-width: 400px; height: 400px;">
                 <canvas id="myChart" style="height: 100%; width: 100%;"></canvas>
             </div>
 
-            <div class="bg-success text-white p-3 rounded w-100" style="max-width: 600px;">
+            <!-- Datos del proyecto a la derecha -->
+            <div class="bg-success text-white p-3 rounded w-100" style="max-width: 400px;">
                 <h4 class="text-center">Resumen de Tareas</h4>
                 <p>Total Tareas: {{ total_tareas }}</p>
                 <p>Tareas Completadas: {{ completadas }}</p>
