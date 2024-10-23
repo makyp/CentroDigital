@@ -102,45 +102,47 @@ Administrar Usuarios
             </tbody>
         </table>
     </div>
-</div>
-
-<!-- Modal de confirmación para aplicar -->
-<div class="modal fade" id="confirmModalApply" tabindex="-1" role="dialog" aria-labelledby="modalLabelApply" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalLabelApply">Confirmar Aplicar Cambios</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                ¿Estás seguro de que deseas aplicar los cambios al usuario?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="confirmApplyBtn">Aplicar</button>
-            </div>
-        </div>
+    
+    <!-- Botón para abrir el modal del formulario de registro -->
+    <div class="text-center mt-4">
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#registroModal">
+            Registrar Nuevo Usuario
+        </button>
     </div>
 </div>
 
-<!-- Modal de confirmación para eliminar -->
-<div class="modal fade" id="confirmModalDelete" tabindex="-1" role="dialog" aria-labelledby="modalLabelDelete" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+<!-- Modal que contiene el formulario de registro -->
+<div class="modal fade" id="registroModal" tabindex="-1" role="dialog" aria-labelledby="registroModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalLabelDelete">Confirmar Eliminación</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                <h5 class="modal-title" id="registroModalLabel">Registrar Usuario</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                ¿Estás seguro de que deseas eliminar este usuario?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+                <!-- Aquí va el formulario del Código 2 -->
+                <form method="POST" action="{{ url_for('registro') }}">
+                    <div class="form-group">
+                        <label for="nombre">Nombre Completo:</label>
+                        <input type="text" name="nombre" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="correo">Correo:</label>
+                        <input type="email" name="correo" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Rol:</label>
+                        <select name="role" class="form-control" required>
+                            <option value="admin">Administrador</option>
+                            <option value="miembro">Miembro</option>
+                        </select>
+                    </div>
+                    <div class="text-center"> <!-- Centro el botón -->
+                        <button type="submit" class="btn btn-success">Registrar</button> <!-- Botón verde -->
+                    </div>
+                </form>
             </div>
         </div>
     </div>

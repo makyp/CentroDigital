@@ -11,22 +11,37 @@
             Aún no cuenta con tareas creadas.
         </div>
     {% else %}
-        <div class="d-flex">
+        <div class="row">
             <!-- Gráfica a la izquierda -->
-            <div class="bg-warning p-4 rounded me-4" style="width: 100%; max-width: 400px; height: 400px;">
-                <canvas id="myChart" style="height: 100%; width: 100%;"></canvas>
+            <div class="col-md-6 mb-4">
+                <div class="bg-warning p-4 rounded" style="width: 100%; height: 400px;">
+                    <canvas id="myChart" style="height: 100%; width: 100%;"></canvas>
+                </div>
             </div>
 
-            <!-- Datos del proyecto a la derecha -->
-            <div class="bg-success text-white p-3 rounded w-100" style="max-width: 400px;">
-                <h4 class="text-center">Resumen de Tareas</h4>
-                <p>Total Tareas: {{ total_tareas }}</p>
-                <p>Tareas Completadas: {{ completadas }}</p>
-                <p>Tareas en Progreso: {{ en_progreso }}</p>
-                <p>Tareas por Iniciar: {{ por_iniciar }}</p>
+            <!-- Datos del proyecto a la derecha (mismo fondo que la gráfica) -->
+            <div class="col-md-6 mb-4">
+                <div class="bg-warning p-3 rounded">
+                    <h4 class="text-center">Datos del Proyecto</h4>
+                    <p><strong>Nombre del Proyecto:</strong> {{ proyecto.nombre }}</p>
+                    <p><strong>Empresa:</strong> {{ proyecto.nombre_empresa }}</p>
+                    <p><strong>Fecha de Inicio:</strong> {{ proyecto.fechainicio }}</p>
+                    <p><strong>Fecha de Finalización:</strong> {{ proyecto.fechafinal }}</p>
+                    <p><strong>Descripción:</strong> {{ proyecto.descripcion }}</p>
+                </div>
             </div>
         </div>
 
+        <!-- Resumen de tareas debajo (fondo verde) -->
+        <div class="bg-success text-white p-4 rounded mt-4">
+            <h4 class="text-center">Resumen de Tareas</h4>
+            <p><strong>Total Tareas:</strong> {{ total_tareas }}</p>
+            <p><strong>Tareas Completadas:</strong> {{ completadas }}</p>
+            <p><strong>Tareas en Progreso:</strong> {{ en_progreso }}</p>
+            <p><strong>Tareas por Iniciar:</strong> {{ por_iniciar }}</p>
+        </div>
+
+        <!-- Script para el gráfico -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             // Datos para el gráfico

@@ -26,6 +26,7 @@ Administrar Empresas
                             <th>Nombre de la empresa</th>
                             <th>Correo</th>
                             <th>Encargado</th>
+                            <th style="width: 10%;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -36,13 +37,17 @@ Administrar Empresas
                                         {{ usuario.nombre }}
                                     </a>
                                 </td>
-                                <td>
-                                    {{ usuario.correo }}
-                                </td>
+                                <td>{{ usuario.correo }}</td>
                                 <td>{{ usuario.encargado }}</td>
+                                <td>
+                                    <!-- Botón para eliminar -->
+                                    <form action="{{ url_for('eliminar_empresa', id=usuario._id) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-success" onclick="return confirm('¿Estás seguro de eliminar esta empresa?');">Eliminar</button>
+                                    </form>
+                                </td>
                             </tr>
                             <tr id="info-{{ usuario._id }}" style="display: none;">
-                                <td colspan="3" style="padding: 15px; background-color: #f9f9f9;">
+                                <td colspan="4" style="padding: 15px; background-color: #f9f9f9;">
                                     <table class="table table-bordered">
                                         <thead>
                                             <tr>
@@ -52,12 +57,20 @@ Administrar Empresas
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td><strong>Nit:</strong></td>
-                                                <td>{{ usuario.nit }}{{ usuario.NIT }}</td>
+                                                <td><strong>NIT:</strong></td>
+                                                <td>{{ usuario.nit }}</td>
                                             </tr>
                                             <tr>
-                                                <td><strong>Telefono:</strong></td>
+                                                <td><strong>Teléfono:</strong></td>
                                                 <td>{{ usuario.telefono }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Dirección:</strong></td>
+                                                <td>{{ usuario.direccion }}</td>  
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Ciudad:</strong></td>
+                                                <td>{{ usuario.ciudad }}</td>     
                                             </tr>
                                         </tbody>
                                     </table>
@@ -66,7 +79,7 @@ Administrar Empresas
                         {% endfor %}
                     </tbody>
                 </table>
-            </div>
+            </div>            
         </div>
     </div>
 </div>

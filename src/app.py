@@ -224,6 +224,22 @@ def admin_empresas():
         flash('No tienes permisos para acceder a esta página.')
         return redirect(url_for('login'))
 
+# Ruta para eliminar empresa
+@app.route('/eliminar_empresa/<id>', methods=['POST'])
+def eliminar_empresa(id):
+    if 'correo' in session and session.get('role') == 'admin':
+        try:
+            # Buscar y eliminar empresa por su ID
+            usuarios_collection.delete_one({"_id": ObjectId(id)})
+            flash('Empresa eliminada exitosamente.', 'success')
+        except Exception as e:
+            flash(f'Error al eliminar la empresa: {str(e)}', 'danger')
+        return redirect(url_for('admin_empresas'))
+    else:
+        flash('No tienes permisos para realizar esta acción.')
+        return redirect(url_for('login'))
+
+
 @app.route('/usuario/<id>/editar', methods=['POST'])
 def editar_usuario(id):
     if 'correo' in session and session.get('role') == 'admin':
@@ -1167,6 +1183,8 @@ def registro_empresa():
         nit = request.form['NIT']
         encargado = request.form['encargado']
         telefono = request.form['telefono']
+        direccion = request.form['direccion']  # Nuevo campo
+        ciudad = request.form['ciudad']        # Nuevo campo
         password = request.form['password']
         ConfirmPassword = request.form['Confirm_password']
 
@@ -1174,10 +1192,10 @@ def registro_empresa():
             flash('El correo ya está registrado.')
         else:
             try:
-                if nombre_empresa and correo_empresa and nit and encargado and telefono and password and ConfirmPassword:
+                if nombre_empresa and correo_empresa and nit and encargado and telefono and direccion and ciudad and password and ConfirmPassword:
                     if ConfirmPassword == password:
                         passwordHashed = generate_password_hash(password)
-                        nuevo_usuario = Empresa(nombre_empresa, correo_empresa, nit, encargado, telefono, passwordHashed)
+                        nuevo_usuario = Empresa(nombre_empresa, correo_empresa, nit, encargado, telefono, direccion, ciudad, passwordHashed)
                         usuarios_collection.insert_one(nuevo_usuario.formato_doc())
                         flash('Empresa registrada exitosamente.')
                         return redirect(url_for('login'))
@@ -1190,6 +1208,7 @@ def registro_empresa():
                 return redirect(url_for('login'))
 
     return render_template('empresa.html')
+
 
 
 @app.route('/cambiar_estado_tarea/<id>', methods=['POST'])
