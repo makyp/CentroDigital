@@ -70,20 +70,32 @@ Ver Todas las Tareas
                         <!-- Fila adicional con información extra (oculta por defecto) -->
                         <tr id="info-{{ tarea._id }}" style="display: none;">
                             <td colspan="5" style="padding: 15px; background-color: #f9f9f9;">
-                                <table class="table table-borderless">
-                                    <tr>
-                                        <td><strong>Descripción:</strong> {{ tarea.descripcion }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Fecha de Vencimiento:</strong> {{ tarea.fechavencimiento }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Objetivo General:</strong> {{ tarea.proyecto_objetivoGeneral }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Objetivo Específico:</strong> {{ tarea.objetivo_especifico_nombre }}</td>
-                                    </tr>
-                                </table>
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <td style="width: 20%;"><strong>Campo</strong></td>
+                                            <td style="width: 80%;">Información</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Descripción</strong></td>
+                                            <td>{{ tarea.descripcion }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Fecha de Vencimiento</strong></td>
+                                            <td>{{ tarea.fechavencimiento }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Objetivo General</strong></td>
+                                            <td>{{ tarea.proyecto_objetivoGeneral }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Objetivo Específico</strong></td>
+                                            <td>{{ tarea.objetivo_especifico_nombre }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>                                
                             </td>
                         </tr>
                         {% endfor %}
