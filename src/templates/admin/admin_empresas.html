@@ -26,7 +26,7 @@ Administrar Empresas
                             <th>Nombre de la empresa</th>
                             <th>Correo</th>
                             <th>Encargado</th>
-                            <th style="width: 10%;">Acciones</th>
+                            <th style="width: 15%;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -40,8 +40,8 @@ Administrar Empresas
                                 <td>{{ usuario.correo }}</td>
                                 <td>{{ usuario.encargado }}</td>
                                 <td>
-                                    <!-- Botón para eliminar -->
-                                    <button class="btn btn-success" data-url="{{ url_for('eliminar_empresa', id=usuario._id) }}" onclick="confirmarEliminacion(this);">Eliminar</button>
+                                    <button class="btn btn-success mb-2" data-url="{{ url_for('eliminar_empresa', id=usuario._id) }}" onclick="confirmarEliminacion(this);">Eliminar</button>
+                                    <button class="btn btn-success mb-2" onclick="toggleInfo('{{ usuario._id }}'); return false;">Ver detalles</button>
                                 </td>
                             </tr>
                             <tr id="info-{{ usuario._id }}" style="display: none;">

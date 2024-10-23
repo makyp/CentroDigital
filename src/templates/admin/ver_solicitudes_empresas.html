@@ -22,9 +22,10 @@ Ver Todas las Solicitudes
             <table class="table table-bordered table-striped table-hover">
                 <thead style="background-color: #027333; color: white;">
                     <tr>
-                        <th style="width: 10%;">#</th>
-                        <th style="width: 70%;">Nombre del Proyecto</th>
+                        <th style="width: 5%;">#</th>
+                        <th style="width: 60%;">Nombre del Proyecto</th>
                         <th style="width: 20%;">Estado</th>
+                        <th style="width: 15%;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -37,9 +38,12 @@ Ver Todas las Solicitudes
                             </a>
                         </td>
                         <td>{{ proyecto.estado }}</td>
+                        <td> <!-- Nueva columna de acciones -->
+                            <button class="btn btn-success" onclick="toggleInfo('{{ proyecto._id }}'); return false;">Ver detalles</button>
+                        </td>
                     </tr>
                     <tr id="info-{{ proyecto._id }}" style="display: none;">
-                        <td colspan="3" style="padding: 15px; background-color: #fdfdfd98;">
+                        <td colspan="4" style="padding: 15px; background-color: #fdfdfd98;">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>

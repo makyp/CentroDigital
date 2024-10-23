@@ -724,19 +724,20 @@ def agregar_tarea(proyecto_id):
 def ver_todas_las_tareas():
     if 'correo' in session:
         usuario_id = session.get('_id')
-        filtro_proyecto = request.args.get('proyecto')  # Filtro de nombre de proyecto
-        filtro_miembro = request.args.get('miembro')  # Filtro de miembro asignado
+        filtro_proyecto = request.args.get('proyecto')  # Filtro de proyecto por ID
+        filtro_miembro = request.args.get('miembro')    # Filtro de miembro por ID
         
         proyectos = []
+        miembros = usuarios_collection.find({}, {'_id': 1, 'nombre': 1})  # Obtener todos los miembros
 
         # Verificación de si el usuario es admin
         if session.get('role') == 'admin':
-            # Si es admin, puede ver todas las tareas de todos los proyectos
+            # Admin puede ver todos los proyectos
             proyectos = proyectos_collection.find()
 
         # Verificación de si el usuario es líder
         elif session.get('lider') == 'Si':
-            # Si es líder, puede ver las tareas solo de los proyectos donde es líder
+            # Líder puede ver solo los proyectos donde es líder
             proyectos = proyectos_collection.find({'lideres._id': ObjectId(usuario_id)})
 
         else:
@@ -747,8 +748,8 @@ def ver_todas_las_tareas():
         tareas = []
 
         for proyecto in proyectos:
-            # Filtro de proyectos por nombre
-            if filtro_proyecto and filtro_proyecto.lower() not in proyecto['nombre'].lower():
+            # Filtro de proyectos por ID
+            if filtro_proyecto and str(proyecto['_id']) != filtro_proyecto:
                 continue 
 
             for tarea in proyecto.get('tareas', []):
@@ -782,17 +783,18 @@ def ver_todas_las_tareas():
                 
                 tarea['objetivo_especifico_nombre'] = objetivo_especifico_nombre
                 
-                # Filtro de miembro asignado
-                if filtro_miembro and filtro_miembro.lower() not in miembro_nombre.lower():
+                # Filtro de miembro asignado por ID
+                if filtro_miembro and miembro_id != filtro_miembro:
                     continue  
 
                 tareas.append(tarea)
 
-        return render_template('admin/ver_tareas.html', tareas=tareas)
+        return render_template('admin/ver_tareas.html', tareas=tareas, proyectos=proyectos, miembros=miembros)
 
     # Redirigir si no tiene permisos
     flash('No tienes permisos para realizar esta acción.')
     return redirect(url_for('login'))
+
 
 @app.route('/tareas_general')
 def ver_tareas_general():

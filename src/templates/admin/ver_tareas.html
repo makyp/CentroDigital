@@ -63,7 +63,8 @@ Ver Todas las Tareas
                             <td>
                                 <div class="action-buttons">
                                     <a href="{{ url_for('editar_tarea', id=tarea._id) }}" class="btn btn-success mb-2">Editar</a>
-                                    <button class="btn btn-success mb-2" onclick="confirmDelete('{{ tarea._id }}')">Eliminar</button>    
+                                    <button class="btn btn-success mb-2" onclick="confirmDelete('{{ tarea._id }}')">Eliminar</button>
+                                    <button class="btn btn-success mb-2" onclick="toggleInfo('{{ tarea._id }}')">Ver detalles</button>
                                 </div>
                             </td>
                         </tr>

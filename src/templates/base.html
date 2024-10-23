@@ -22,32 +22,35 @@
     </div>
 
     <!-- Barra lateral -->
-    <div class="sidebar" id="sidebar">
-        {% if session.get('role') == 'admin' %}
+<div class="sidebar" id="sidebar">
+    {% if session.get('role') == 'admin' %}
+        <a href="{{ url_for('admin_proyectos') }}">Administrar Proyectos</a>
+        <a href="{{ url_for('admin_usuarios') }}">Administrar Usuarios</a>
+        <a href="{{ url_for('admin_empresas') }}">Ver empresas</a>
+        <a href="{{ url_for('ver_todas_solicitudes') }}">Ver solicitudes de empresas</a>
+        <a href="{{ url_for('seleccionar_proyecto') }}">Agregar Tarea</a>
+        <a href="{{ url_for('ver_todas_las_tareas') }}">Administrar Tareas</a>
+        <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
+        <a href="{{ url_for('mis_tareas') }}">Mis Tareas</a>  
+    {% elif session.get('role') == 'miembro' %}
+        <a href="{{ url_for('mis_tareas') }}">Mis Tareas</a>
+        <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
+        
+        {% if session.get('lider') == 'Si' %}
             <a href="{{ url_for('admin_proyectos') }}">Administrar Proyectos</a>
-            <a href="{{ url_for('admin_usuarios') }}">Administrar Usuarios</a>
-            <a href="{{ url_for('admin_empresas') }}">Ver empresas</a>
-            <a href="{{ url_for('ver_todas_solicitudes') }}">Ver solicitudes de empresas</a>
-            <a href="{{ url_for('seleccionar_proyecto') }}">Agregar Tarea</a>
             <a href="{{ url_for('ver_todas_las_tareas') }}">Administrar Tareas</a>
-            <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
-            <a href="{{ url_for('mis_tareas') }}">Mis Tareas</a>  
-        {% elif session.get('role') == 'miembro' %}
-            <a href="{{ url_for('mis_tareas') }}">Mis Tareas</a>
-            <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
-            
-            {% if session.get('lider') == 'Si' %}
-                <a href="{{ url_for('admin_proyectos') }}">Administrar Proyectos</a>
-                <a href="{{ url_for('ver_todas_las_tareas') }}">Administrar Tareas</a>
-                <a href="{{ url_for('seleccionar_proyecto') }}">Agregar Tarea</a>
-            {% endif %}
-            
-        {% elif session.get('role') == 'empresa' %}
-            <a href="{{ url_for('solicitar_proyecto') }}">Radicar Solicitud</a>
-            <a href="{{ url_for('ver_solicitudes') }}">Ver solicitudes</a>
-            <a href="{{ url_for('admin_proyectos') }}">Ver Indicadores</a>
+            <a href="{{ url_for('seleccionar_proyecto') }}">Agregar Tarea</a>
         {% endif %}
-    </div>    
+        
+    {% elif session.get('role') == 'empresa' %}
+        <a href="{{ url_for('solicitar_proyecto') }}">Radicar Solicitud</a>
+        <a href="{{ url_for('ver_solicitudes') }}">Ver solicitudes</a>
+        <a href="{{ url_for('admin_proyectos') }}">Ver Indicadores</a>
+    {% endif %}
+    
+    <!-- Imagen en la parte baja de la barra lateral -->
+    <img src="static/img/logo.png" style="width: 100%; margin-top: auto;">
+</div>
 
     <!-- Área de contenido -->
     <div class="content">

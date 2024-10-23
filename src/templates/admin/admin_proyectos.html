@@ -38,15 +38,15 @@ Proyectos
                     <tbody>
                         {% for proyecto in proyectos %}
                         <tr>
-                            <td>
+                            <td class="centered">
                                 <a href="#" class="nombre-proyecto" style="color: black;"
                                     onclick="toggleInfo('{{ proyecto._id }}'); return false;">
                                     {{ proyecto.nombre }}
                                 </a>
                             </td>
-                            <td>{{ proyecto.nombre_empresa }}</td>
-                            <td class="d-none d-md-table-cell">{{ proyecto.nombre_solicitud }}</td>
-                            <td>{{ proyecto.estado }}</td>
+                            <td class="centered">{{ proyecto.nombre_empresa }}</td>
+                            <td class="d-none d-md-table-cell centered">{{ proyecto.nombre_solicitud }}</td>
+                            <td class="centered">{{ proyecto.estado }}</td>
                             <td>
                                 <div class="action-buttons" style="display: flex; flex-direction: column;">
                                     {% if session.get('role') != 'empresa' %}
@@ -62,8 +62,11 @@ Proyectos
                                     </a>
                                     {% endif %}
                                     <a href="{{ url_for('ver_indicadores', proyecto_id=proyecto._id) }}"
-                                        class="btn btn-success">
+                                        class="btn btn-success mb-2">
                                         Indicadores
+                                    </a>
+                                    <a href="#" onclick="toggleInfo('{{ proyecto._id }}'); return false;" class="btn btn-success">
+                                        Ver detalles
                                     </a>
                                 </div>
                             </td>

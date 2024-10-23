@@ -380,3 +380,9 @@ html {
         font-size: 14px;
     }
 }
+
+td.centered {
+    text-align: center;
+    vertical-align: middle; /* Centra el contenido verticalmente */
+    padding: 10px; /* Añade un poco de espacio alrededor del texto */
+}

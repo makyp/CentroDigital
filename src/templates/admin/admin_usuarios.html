@@ -48,6 +48,7 @@ Administrar Usuarios
                             <button class="btn btn-success" id="edit-btn-{{ usuario._id }}" onclick="toggleEdit('{{ usuario._id }}');">Editar</button>
                             <button class="btn btn-success" style="display:none;" id="apply-btn-{{ usuario._id }}" onclick="confirmApply('{{ usuario._id }}');">Aplicar</button>
                             <button class="btn btn-success" onclick="confirmDelete('{{ usuario._id }}');">Eliminar</button>
+                            <button class="btn btn-success" onclick="toggleInfo('{{ usuario._id }}'); return false;">Ver detalles</button>
                         </td>
                     </tr>
                     <tr id="info-{{ usuario._id }}" style="display: none;">
@@ -55,8 +56,8 @@ Administrar Usuarios
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>Campo</th>
-                                        <th>Información</th>
+                                        <td style="width: 20%;"><strong>Campo</strong></td>
+                                        <td style="width: 80%;">Información</td>
                                     </tr>
                                 </thead>
                                 <tbody>
