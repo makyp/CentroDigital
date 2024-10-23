@@ -21,6 +21,18 @@
                     <h1 class="my-5 display-5 fw-bold ls-tight" style="color: hsl(120, 81%, 95%)"> Centro Digital de
                         Desarrollo Tecnologico <br />
                     </h1>
+                    <!-- Bloque para mostrar mensajes flash -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    <div class="alert-container">
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
                 </div>
                 <div class="col-lg-6 mb-5 mb-lg-0 position-relative">
                     <div class="card bg-glass">
@@ -177,21 +189,18 @@
             }
         }
 
-        function togglePassword(fieldId, eyeIconId) {
-            var passwordField = document.getElementById(fieldId);
-            var eyeIcon = document.getElementById(eyeIconId);
-
-            if (passwordField.type === "password") {
-                passwordField.type = "text";
-                eyeIcon.classList.remove("fa-eye");
-                eyeIcon.classList.add("fa-eye-slash");
-            } else {
-                passwordField.type = "password";
-                eyeIcon.classList.remove("fa-eye-slash");
-                eyeIcon.classList.add("fa-eye");
-            }
-        }
     </script>
+
+    <script>
+        window.setTimeout(function () {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function (alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 3000); 
+    </script>
+    
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

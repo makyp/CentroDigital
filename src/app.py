@@ -63,21 +63,31 @@ def login():
         # Consulta para buscar al usuario en la base de datos
         usuario = usuarios_collection.find_one({'correo': correo})
         
-        # Verificar si el usuario existe y si la contraseña es correcta
-        if usuario and usuario['password'] and password.strip() and check_password_hash(usuario['password'], password):
-            session['correo'] = usuario['correo']
-            session['role'] = usuario['role']
-            session['nombre'] = usuario['nombre']
-            session['lider'] = usuario.get('lider', False)
-            session['_id'] = str(usuario['_id'])
-            
-            # Si el usuario tiene el rol de empresa, almacenar el _id en la sesión
-            if usuario['role'] == 'empresa':
-                session['empresa_id'] = str(usuario['_id'])  # Convertir ObjectId a string
-            
-            return redirect(url_for('perfil'))
+        # Verificar si el usuario existe
+        if usuario:
+            # Verificar si el registro está completo
+            if not usuario.get('registroCompletado', False):
+                flash('Debes completar tu registro antes de iniciar sesión.', 'warning')
+                return redirect(url_for('login'))
+
+            # Verificar si la contraseña es correcta
+            if usuario['password'] and password.strip() and check_password_hash(usuario['password'], password):
+                session['correo'] = usuario['correo']
+                session['role'] = usuario['role']
+                session['nombre'] = usuario['nombre']
+                session['lider'] = usuario.get('lider', False)
+                session['_id'] = str(usuario['_id'])
+                
+                # Si el usuario tiene el rol de empresa, almacenar el _id en la sesión
+                if usuario['role'] == 'empresa':
+                    session['empresa_id'] = str(usuario['_id'])  # Convertir ObjectId a string
+                
+                return redirect(url_for('perfil'))
+            else:
+                # Agregar mensaje flash de error si la contraseña es incorrecta
+                flash('Correo o contraseña incorrectos.', 'danger')
         else:
-            # Agregar mensaje flash de error
+            # Agregar mensaje flash de error si el usuario no existe
             flash('Correo o contraseña incorrectos.', 'danger')
     
     # Renderizar la página de inicio de sesión
@@ -102,7 +112,7 @@ def registro():
                         "nombre": nombre,
                         "correo": correo,
                         "role": role,
-                        "password": VerificationCode,  # Contraseña temporal generada
+                        "password": generate_password_hash(VerificationCode),  # Contraseña temporal generada
                         "registroCompletado": False,
                         "lider": "No"  # Por defecto, no es líder
                     }
@@ -132,23 +142,24 @@ def completar_registro(token):
         
         nombre_completo = usuario.get('nombre')  
         correo = usuario.get('correo')
-        verificationCode = usuario.get('verficationCode')
-         
+        verificationCode = usuario.get('password')  # Este campo es la contraseña encriptada
+
         if request.method == 'POST':
-            
             telefono = request.form.get('telefono')
             profesion = request.form.get('profesion')
             estudios = request.form.get('estudios')
             habilidades = request.form.get('habilidades')
             experiencia = request.form.get('experiencia')
             programa = request.form.get('programa')
-            temp_Password= request.form['temp_password']
+            temp_Password = request.form['temp_password']
             new_password = request.form['new_password']
             
-            if (verificationCode != temp_Password):
-                print('La contraseña temporal no es válida.')
+            # Verifica la contraseña temporal con la contraseña encriptada
+            if not check_password_hash(verificationCode, temp_Password):
+                flash('La contraseña temporal no coincide.')
                 return redirect(url_for('completar_registro', token=token))
             
+
             if habilidades:
                 habilidades_lista = [h.strip() for h in re.split(r'\s*,\s*', habilidades)]
             else:
@@ -163,7 +174,6 @@ def completar_registro(token):
                         'estudios': estudios,
                         'habilidades': habilidades_lista,
                         'experiencia': experiencia,
-                        'verficationCode': None,
                         'programa': programa,
                         'password': generate_password_hash(new_password),
                         'registroCompletado': True  
@@ -175,9 +185,9 @@ def completar_registro(token):
             return redirect(url_for('login'))
             
         return render_template('inicio_sesion/completar_registro.html',
-                               nombre_completo=nombre_completo,correo=correo,token=token)
+                               nombre_completo=nombre_completo, correo=correo, token=token)
     except Exception as e:
-        print('El enlace de registro ha expirado o es inválido. Error: {str(e)}')
+        flash('El enlace de registro ha expirado o es inválido. Comuníquese con el administrador.')
         return redirect(url_for('login'))
     
 @app.route('/logout')
