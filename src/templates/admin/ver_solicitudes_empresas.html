@@ -8,24 +8,24 @@ Ver Todas las Solicitudes
 <div class="row">
     <div class="col-md-12">
         {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert alert-success text-center" role="alert">
-                    {% for message in messages %} 
-                        {{ message }}<br>
-                    {% endfor %}
-                </div>
-            {% endif %}
+        {% if messages %}
+        <div class="alert alert-success text-center" role="alert">
+            {% for message in messages %}
+            {{ message }}<br>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% endwith %}
-        <h1 class="text-success text-center">Solicitudes de Proyectos</h1>
+        <h1>Solicitudes de Proyectos</h1>
         {% if proyectos %}
         <div class="table-responsive">
             <table class="table table-bordered table-striped table-hover">
                 <thead style="background-color: #027333; color: white;">
                     <tr>
                         <th style="width: 5%;">#</th>
-                        <th style="width: 60%;">Nombre del Proyecto</th>
-                        <th style="width: 20%;">Estado</th>
-                        <th style="width: 15%;">Acciones</th>
+                        <th style="width: 50%;">Nombre del Proyecto</th>
+                        <th style="width: 25%;">Estado</th>
+                        <th style="width: 20%;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -38,8 +38,11 @@ Ver Todas las Solicitudes
                             </a>
                         </td>
                         <td>{{ proyecto.estado }}</td>
-                        <td> <!-- Nueva columna de acciones -->
-                            <button class="btn btn-success" onclick="toggleInfo('{{ proyecto._id }}'); return false;">Ver detalles</button>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-success"
+                                    onclick="toggleInfo('{{ proyecto._id }}'); return false;">Ver detalles</button>
+                            </div>
                         </td>
                     </tr>
                     <tr id="info-{{ proyecto._id }}" style="display: none;">
@@ -47,8 +50,8 @@ Ver Todas las Solicitudes
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <td style="width: 20%;"><strong>Campo</strong></td>
-                                        <td style="width: 80%;">Información</td>
+                                        <td style="width: 30%;"><strong>Campo</strong></td>
+                                        <td style="width: 70%;">Información</td>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -81,48 +84,68 @@ Ver Todas las Solicitudes
                                         <td>{{ proyecto.fecha_solicitud.strftime('%d/%m/%Y') }}</td>
                                     </tr>
                                     <tr>
+                                    <tr>
                                         <td colspan="2">
                                             {% if proyecto.estado == 'Pendiente' %}
-                                            <!-- Botones para aprobar la solicitud -->
-                                            <form method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}" class="d-inline-block">
+                                            <!-- Formulario para aprobar -->
+                                            <form method="POST"
+                                                action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}"
+                                                class="d-inline-block">
                                                 <input type="hidden" name="estado" value="Aprobado">
-                                                <button type="submit" class="btn btn-success">Aprobar</button>
+                                                <div class="action-buttons">
+                                                    <button type="submit" class="btn btn-success">Aprobar</button>
+                                                </div>
                                             </form>
 
-                                            <!-- Botón para rechazar y mostrar el campo de comentario -->
-                                            <button class="btn btn-danger" onclick="mostrarComentarioRechazo('{{ proyecto._id }}'); deshabilitarBotones('{{ proyecto._id }}')">Rechazar</button>
+                                            <!-- Botón para rechazar con comentario -->
+                                            <div class="action-buttons d-inline-block mb-2">
+                                                <button class="btn btn-success"
+                                                    onclick="mostrarComentarioRechazo('{{ proyecto._id }}'); deshabilitarBotones('{{ proyecto._id }}')">Rechazar</button>
+                                            </div>
 
-                                            <!-- Formulario para rechazar con comentario -->
-                                            <form id="form-rechazo-{{ proyecto._id }}" method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}" style="display: none;">
+                                            <!-- Formulario para rechazar con comentario (oculto inicialmente) -->
+                                            <form id="form-rechazo-{{ proyecto._id }}" method="POST"
+                                                action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}"
+                                                style="display:none;">
                                                 <input type="hidden" name="estado" value="Rechazado">
                                                 <div class="form-group">
                                                     <label for="comentario_rechazo">Comentario sobre el rechazo:</label>
-                                                    <textarea name="comentario_rechazo" class="form-control" rows="3" required></textarea>
+                                                    <textarea name="comentario_rechazo" class="form-control" rows="3"
+                                                        required></textarea>
                                                 </div>
-                                                <button type="submit" class="btn btn-danger">Confirmar Rechazo</button>
+                                                <div class="action-buttons d-inline-block">
+                                                    <button type="submit" class="btn btn-success">Confirmar
+                                                        Rechazo</button>
+                                                </div>
                                             </form>
-
                                             {% elif proyecto.estado == 'Rechazado' %}
                                             <!-- Botón para aprobar con cambios después del rechazo -->
-                                            <form method="POST" action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}">
+                                            <form method="POST"
+                                                action="{{ url_for('actualizar_solicitud', solicitud_id=proyecto._id) }}">
                                                 <input type="hidden" name="estado" value="Aprobado con cambios">
-                                                <button type="submit" class="btn btn-warning">Aprobar con cambios</button>
+                                                <div class="action-buttons">
+                                                    <button type="submit" class="btn btn-success d-inline-block">Aprobar con
+                                                        cambios</button>
+                                                </div>
                                             </form>
                                             {% else %}
-                                            <button class="btn btn-secondary" disabled>Proyecto Radicado</button>
+                                            <div class="action-buttons">
+                                                <button class="btn btn-secondary" disabled>Proyecto Radicado</button>
+                                            </div>
                                             {% endif %}
                                         </td>
                                     </tr>
-                                </tbody>
-                            </table>
-                        </td>
                     </tr>
-                    {% endfor %}
                 </tbody>
+            </table>
+            </td>
+            </tr>
+            {% endfor %}
+            </tbody>
             </table>
         </div>
         {% else %}
-            <p class="text-center">No hay proyectos solicitados por el momento.</p>
+        <p class="text-center">No hay proyectos solicitados por el momento.</p>
         {% endif %}
     </div>
 </div>

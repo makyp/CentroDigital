@@ -3,9 +3,9 @@
 {% block title %}Perfil de Usuario{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container">
     <div class="text-center">
-        <h1 class="text-success">Perfil del {{ usuario.role }} {{ usuario.nombre }}</h1> <!-- Título verde -->
+        <h1>Perfil del {{ usuario.role }} {{ usuario.nombre }}</h1>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <div class="alert alert-info" role="alert">
@@ -49,7 +49,7 @@
 
     <!-- Sección de Proyectos -->
     <div class="text-center">
-        <h2 class="text-success">Proyectos a los que pertenece</h2> <!-- Título verde -->
+        <h2>Proyectos a los que pertenece</h2> <!-- Título verde -->
         <ul class="list-group mb-4 mx-auto" style="max-width: 600px;"> <!-- Lista centrada -->
             {% if proyectos %}
             {% for proyecto in proyectos %}

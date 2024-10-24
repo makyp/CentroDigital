@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}
+Agregar Tarea a Proyecto
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Gestión de Tareas</h1>
+    <div class="row">
+        <!-- Columna izquierda (30%) - Selección de proyecto -->
+        <div class="col-md-4">
+            
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-info" role="alert">
+                        <ul class="mb-0">
+                            {% for message in messages %}
+                                <li>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <div class="p-4 border rounded shadow mb-4" style="background-color: #fdfdfdcc;">
+                <h3>Seleccionar Proyecto</h3>
+                <div class="form-group">
+                    <label for="proyecto_id">Proyecto:</label>
+                    <select id="proyecto_id" class="form-control" required>
+                        <option value="">Seleccione un proyecto</option>
+                        {% for proyecto in proyectos %}
+                            <option value="{{ proyecto._id }}"
+                                    data-nombre="{{ proyecto.nombre }}"
+                                    data-objetivos='{{ proyecto.objetivosEspecificos | tojson | safe }}'
+                                    data-miembros='{{ proyecto.usuarios_completos | tojson | safe }}'>
+                                {{ proyecto.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna derecha (70%) - Formulario de tarea -->
+        <div class="col-md-8">
+            <div id="formularioTarea" class="p-4 border rounded shadow h-100" style="background-color: #fdfdfdcc; display: none;">
+                <h3>Agregar Tarea al Proyecto: <span id="nombreProyecto"></span></h3>
+                <form method="POST" id="formTarea">
+                    <input type="hidden" id="selected_proyecto_id" name="proyecto_id">
+                    
+                    <div class="form-group mb-3">
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" id="nombre" name="nombre" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="descripcion">Descripción:</label>
+                        <textarea id="descripcion" name="descripcion" class="form-control" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="fechavencimiento">Fecha de Vencimiento:</label>
+                        <input type="date" id="fechavencimiento" name="fechavencimiento" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="objetivo_especifico_id">Objetivo Específico:</label>
+                        <select id="objetivo_especifico_id" name="objetivo_especifico_id" class="form-control" required>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="miembro_asignado">Asignar a:</label>
+                        <select id="miembro_asignado" name="miembro_asignado" class="form-control" required>
+                        </select>
+                        <p id="noMiembros" class="text-danger" style="display: none;">No has agregado miembros a tu proyecto.</p>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="estado">Estado:</label>
+                        <select id="estado" name="estado" class="form-control" required>
+                            <option value="Por iniciar">Por iniciar</option>
+                            <option value="En progreso">En progreso</option>
+                            <option value="Completado">Completado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success">Agregar Tarea</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Mensaje cuando no hay proyecto seleccionado -->
+            <div id="mensajeSeleccion" class="d-flex justify-content-center align-items-center h-100" style="display: none;">
+                <h4 class="text-muted">Seleccione un proyecto para agregar una tarea</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const proyectoSelect = document.getElementById('proyecto_id');
+    const formularioTarea = document.getElementById('formularioTarea');
+    const nombreProyectoSpan = document.getElementById('nombreProyecto');
+    const objetivosSelect = document.getElementById('objetivo_especifico_id');
+    const miembrosSelect = document.getElementById('miembro_asignado');
+    const formTarea = document.getElementById('formTarea');
+    const selectedProyectoIdInput = document.getElementById('selected_proyecto_id');
+    const noMiembrosP = document.getElementById('noMiembros');
+
+    proyectoSelect.addEventListener('change', function() {
+        if (this.value) {
+            const selectedOption = this.options[this.selectedIndex];
+            const objetivos = JSON.parse(selectedOption.dataset.objetivos);
+            const miembros = JSON.parse(selectedOption.dataset.miembros);
+            
+            nombreProyectoSpan.textContent = selectedOption.dataset.nombre;
+            selectedProyectoIdInput.value = this.value;
+            
+            // Llenar objetivos específicos
+            objetivosSelect.innerHTML = '';
+            objetivos.forEach(objetivo => {
+                const option = document.createElement('option');
+                option.value = objetivo.id;
+                option.textContent = objetivo.descripcion;
+                objetivosSelect.appendChild(option);
+            });
+            
+            // Verificar y llenar miembros
+            miembrosSelect.innerHTML = '';
+            if (miembros && miembros.length > 0) {
+                miembros.forEach(miembro => {
+                    const option = document.createElement('option');
+                    option.value = miembro._id;
+                    option.textContent = miembro.nombre;
+                    miembrosSelect.appendChild(option);
+                });
+                noMiembrosP.style.display = 'none';
+            } else {
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "No hay miembros disponibles";
+                miembrosSelect.appendChild(option);
+                noMiembrosP.style.display = 'block';
+            }
+            
+            formularioTarea.style.display = 'block';
+        } else {
+            formularioTarea.style.display = 'none';
+        }
+    });
+
+    formTarea.addEventListener('submit', function(e) {
+        if (!selectedProyectoIdInput.value) {
+            e.preventDefault();
+            alert('Por favor, seleccione un proyecto primero.');
+        }
+    });
+});
+</script>
+{% endblock %}

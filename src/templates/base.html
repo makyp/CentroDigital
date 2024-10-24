@@ -7,13 +7,14 @@
     <link rel="shortcut icon" href="/static/img/logo.png">
     <title>{% block title %}{% endblock %}</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="{{ url_for('static', filename='css/estilos_base.css') }}" rel="stylesheet">
 </head>
 
 <body>
     <!-- Barra superior -->
     <div class="navbar-custom">
-        <h2>Centro Digital de Desarrollo Tecnológico</h2>
+        <h2 style="color: white;">Centro Digital de Desarrollo Tecnológico</h2>
         <div class="nav-buttons">
             <a class="btn-top" href="{{ url_for('perfil') }}">Perfil</a>
             <a class="btn-top" href="{{ url_for('logout') }}">Cerrar Sesión</a>
@@ -28,7 +29,7 @@
         <a href="{{ url_for('admin_usuarios') }}">Administrar Usuarios</a>
         <a href="{{ url_for('admin_empresas') }}">Ver empresas</a>
         <a href="{{ url_for('ver_todas_solicitudes') }}">Ver solicitudes de empresas</a>
-        <a href="{{ url_for('seleccionar_proyecto') }}">Agregar Tarea</a>
+        <a href="{{ url_for('gestionar_tarea') }}">Agregar Tarea</a>
         <a href="{{ url_for('ver_todas_las_tareas') }}">Administrar Tareas</a>
         <a href="{{ url_for('ver_tareas_general') }}">Tareas y comentarios</a>
         <a href="{{ url_for('mis_tareas') }}">Mis Tareas</a>  
@@ -39,7 +40,7 @@
         {% if session.get('lider') == 'Si' %}
             <a href="{{ url_for('admin_proyectos') }}">Administrar Proyectos</a>
             <a href="{{ url_for('ver_todas_las_tareas') }}">Administrar Tareas</a>
-            <a href="{{ url_for('seleccionar_proyecto') }}">Agregar Tarea</a>
+            <a href="{{ url_for('gestionar_tarea') }}">Agregar Tarea</a>
         {% endif %}
         
     {% elif session.get('role') == 'empresa' %}
@@ -48,8 +49,6 @@
         <a href="{{ url_for('admin_proyectos') }}">Ver Indicadores</a>
     {% endif %}
     
-    <!-- Imagen en la parte baja de la barra lateral -->
-    <img src="static/img/logo.png" style="width: 100%; margin-top: auto;">
 </div>
 
     <!-- Área de contenido -->

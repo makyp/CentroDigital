@@ -7,63 +7,83 @@ Editar Proyecto
 {% block content %}
 <div class="row">
     <div class="col-md-6 offset-md-3">
-        <h1 class="text-success text-center">Editar Proyecto</h1> <!-- Estilo del título -->
-        <form id="editForm" method="POST" class="p-4 border rounded shadow" style="background-color: #fdfdfd98;">
+        <h1>Editar Proyecto</h1> <!-- Estilo del título -->
+        <form id="editForm" method="POST" class="p-4 border rounded shadow" style="background-color: #fdfdfdbe;">
             <!-- Información general del proyecto -->
             <div class="form-group">
                 <label for="nombre">Nombre:</label>
-                <input type="text" id="nombre" name="nombre" value="{{ proyecto.nombre }}" class="form-control" required>
+                <input type="text" id="nombre" name="nombre" value="{{ proyecto.nombre }}" class="form-control"
+                    required>
             </div>
             <div class="form-group">
                 <label for="descripcion">Descripción:</label>
-                <input type="text" id="descripcion" name="descripcion" value="{{ proyecto.descripcion }}" class="form-control" required>
+                <textarea id="descripcion" name="descripcion" class="form-control"
+                    required>{{ proyecto.descripcion }}</textarea>
             </div>
             <div class="form-group">
                 <label for="objetivoGeneral">Objetivo general:</label>
-                <input type="text" id="objetivoGeneral" name="objetivoGeneral" value="{{ proyecto.objetivoGeneral }}" class="form-control" required>
+                <textarea id="objetivoGeneral" name="objetivoGeneral" class="form-control"
+                    required>{{ proyecto.objetivoGeneral }}</textarea>
             </div>
-            <div class="form-group">
-                <label for="fechainicio">Fecha de Inicio:</label>
-                <input type="date" id="fechainicio" name="fechainicio" value="{{ proyecto.fechainicio }}" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="fechafinal">Fecha de Finalización:</label>
-                <input type="date" id="fechafinal" name="fechafinal" value="{{ proyecto.fechafinal }}" class="form-control" required>
+
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="fechainicio">Fecha de Inicio:</label>
+                    <input type="date" id="fechainicio" name="fechainicio" value="{{ proyecto.fechainicio }}"
+                        class="form-control" required>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="fechafinal">Fecha de Finalización:</label>
+                    <input type="date" id="fechafinal" name="fechafinal" value="{{ proyecto.fechafinal }}"
+                        class="form-control" required>
+                </div>
             </div>
 
             <!-- Objetivos Específicos -->
-            <h4 class="text-success">Objetivos Específicos</h4> <!-- Estilo del subtítulo -->
-            <div id="objetivosEspecificosContainer" data-objetivos-mostrandose="{{ proyecto.objetivosEspecificos | length }}">
+            <h4 class="text-success">Objetivos Específicos</h4>
+            <div id="objetivosEspecificosContainer"
+                data-objetivos-mostrandose="{{ proyecto.objetivosEspecificos | length }}">
                 {% for objetivo in proyecto.objetivosEspecificos %}
-                <div class="form-group objetivo-especifico" id="objetivo_{{ loop.index }}">
-                    <label for="objetivo_especifico_{{ loop.index }}">Objetivo Específico {{ loop.index }}:</label>
+                <div class="form-group objetivo-especifico d-flex align-items-center" id="objetivo_{{ loop.index }}">
+                    <label for="objetivo_especifico_{{ loop.index }}" class="mr-2">Objetivo Específico {{ loop.index
+                        }}:</label>
                     <input type="hidden" name="objetivos_especificos_ids" value="{{ objetivo.id }}">
-                    <input type="text" id="objetivo_especifico_{{ loop.index }}" name="objetivos_especificos" value="{{ objetivo.descripcion }}" class="form-control" required>
-                    <button type="button" class="btn btn-danger mt-2 eliminarObjetivoBtn">Eliminar</button>
+                    <textarea id="objetivo_especifico_{{ loop.index }}" name="objetivos_especificos"
+                        class="form-control flex-grow-1 mr-2" required>{{ objetivo.descripcion }}</textarea>
+                    <button type="button" class="btn btn-success eliminarObjetivoBtn">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                 </div>
                 {% endfor %}
-            </div>           
-            <button type="button" id="agregarObjetivoBtn" class="btn btn-secondary mt-2">Agregar Objetivo</button>
+            </div>
+            <div class="text-center">
+                <button type="button" id="agregarObjetivoBtn" class="btn btn-secondary mt-2">Agregar Objetivo</button>
+            </div>
 
             <div class="form-group">
                 <label for="estado">Estado:</label>
                 <select id="estado" name="estado" class="form-control" required>
-                    <option value="Por iniciar" {% if proyecto.estado=='Por iniciar' %} selected {% endif %}>Por iniciar</option>
-                    <option value="En proceso" {% if proyecto.estado=='En proceso' %} selected {% endif %}>En proceso</option>
-                    <option value="Completado" {% if proyecto.estado=='Completado' %} selected {% endif %}>Completado</option>
+                    <option value="Por iniciar" {% if proyecto.estado=='Por iniciar' %} selected {% endif %}>Por iniciar
+                    </option>
+                    <option value="En proceso" {% if proyecto.estado=='En proceso' %} selected {% endif %}>En proceso
+                    </option>
+                    <option value="Completado" {% if proyecto.estado=='Completado' %} selected {% endif %}>Completado
+                    </option>
                 </select>
             </div>
 
             <!-- Botón para guardar los cambios -->
             <div class="text-center">
-                <button type="button" class="btn btn-success mt-3" data-toggle="modal" data-target="#confirmModal">Guardar Cambios</button>
+                <button type="button" class="btn btn-success mt-3" data-toggle="modal"
+                    data-target="#confirmModal">Guardar Cambios</button>
             </div>
-            </form>
+        </form>
     </div>
 </div>
 
 <!-- Modal de confirmación -->
-<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -85,7 +105,7 @@ Editar Proyecto
 
 <!-- Script para manejar la confirmación -->
 <script>
-    document.getElementById('confirmEdit').addEventListener('click', function() {
+    document.getElementById('confirmEdit').addEventListener('click', function () {
         document.getElementById('editForm').submit();
     });
 
@@ -101,14 +121,16 @@ Editar Proyecto
             if (objetivoCount < maxObjetivos) {
                 objetivoCount++;
                 const div = document.createElement('div');
-                div.classList.add('form-group', 'objetivo-especifico');
+                div.classList.add('form-group', 'objetivo-especifico', 'd-flex', 'align-items-center');
                 div.id = `objetivo_${objetivoCount}`;
                 div.innerHTML = `
-                <label for="objetivo_especifico_${objetivoCount}">Objetivo Específico ${objetivoCount}:</label>
-                <input type="hidden" name="objetivos_especificos_ids" value="">
-                <input type="text" id="objetivo_especifico_${objetivoCount}" name="objetivos_especificos" class="form-control" required>
-                <button type="button" class="btn btn-danger mt-2 eliminarObjetivoBtn">Eliminar</button>
-            `;
+            <label for="objetivo_especifico_${objetivoCount}" class="mr-2">Objetivo Específico ${objetivoCount}:</label>
+            <input type="hidden" name="objetivos_especificos_ids" value="">
+            <textarea id="objetivo_especifico_${objetivoCount}" name="objetivos_especificos" class="form-control flex-grow-1 mr-2" required></textarea>
+            <button type="button" class="btn btn-success eliminarObjetivoBtn">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        `;
                 container.appendChild(div);
 
                 // Añadir el listener para eliminar el nuevo campo

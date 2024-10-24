@@ -3,7 +3,7 @@ html {
     height: 100%;
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: #d6f7db;
+    background-color: #c1ccc4;
 }
 
 /* Estilos para la barra superior */
@@ -23,6 +23,48 @@ html {
     text-align: center;
     flex: 1 0 100%;
     order: 1;
+}
+
+h1 {
+    color: #027333;
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 45px;
+    font-weight: bold;
+}
+
+h2, h3 {
+    color: #027333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.form-control {
+    border: 1px solid #027333;
+    border-radius: 10px;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.form-control:focus {
+    outline: none;
+    box-shadow: 0 0 5px #027333; 
+    border: 2px solid #027333;
+}
+
+select:focus, 
+input[type="date"]:focus {
+    outline: none;
+    box-shadow: none;
+    border: 2px solid #027333;
+}
+
+
+label {
+    color: #027333;
+    font-weight: bold;
 }
 
 /* Contenedor para los botones en la barra superior */
@@ -51,14 +93,14 @@ html {
 /* Botón de menú */
 #menu-toggle {
     display: none;
-    padding: 10px 15px;
+    padding: 10px 10px;
     color: white;
     background-color: #D9A404;
     border: none;
     border-radius: 3px;
     transition: background-color 0.3s;
     order: 3;
-    font-size: 12px; 
+    font-size: 10px; 
 }
 
 #menu-toggle:hover {
@@ -186,9 +228,14 @@ html {
 }
 
 .bg-warning {
-    background-color: #ffc10734 !important;
+    background-color: #f9f9f9 !important;
     /* Fondo amarillo para la tarjeta */
     border: none;
+}
+
+/* Cambiar el color de fondo de los contenedores bg-success */
+.bg-success {
+    background-color: #027333 !important; /* Cambiar a un verde más suave */
 }
 
 .table th {
@@ -251,15 +298,9 @@ html {
     border: none;
     border-radius: 3px;
     cursor: pointer;
+    min-width: 60px;
 }
 
-.btn-danger {
-    background-color: #dc3545;
-}
-
-.btn-info {
-    background-color: #17a2b8;
-}
 
 @media (max-width: 900px) {
     .navbar-custom {
@@ -307,17 +348,13 @@ html {
 
     .action-buttons {
         flex-direction: column;
+        justify-content: flex-start;
+        min-width: 60px;
     }
 
     .action-buttons .btn {
         width: 100%;
         margin-bottom: 5px;
-    }
-
-
-    .table th,
-    .table td {
-        font-size: 14px;
     }
 
     .d-none {
@@ -326,11 +363,11 @@ html {
 
     .navbar-custom .btn-top, 
     .action-buttons .btn {
-        font-size: 12px; /* Reducir el tamaño de letra en pantallas pequeñas */
+        font-size: 10px;
     }
 
     .table th, .table td {
-        font-size: 12px; /* Reducir el tamaño de texto en las celdas de la tabla */
+        font-size: 12px;
     }
 }
 
@@ -361,28 +398,26 @@ html {
         width: 100%;
     }
 
-    /* Ajustar el tamaño de letra en los botones */
     .navbar-custom .btn-top, 
     .action-buttons .btn {
-        font-size: 14px; /* Tamaño normal de los botones en pantallas grandes */
+        font-size: 14px;
     }
 
-    /* Asegurar que la tabla no se desborde */
     table {
         table-layout: fixed;
         width: 100%;
         word-wrap: break-word;
     }
 
-    table td,
-    table th {
+    .table td,
+    .table th {
         text-align: center;
-        font-size: 14px;
+        font-size: 16px;
     }
 }
 
 td.centered {
     text-align: center;
-    vertical-align: middle; /* Centra el contenido verticalmente */
-    padding: 10px; /* Añade un poco de espacio alrededor del texto */
+    vertical-align: middle;
+    padding: 10px;
 }

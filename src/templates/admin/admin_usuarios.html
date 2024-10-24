@@ -5,8 +5,8 @@ Administrar Usuarios
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1 class="text-center text-success">Administrar Usuarios</h1>
+<div>
+    <h1>Administrar Usuarios</h1>
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             <div class="alert alert-success" role="alert" id="flash-message">
@@ -36,19 +36,19 @@ Administrar Usuarios
                         </td>
                         <td style="width: 10%;">
                             <span id="role-display-{{ usuario._id }}">{{ usuario.role }}</span>
-                            <div class="form-group">
+                            <div class="form-group d-flex justify-content-center">
                                 <select id="role-select-{{ usuario._id }}" style="display:none;">
-                                    <option value="admin" {% if usuario.role == 'admin' %}selected{% endif %}>Admin</option>
+                                    <option value="admin" {% if usuario.role == 'admin' %}selected{% endif %}>Administrador</option>
                                     <option value="miembro" {% if usuario.role == 'miembro' %}selected{% endif %}>Miembro</option>
                                 </select>
                             </div>
                         </td>
                         <td style="width: 40%;">{{ usuario.programa if usuario.programa else 'Pendiente' }}</td>
                         <td class="action-buttons" style="width: 10%;">
-                            <button class="btn btn-success" id="edit-btn-{{ usuario._id }}" onclick="toggleEdit('{{ usuario._id }}');">Editar</button>
-                            <button class="btn btn-success" style="display:none;" id="apply-btn-{{ usuario._id }}" onclick="confirmApply('{{ usuario._id }}');">Aplicar</button>
-                            <button class="btn btn-success" onclick="confirmDelete('{{ usuario._id }}');">Eliminar</button>
-                            <button class="btn btn-success" onclick="toggleInfo('{{ usuario._id }}'); return false;">Ver detalles</button>
+                            <button class="btn btn-success mb-2" id="edit-btn-{{ usuario._id }}" onclick="toggleEdit('{{ usuario._id }}');">Editar</button>
+                            <button class="btn btn-success mb-2" style="display:none;" id="apply-btn-{{ usuario._id }}" onclick="confirmApply('{{ usuario._id }}');">Aplicar</button>
+                            <button class="btn btn-success mb-2" onclick="confirmDelete('{{ usuario._id }}');">Eliminar</button>
+                            <button class="btn btn-success mb-2" onclick="toggleInfo('{{ usuario._id }}'); return false;">Ver detalles</button>
                         </td>
                     </tr>
                     <tr id="info-{{ usuario._id }}" style="display: none;">
@@ -56,8 +56,8 @@ Administrar Usuarios
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <td style="width: 20%;"><strong>Campo</strong></td>
-                                        <td style="width: 80%;">Información</td>
+                                        <td style="width: 30%;"><strong>Campo</strong></td>
+                                        <td style="width: 70%;">Información</td>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -75,7 +75,7 @@ Administrar Usuarios
                                             {% if usuario.habilidades %}
                                                 <ul>
                                                     {% for habilidad in usuario.habilidades %}
-                                                        <li>{{ habilidad }}</li>
+                                                        {{ habilidad }}
                                                     {% endfor %}
                                                 </ul>
                                             {% else %}
@@ -103,7 +103,46 @@ Administrar Usuarios
             </tbody>
         </table>
     </div>
-    
+
+    <div class="modal fade" id="confirmModalApply" tabindex="-1" role="dialog" aria-labelledby="modalLabelApply" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabelApply">Confirmar Aplicar Cambios</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas aplicar los cambios al usuario?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirmApplyBtn">Aplicar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmModalDelete" tabindex="-1" role="dialog" aria-labelledby="modalLabelDelete" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabelDelete">Confirmar Eliminación</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas eliminar este usuario?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button> 
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Botón para abrir el modal del formulario de registro -->
     <div class="text-center mt-4">
         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#registroModal">
@@ -141,7 +180,7 @@ Administrar Usuarios
                         </select>
                     </div>
                     <div class="text-center"> <!-- Centro el botón -->
-                        <button type="submit" class="btn btn-success">Registrar</button> <!-- Botón verde -->
+                        <button type="submit" class="btn btn-success">Registrar</button>
                     </div>
                 </form>
             </div>

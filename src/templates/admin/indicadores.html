@@ -3,8 +3,8 @@
 {% block title %}Indicadores de Prueba de Relacionamiento{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4 text-success text-center">Indicadores de Prueba de Relacionamiento</h1>
+<div class="container">
+    <h1>Indicadores de Prueba de Relacionamiento</h1>
 
     {% if total_tareas == 0 %}
         <div class="alert alert-warning" role="alert">
@@ -22,7 +22,7 @@
             <!-- Datos del proyecto a la derecha (mismo fondo que la gráfica) -->
             <div class="col-md-6 mb-4">
                 <div class="bg-warning p-3 rounded">
-                    <h4 class="text-center">Datos del Proyecto</h4>
+                    <h4 class="text-center text-success">Datos del Proyecto</h4>
                     <p><strong>Nombre del Proyecto:</strong> {{ proyecto.nombre }}</p>
                     <p><strong>Empresa:</strong> {{ proyecto.nombre_empresa }}</p>
                     <p><strong>Fecha de Inicio:</strong> {{ proyecto.fechainicio }}</p>
@@ -56,14 +56,14 @@
                     label: 'Tareas',
                     data: [porIniciar, enProgreso, completadas],
                     backgroundColor: [
-                        'rgba(255, 99, 132, 0.6)',
-                        'rgba(54, 162, 235, 0.6)',
-                        'rgba(75, 192, 192, 0.6)'
+                        'rgba(157, 151, 151, 0.6)',
+                        'rgba(158, 238, 117, 0.6)',
+                        'rgba(58, 189, 51, 0.6)'
                     ],
                     borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(75, 192, 192, 1)'
+                        'rgba(157, 151, 151, 1)',
+                        'rgba(158, 238, 117, 1)',
+                        'rgba(58, 189, 51, 1)'
                     ],
                     borderWidth: 1
                 }]

@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}
@@ -7,12 +6,12 @@ Administrar Empresas
 
 {% block content %}
 <div class="container-fluid">
-    <h1 class=" text-success text-center">Administrar Empresas</h1>
+    <h1>Administrar Empresas</h1>
     <div class="row">
         <div class="col-md-12">
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
-                    <div class="alert alert-success" role="alert" id="flash-message">
+                    <div class="alert alert-{{ 'success' if 'exitosamente' in messages[0] else 'danger' }}" role="alert" id="flash-message">
                         {% for message in messages %}
                             {{ message }}<br>
                         {% endfor %}
@@ -26,7 +25,7 @@ Administrar Empresas
                             <th>Nombre de la empresa</th>
                             <th>Correo</th>
                             <th>Encargado</th>
-                            <th style="width: 15%;">Acciones</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -40,8 +39,10 @@ Administrar Empresas
                                 <td>{{ usuario.correo }}</td>
                                 <td>{{ usuario.encargado }}</td>
                                 <td>
-                                    <button class="btn btn-success mb-2" data-url="{{ url_for('eliminar_empresa', id=usuario._id) }}" onclick="confirmarEliminacion(this);">Eliminar</button>
-                                    <button class="btn btn-success mb-2" onclick="toggleInfo('{{ usuario._id }}'); return false;">Ver detalles</button>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-success mb-2" data-id="{{ usuario._id }}" onclick="showConfirmModal(this);">Eliminar</button>
+                                        <button class="btn btn-success mb-2" onclick="toggleInfo('{{ usuario._id }}'); return false;">Ver detalles</button>
+                                    </div>                                    
                                 </td>
                             </tr>
                             <tr id="info-{{ usuario._id }}" style="display: none;">
@@ -82,44 +83,66 @@ Administrar Empresas
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar esta empresa?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    function confirmarEliminacion(element) {
-        const url = element.getAttribute('data-url'); // Obtener la URL del atributo data-url
-        Swal.fire({
-            title: '¿Estás seguro?',
-            text: "No podrás revertir esta acción",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = url; // Redirigir a la URL proporcionada
+    let empresaIdToDelete = '';
+
+    function showConfirmModal(button) {
+        empresaIdToDelete = button.getAttribute('data-id');
+        $('#confirmDeleteModal').modal('show');
+    }
+
+    document.getElementById('confirmDelete').addEventListener('click', async function() {
+        try {
+            const response = await fetch(`/eliminar_empresa/${empresaIdToDelete}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (response.ok) {
+                // Recargar la página después de eliminar exitosamente
+                window.location.reload();
+            } else {
+                const data = await response.json();
+                alert('Error al eliminar la empresa: ' + (data.message || 'Error desconocido'));
             }
-        });
-    }
-</script>
-<script>
+        } catch (error) {
+            alert('Error al eliminar la empresa: ' + error.message);
+        } finally {
+            $('#confirmDeleteModal').modal('hide');
+        }
+    });
+
     function toggleInfo(id) {
-        var infoRow = document.getElementById('info-' + id);
-        if (infoRow.style.display === 'none') {
-            infoRow.style.display = '';
+        const infoRow = document.getElementById(`info-${id}`);
+        if (infoRow.style.display === "none") {
+            infoRow.style.display = "";
         } else {
-            infoRow.style.display = 'none';
+            infoRow.style.display = "none";
         }
     }
-
-</script>
-
-<script>
-    setTimeout(function() {
-        var flashMessage = document.getElementById('flash-message');
-        if (flashMessage) {
-            flashMessage.style.display = 'none';  // Oculta el mensaje
-        }
-    }, 3000);  // Tiempo en milisegundos (3000 ms = 3 segundos)
 </script>
 {% endblock %}

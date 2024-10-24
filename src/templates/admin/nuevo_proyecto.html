@@ -7,7 +7,7 @@ Agregar Nuevo Proyecto
 {% block content %}
 <div class="row">
     <div class="col-md-6 offset-md-3">
-        <h2 class="text-success text-center">Agregar Nuevo Proyecto</h2>
+        <h1>Agregar Nuevo Proyecto</h1>
 
         {% with messages = get_flashed_messages() %}
             {% if messages %}
@@ -21,7 +21,7 @@ Agregar Nuevo Proyecto
             {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('nuevo_proyecto') }}" class="p-4 border rounded shadow" style="background-color: #fdfdfd98;">
+        <form method="POST" action="{{ url_for('nuevo_proyecto') }}" class="p-4 border rounded shadow" style="background-color: #fdfdfdc0;">
             <input type="hidden" name="solicitud_id" value="{{ solicitud_id }}">
             <input type="hidden" name="empresa_id" value="{{ empresa_id }}">
 
@@ -51,16 +51,16 @@ Agregar Nuevo Proyecto
                 <textarea id="objetivo_general" name="objetivo_general" class="form-control" rows="3" required></textarea>
             </div>
 
-            <h4 class="text-success">Objetivos Específicos</h4>
+            <h4 class="text-success fw-bold">Objetivos Específicos</h4>
             <div id="objetivosEspecificosContainer">
                 <div class="form-group objetivo-especifico">
                     <label for="objetivo_especifico1">Objetivo Específico 1:</label>
-                    <input type="text" id="objetivo_especifico1" name="objetivos_especificos" class="form-control" required>
+                    <textarea type="text" id="objetivo_especifico1" name="objetivos_especificos" class="form-control" required ></textarea>
                 </div>
             </div>
 
             <div class="form-group">
-                <button type="button" id="agregarObjetivoBtn" class="btn btn-warning btn-sm">Agregar otro objetivo específico</button>
+                <button type="button" id="agregarObjetivoBtn" class="btn btn-success btn-sm">Agregar otro objetivo específico</button>
             </div>
 
             <div class="form-group">
@@ -94,7 +94,7 @@ Agregar Nuevo Proyecto
                 div.classList.add('form-group', 'objetivo-especifico');
                 div.innerHTML = `
                     <label for="objetivo_especifico${objetivoCount}">Objetivo Específico ${objetivoCount}:</label>
-                    <input type="text" id="objetivo_especifico${objetivoCount}" name="objetivos_especificos" class="form-control" required>
+                    <textarea type="text" id="objetivo_especifico${objetivoCount}" name="objetivos_especificos" class="form-control" required></textarea>
                 `;
                 container.appendChild(div);
                 if (objetivoCount === maxObjetivos) {

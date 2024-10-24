@@ -5,8 +5,8 @@ Asignar Miembros y Líderes a Proyecto
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="text-center text-success mb-4">Administrar Miembros del Proyecto: {{ proyecto.nombre }}</h2>
+<div class="container d-flex justify-content-center align-items-center flex-column">
+    <h1>Administrar Miembros del Proyecto: {{ proyecto.nombre }}</h1>
 
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -18,61 +18,68 @@ Asignar Miembros y Líderes a Proyecto
         {% endif %}
     {% endwith %}
 
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h3 class="card-title">Miembros Asignados:</h3>
+    <div class="row justify-content-center" style="width: 100%;">
+        <div class="col-12 col-md-8 mb-4">
+            <div class="input-group">
+                <input type="text" id="search" class="form-control rounded-pill" placeholder="Filtrar Miembros">
+            </div>
+        </div>
+    </div>
+
+    <div class="row w-100 justify-content-center">
+        <div class="col-md-6 d-flex justify-content-center">
+            
+            <div class="card mb-4 w-100">
+                <div class="card-body text-center">
+                    <h3 class="card-title text-success mb-4">Miembros Asignados:</h3>
                     <form id="formEliminar" method="POST">
                         {% for miembro in proyecto.miembros %}
-                            <div class="form-check">
+                            <div class="form-check text-left">
                                 <input type="checkbox" class="form-check-input" name="eliminar_miembro" value="{{ miembro._id }}" id="miembro{{ miembro._id }}">
                                 <label class="form-check-label" for="miembro{{ miembro._id }}">
                                     {{ miembro.nombre }}
                                     {% if miembro in proyecto.lideres %}
-                                        <span class="badge bg-info">Líder</span>
+                                        <span class="badge bg-success" style="color: white;">Líder</span>
                                     {% endif %}
                                 </label>
                             </div>
                         {% endfor %}
-                        <button type="button" id="btnEliminar" class="btn btn-danger mt-3" disabled>Eliminar Miembros Seleccionados</button>
+                        <button type="button" id="btnEliminar" class="btn btn-success mt-4" disabled>Eliminar miembros</button>
                     </form>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h3 class="card-title">Miembros Disponibles para Agregar:</h3>
+        <div class="col-md-6 d-flex justify-content-center">
+            <div class="card mb-4 w-100">
+                <div class="card-body text-center">
+                    <h3 class="card-title text-success mb-4">Miembros Disponibles para Agregar:</h3>
+                    
                     <form id="formAgregar" method="POST">
-                        {% for usuario in usuarios %}
-                            {% if usuario not in proyecto.miembros %}
-                                <div class="form-check mb-2 d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <input type="checkbox" class="form-check-input agregar-miembro" name="agregar_miembro" value="{{ usuario._id }}" id="usuario{{ usuario._id }}">
-                                        <label class="form-check-label" for="usuario{{ usuario._id }}">
-                                            {{ usuario.nombre }} {{ usuario.apellido }}
-                                        </label>
+                        <div id="miembros-list">
+                            {% for usuario in usuarios %}
+                                {% if usuario not in proyecto.miembros %}
+                                    <div class="form-check mb-2 d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <input type="checkbox" class="form-check-input agregar-miembro" name="agregar_miembro" value="{{ usuario._id }}" id="usuario{{ usuario._id }}">
+                                            <label class="form-check-label" for="usuario{{ usuario._id }}">
+                                                {{ usuario.nombre }} {{ usuario.apellido }}
+                                            </label>
+                                        </div>
+                                        <div>
+                                            <input type="checkbox" class="form-check-input asignar-lider" name="asignar_lider" value="{{ usuario._id }}" id="lider{{ usuario._id }}" 
+                                                {% if proyecto.lideres|length > 0 %} disabled {% endif %}>
+                                            <label class="form-check-label" for="lider{{ usuario._id }}">Líder</label>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <input type="checkbox" class="form-check-input asignar-lider" name="asignar_lider" value="{{ usuario._id }}" id="lider{{ usuario._id }}" 
-                                            {% if proyecto.lideres|length > 0 %} disabled {% endif %}>
-                                        <label class="form-check-label" for="lider{{ usuario._id }}">Líder</label>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                        {% if proyecto.lideres|length > 0 %}
-                            <div class="alert alert-warning" role="alert">
-                                Ya hay un líder asignado a este proyecto. No se puede asignar otro líder.
-                            </div>
-                        {% endif %}
-                        <button type="button" id="btnAgregar" class="btn btn-success mt-3" disabled>Agregar Miembros y Líderes</button>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <button type="button" id="btnAgregar" class="btn btn-success mt-4" disabled>Agregar miembros y líderes</button>
                     </form>
                 </div>
             </div>
-        </div>        
+        </div>           
     </div>
 </div>
 
@@ -123,6 +130,8 @@ Asignar Miembros y Líderes a Proyecto
     document.addEventListener('DOMContentLoaded', function() {
         const checkboxesMiembros = document.querySelectorAll('.agregar-miembro');
         const btnAgregar = document.getElementById('btnAgregar');
+        const searchInput = document.getElementById('search');
+        const miembrosList = document.getElementById('miembros-list');
 
         checkboxesMiembros.forEach(checkbox => {
             checkbox.addEventListener('change', function() {
@@ -169,6 +178,27 @@ Asignar Miembros y Líderes a Proyecto
 
         document.getElementById('confirmAdd').addEventListener('click', function() {
             document.getElementById('formAgregar').submit();
+        });
+
+        // Filtrar miembros disponibles
+        searchInput.addEventListener('input', function() {
+            const filter = searchInput.value.toLowerCase();
+            const checkboxes = document.querySelectorAll('.form-check-label');
+            
+            checkboxes.forEach(label => {
+                const text = label.textContent.toLowerCase();
+                const checkbox = label.previousElementSibling;
+                
+                if (text.includes(filter)) {
+                    label.parentElement.style.display = 'flex';
+                    checkbox.addEventListener('click', function() {
+                        checkbox.checked = true;
+                        toggleButtons();
+                    });
+                } else {
+                    label.parentElement.style.display = 'none';
+                }
+            });
         });
     });
 </script>

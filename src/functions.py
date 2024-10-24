@@ -1,11 +1,9 @@
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Message
 from flask import url_for
+from flask import flash
 import random
 import string
-
-
-
 
 def enviar_correo_registro(nombre, email, password, token):
     enlace = url_for('completar_registro', token=token, _external=True)
@@ -125,39 +123,46 @@ def notificar_cambio_rol(nombre_completo_usuario, correo_usuario, nombre_admin, 
     mail.send(msg_usuario)
 
 def notificar_eliminacion_usuario(nombre_usuario, correo_usuario, nombre_admin, mail, usuarios_collection):
-    # Obtener la lista de administradores (excluyendo al usuario eliminado si es administrador o líder)
     administradores = usuarios_collection.find({'role': 'admin', 'correo': {'$ne': correo_usuario}})
     correos_admin = [admin['correo'] for admin in administradores]
 
-    # Definir el pie de página común para todos los correos
+    # Definir el pie de página común con formato
     footer = """
     <p><strong>Nota:</strong> Este correo es generado automáticamente para notificaciones, por favor no responda a este mensaje.</p>
     <p>Atentamente,<br>Centro Digital de Desarrollo - Universidad de Cundinamarca</p>
     """
 
-    # Notificación a los administradores sobre la eliminación
-    msg_admin = Message(
-        "Eliminación de usuario",
-        recipients=correos_admin,
-        html=f"""
-        <p>Estimado administrador,</p>
-        <p>El administrador <strong>{nombre_admin}</strong> ha eliminado al usuario <strong>{nombre_usuario}</strong> ({correo_usuario}) del sistema.</p>
-        {footer}
-        """
-    )
-    mail.send(msg_admin)
+    try:
+        # Mensaje para los administradores
+        msg_admin = Message(
+            "Eliminación de usuario",
+            recipients=correos_admin,
+            html=f"""
+            <div style="font-family: Arial, sans-serif; color: #333;">
+                <p>Estimados administradores,</p>
+                <p>El administrador <strong>{nombre_admin}</strong> ha eliminado al usuario <strong>{nombre_usuario}</strong> ({correo_usuario}) del sistema.</p>
+                {footer}
+            </div>
+            """
+        )
+        mail.send(msg_admin)
+        
+        # Mensaje para el usuario eliminado
+        msg_usuario = Message(
+            "Cuenta eliminada",
+            recipients=[correo_usuario],
+            html=f"""
+            <div style="font-family: Arial, sans-serif; color: #333;">
+                <p>Hola <strong>{nombre_usuario}</strong>,</p>
+                <p>Tu cuenta ha sido eliminada del sistema. Para más información, por favor contacta al administrador.</p>
+                {footer}
+            </div>
+            """
+        )
+        mail.send(msg_usuario)
 
-    # Notificación al usuario eliminado
-    msg_usuario = Message(
-        "Cuenta eliminada",
-        recipients=[correo_usuario],
-        html=f"""
-        <p>Hola {nombre_usuario},</p>
-        <p>Tu cuenta ha sido eliminada del sistema. Para más información, por favor contacta al administrador.</p>
-        {footer}
-        """
-    )
-    mail.send(msg_usuario)
+    except Exception as e:
+        flash(f'Error al enviar el correo: {str(e)}')
 
 def notificar_cambio_proyecto(proyecto_anterior, proyecto_nuevo, nombre_admin, mail, usuarios_collection):
     # Obtener correos de los administradores

@@ -27,12 +27,14 @@ class Usuario:
         }
 
 class Empresa:
-    def __init__(self, nombre, correo, nit, encargado, telefono, password):
+    def __init__(self, nombre, correo, nit, encargado, telefono, direccion, ciudad,  password):
         self.nombre = nombre
         self.correo = correo
         self.nit = nit
         self.encargado = encargado
         self.telefono = telefono
+        self.direccion= direccion
+        self.ciudad = ciudad
         self.password = password
 
     def formato_doc(self):
@@ -43,6 +45,8 @@ class Empresa:
             'nit': self.nit,
             'encargado': self.encargado,
             'telefono': self.telefono,
+            'direccion': self.direccion,
+            'ciudad': self.ciudad,
             'password': self.password
         }
 

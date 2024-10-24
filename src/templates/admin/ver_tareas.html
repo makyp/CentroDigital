@@ -5,47 +5,74 @@ Ver Todas las Tareas
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="text-center text-success">Panel de administración de las tareas</h2>
-    
-    <!-- Formulario de filtros -->
+<div class="container-fluid">
+    <h2 class="mb-4 text-center">Panel de administración de las tareas</h2>
     <div class="row">
-        <div class="col-md-4">
-            <form method="GET" action="{{ url_for('ver_todas_las_tareas') }}">
-                <div class="form-group">
-                    <label for="proyecto">Filtrar por Proyecto</label>
-                    <input type="text" name="proyecto" class="form-control form-control-sm" placeholder="Nombre del Proyecto" value="{{ request.args.get('proyecto', '') }}" style="width: 80%;">
+        <!-- Columna de filtros -->
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0 text-center">Filtros de búsqueda</h5>
                 </div>
-                <div class="form-group">
-                    <label for="miembro">Filtrar por Miembro</label>
-                    <input type="text" name="miembro" class="form-control form-control-sm" placeholder="Nombre del Miembro" value="{{ request.args.get('miembro', '') }}" style="width: 80%;">
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('ver_todas_las_tareas') }}">
+                        <div class="form-group mb-3">
+                            <label for="proyecto" class="form-label">Filtrar por Proyecto</label>
+                            <select name="proyecto" id="proyecto" class="form-select form-select-sm"
+                                style="width: 100%; max-width: 100%;">
+                                <option value="">Todos los proyectos</option>
+                                {% for proyecto in proyectos %}
+                                <option value="{{ proyecto._id }}" {% if request.args.get('proyecto')==(proyecto._id)
+                                    %}selected{% endif %} style="white-space: normal; word-wrap: break-word;">
+                                    {{ proyecto.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="miembro" class="form-label">Filtrar por Miembro</label>
+                            <select name="miembro" id="miembro" class="form-select form-select-sm"
+                                style="width: 100%; max-width: 100%;">
+                                <option value="">Todos los miembros</option>
+                                {% for miembro in miembros %}
+                                <option value="{{ miembro._id }}" {% if request.args.get('miembro')==(miembro._id)
+                                    %}selected{% endif %} style="white-space: normal; word-wrap: break-word;">
+                                    {{ miembro.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-filter"></i> Aplicar Filtros
+                        </button>
+                    </form>
                 </div>
-                <button type="submit" class="btn btn-success">Filtrar</button>
-            </form>
+            </div>
         </div>
 
-        <div class="col-md-8">
+        <!-- Columna de la tabla -->
+        <div class="col-md-9">
             {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    <div class="alert alert-info" role="alert">
-                        <ul>
-                            {% for message in messages %}
-                                <li>{{ message }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
+            {% if messages %}
+            <div class="alert alert-info shadow-sm" role="alert">
+                <ul class="mb-0">
+                    {% for message in messages %}
+                    <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
             {% endwith %}
 
             <div class="table-responsive">
-                <table class="table">
-                    <thead style="background-color: #027333; color: white;">
+                <table class="table table-hover">
+                    <thead>
                         <tr>
-                            <th>Nombre del Proyecto</th>
-                            <th>Nombre de la Tarea</th>
-                            <th>Responsable</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
+                            <th class="centered">Nombre del Proyecto</th>
+                            <th class="centered">Nombre de la Tarea</th>
+                            <th class="centered">Encargado</th>
+                            <th class="d-none d-md-table-cell centered">Estado</th>
+                            <th class="centered">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -53,50 +80,58 @@ Ver Todas las Tareas
                         <tr>
                             <td>{{ tarea.proyecto_nombre }}</td>
                             <td>
-                                <!-- Nombre de la tarea como enlace para mostrar información adicional -->
-                                <a href="#" style="color: black;" onclick="toggleInfo('{{ tarea._id }}'); return false;">
+                                <a href="#" class="text-dark" onclick="toggleInfo('{{ tarea._id }}'); return false;">
                                     {{ tarea.nombre }}
                                 </a>
                             </td>
                             <td>{{ tarea.miembro_nombre }}</td>
-                            <td>{{ tarea.estado }}</td> 
+                            <td class="d-none d-md-table-cell centered">{{ tarea.estado }}</td>
                             <td>
-                                <div class="action-buttons">
-                                    <a href="{{ url_for('editar_tarea', id=tarea._id) }}" class="btn btn-success mb-2">Editar</a>
-                                    <button class="btn btn-success mb-2" onclick="confirmDelete('{{ tarea._id }}')">Eliminar</button>
-                                    <button class="btn btn-success mb-2" onclick="toggleInfo('{{ tarea._id }}')">Ver detalles</button>
+                                <div class="action-buttons" style="flex-direction: column;" role="group">
+                                    <a href="{{ url_for('editar_tarea', id=tarea._id) }}"
+                                        class="btn btn-success mb-2">Editar</a>
+                                    <button class="btn btn-success mb-2"
+                                        onclick="confirmDelete('{{ tarea._id }}')">Eliminar</button>
+                                    <button class="btn btn-success mb-2" onclick="toggleInfo('{{ tarea._id }}')">Ver
+                                        detalles</button>
                                 </div>
                             </td>
                         </tr>
-                        <!-- Fila adicional con información extra (oculta por defecto) -->
+                        <!-- Fila de detalles -->
                         <tr id="info-{{ tarea._id }}" style="display: none;">
-                            <td colspan="5" style="padding: 15px; background-color: #f9f9f9;">
+                            <td colspan="5" class="detail-row" style="padding: 15px; background-color: #f9f9f9;">
+
                                 <table class="table table-bordered">
                                     <thead>
                                         <tr>
-                                            <td style="width: 20%;"><strong>Campo</strong></td>
-                                            <td style="width: 80%;">Información</td>
+                                            <th style="width: 30%;">Campo</th>
+                                            <th style="width: 70%;">Información</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td><strong>Descripción</strong></td>
+                                            <td class="fw-bold">Descripción:</td>
                                             <td>{{ tarea.descripcion }}</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Fecha de Vencimiento</strong></td>
+                                            <td class="fw-bold">Fecha de Vencimiento:</td>
                                             <td>{{ tarea.fechavencimiento }}</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Objetivo General</strong></td>
+                                            <td class="fw-bold">Objetivo General:</td>
                                             <td>{{ tarea.proyecto_objetivoGeneral }}</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Objetivo Específico</strong></td>
+                                            <td class="fw-bold">Objetivo Específico:</td>
                                             <td>{{ tarea.objetivo_especifico_nombre }}</td>
                                         </tr>
+                                        <tr>
+                                            <td class="fw-bold">Estado:</td>
+                                            <td>{{ tarea.estado }}</td>
+                                        </tr>
                                     </tbody>
-                                </table>                                
+                                </table>
+
                             </td>
                         </tr>
                         {% endfor %}
@@ -105,62 +140,73 @@ Ver Todas las Tareas
             </div>
         </div>
     </div>
-    <br>
-</div>
 
-<!-- Modal de confirmación para eliminar -->
-<div class="modal fade" id="confirmModalDelete" tabindex="-1" role="dialog" aria-labelledby="modalLabelDelete" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalLabelDelete">Confirmar Eliminación</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                ¿Estás seguro de que deseas eliminar esta tarea?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+    <!-- Modal de confirmación para eliminar -->
+    <div class="modal fade" id="confirmModalDelete" tabindex="-1" role="dialog" aria-labelledby="modalLabelDelete"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabelDelete">Confirmar Eliminación</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas eliminar esta tarea?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    // Función para mostrar/ocultar la información adicional
-    function toggleInfo(id) {
-        var infoRow = document.getElementById('info-' + id);
-        if (infoRow.style.display === 'none') {
-            infoRow.style.display = '';
-        } else {
-            infoRow.style.display = 'none';
-        }
-    }
-
-    function confirmDelete(id) {
-        // Establecer el comportamiento del botón de confirmación en el modal
-        document.getElementById('confirmDeleteBtn').onclick = function() {
-            deleteTask(id);
-        };
-        $('#confirmModalDelete').modal('show');
-    }
-
-    function deleteTask(id) {
-        // Enviar una solicitud POST para eliminar la tarea
-        fetch(`/tarea/${id}/eliminar`, {
-            method: 'POST'
-        })
-        .then(response => {
-            if (response.ok) {
-                location.reload(); // Recargar la página para mostrar los cambios
+    <script>
+        function toggleInfo(id) {
+            var infoRow = document.getElementById('info-' + id);
+            if (infoRow.style.display === 'none') {
+                infoRow.style.display = '';
             } else {
-                alert('Error al eliminar la tarea.');
+                infoRow.style.display = 'none';
             }
-        });
-    }
-</script>
+            ajustarColspan();
+        }
 
-{% endblock %}
+        function confirmDelete(id) {
+            document.getElementById('confirmDeleteBtn').onclick = function () {
+                deleteTask(id);
+            };
+            $('#confirmModalDelete').modal('show');
+        }
+
+        function deleteTask(id) {
+            fetch(`/tarea/${id}/eliminar`, {
+                method: 'POST'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al eliminar la tarea.');
+                    }
+                });
+        }
+
+        function ajustarColspan() {
+            // Obtener todas las filas de detalles (ocultas por defecto)
+            var filasDetalles = document.querySelectorAll('.detail-row');
+
+            // Detectar el ancho de la pantalla
+            var pantallaAncha = window.innerWidth >= 768; // Pantallas medianas y grandes (>= 768px)
+
+            filasDetalles.forEach(function (fila) {
+                fila.setAttribute('colspan', pantallaAncha ? '5' : '4');
+            });
+        }
+
+        ajustarColspan();
+        window.addEventListener('resize', ajustarColspan);
+    </script>
+    {% endblock %}
