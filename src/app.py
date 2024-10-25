@@ -42,12 +42,10 @@ app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 db = Conexion()
 usuarios_collection = db['usuarios']
 proyectos_collection = db['proyectos']
-tareas_collection = db['tareas']
 solicitudes_collection = db['solicitudes']
 
 def es_lider_usuario():
     return session.get('lider') == 'Si'
-
 
 @app.route('/')
 def index():
@@ -702,7 +700,7 @@ def ver_todas_las_tareas():
     filtro_proyecto = request.args.get('proyecto')
     filtro_miembro = request.args.get('miembro')
 
-    # Obtener y procesar miembros
+    # Obtener y procesar miembros (evitar roles de 'empresa')
     miembros = list(usuarios_collection.find(
         {'role': {'$ne': 'empresa'}}, 
         {'_id': 1, 'nombre': 1}
@@ -716,8 +714,8 @@ def ver_todas_las_tareas():
     elif session.get('lider') == 'Si':
         proyectos_query = {'lideres._id': ObjectId(usuario_id)}
     else:
-        flash('No tienes permisos para realizar esta acción.')
-        return redirect(url_for('login'))
+        # Si es miembro, ver solo los proyectos en los que participa
+        proyectos_query = {'miembros._id': ObjectId(usuario_id)}
 
     # Convertir el cursor a lista y procesar los proyectos
     proyectos = list(proyectos_collection.find(proyectos_query))
@@ -735,7 +733,7 @@ def ver_todas_las_tareas():
             miembro_id = tarea.get('miembro_asignado')
             miembro_nombre = "Sin asignar"
 
-            # Buscar nombre del miembro
+            # Buscar nombre del miembro asignado
             if miembro_id:
                 if isinstance(miembro_id, str):
                     try:
@@ -772,61 +770,8 @@ def ver_todas_las_tareas():
 
             tareas.append(tarea)
 
-        return render_template('admin/ver_tareas.html', tareas=tareas, proyectos=proyectos, miembros=miembros)
-
-    # Redirigir si no tiene permisos
-    flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('login'))
-
-
-@app.route('/tareas_general')
-def ver_tareas_general():
-    if 'correo' in session:
-        # Obtener todos los proyectos
-        proyectos = proyectos_collection.find()
-        tareas = []
-
-        for proyecto in proyectos:
-            for tarea in proyecto.get('tareas', []):
-                # Añadir detalles del proyecto a la tarea
-                tarea['proyecto_nombre'] = proyecto['nombre']
-                tarea['proyecto_id'] = str(proyecto['_id'])  # Convertir a string para evitar problemas de visualización
-                tarea['proyecto_objetivoGeneral'] = proyecto.get('objetivoGeneral', 'Sin objetivo general')
-
-                # Añadir el nombre del miembro asignado
-                miembro_id = tarea.get('miembroasignado') 
-                miembro_nombre = "Sin asignar"
-                if miembro_id:
-                    try:
-                        miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)}, {'nombre': 1})
-                        if miembro and 'nombre' in miembro:
-                            miembro_nombre = miembro['nombre']
-                    except Exception as e:
-                        print(f"Error al convertir miembro_id a ObjectId: {e}")
-
-                tarea['miembro_nombre'] = miembro_nombre
-                
-                # Añadir el nombre del objetivo específico
-                objetivo_especifico_id = tarea.get('objetivo_especifico_id')
-                objetivo_especifico_nombre = "Objetivo no encontrado"
-                if objetivo_especifico_id and 'objetivosEspecificos' in proyecto:
-                    for objetivo in proyecto['objetivosEspecificos']:
-                        if objetivo.get('id') == objetivo_especifico_id:
-                            objetivo_especifico_nombre = objetivo.get('descripcion', 'Descripción no definida')
-                            break
-                tarea['objetivo_especifico_nombre'] = objetivo_especifico_nombre
-                
-                # Añadir comentarios (se asume que cada comentario tiene 'nombre_autor', 'texto' y 'fecha')
-                tarea['comentarios'] = tarea.get('comentarios', [])
-                
-                # Añadir la tarea a la lista de tareas
-                tareas.append(tarea)
-
-        # Renderizar la plantilla con las tareas
-        return render_template('ver_todas_las_tareas.html', tareas=tareas)
-
-    flash('Debes iniciar sesión para ver las tareas.')
-    return redirect(url_for('login'))
+    # Renderizar la plantilla después de procesar todas las tareas
+    return render_template('admin/ver_tareas.html', tareas=tareas, proyectos=proyectos, miembros=miembros)
 
 @app.route('/proyecto/<proyecto_id>/tarea/<tarea_id>/comentar', methods=['POST'])
 def comentar_tarea(proyecto_id, tarea_id):
@@ -1102,39 +1047,6 @@ def editar_perfil():
     # Mostrar el formulario de edición con los datos actuales del usuario
     return render_template('editar_perfil.html', usuario=usuario)
 
-@app.route('/mis_tareas')
-
-def mis_tareas():
-    if 'correo' in session:  # Verificamos que haya una sesión activa
-        usuario = usuarios_collection.find_one({'correo': session['correo']})
-        
-        if usuario:  # Si se encuentra el usuario en la base de datos
-            # Obtener todos los proyectos en los que el usuario es miembro
-            proyectos = list(proyectos_collection.find({'miembros._id': usuario['_id']}))
-            
-            tareas_asignadas = []
-            # Iteramos sobre los proyectos para extraer las tareas asignadas al usuario
-            for proyecto in proyectos:
-                tareas = proyecto.get('tareas', [])  # Usamos 'tareas' o array vacío si no existe
-                for tarea in tareas:  # Iteramos sobre la variable 'tareas', no 'proyecto['tareas']'
-                    if str(tarea['miembro_asignado']) == str(usuario['_id']):
-                        tarea_info = {
-                            '_id': tarea['_id'],
-                            'nombre': tarea['nombre'],
-                            'descripcion': tarea['descripcion'],
-                            'estado': tarea['estado'],
-                            'fechavencimiento': tarea.get('fechavencimiento', 'No asignada'),
-                            'proyecto': proyecto['nombre']
-                        }
-                        tareas_asignadas.append(tarea_info)
-            
-            # Renderizamos la plantilla con las tareas asignadas al usuario
-            return render_template('mis_tareas.html', tareas=tareas_asignadas)
-    
-    flash('No tienes permisos para realizar esta acción.')
-    return redirect(url_for('login'))
-
-
 @app.route('/recuperacion', methods=['GET', 'POST'])
 def recuperacion():
      if request.method == 'POST':
@@ -1194,8 +1106,6 @@ def registro_empresa():
 
     return render_template('empresa.html')
 
-
-
 @app.route('/cambiar_estado_tarea/<id>', methods=['POST'])
 def cambiar_estado_tarea(id):
     nuevo_estado = request.form['estado']  # Obtiene el nuevo estado del formulario
@@ -1221,12 +1131,12 @@ def cambiar_estado_tarea(id):
                     flash('El estado de la tarea ha sido actualizado.')
 
                     # Enviar correo a líder y administrador
-                    send_notification_email(proyecto, tarea, nuevo_estado)
+                    send_notification_email(proyecto, tarea, nuevo_estado, comentario)
 
-                    return redirect(url_for('mis_tareas'))
+                    return redirect(url_for('ver_tareas_y_actualizar'))
     
     flash('No se pudo actualizar el estado de la tarea.')
-    return redirect(url_for('mis_tareas'))
+    return redirect(url_for('ver_tareas_y_actualizar'))
 
 def send_notification_email(proyecto, tarea, nuevo_estado, comentario):
     # Obtener correos del líder del proyecto
@@ -1282,7 +1192,7 @@ def send_notification_email(proyecto, tarea, nuevo_estado, comentario):
 
 
 def agregar_comentario(proyecto_id, tarea_id, contenido):
-    autor = session['nombre']
+    autor = session.get('nombre', 'Anónimo')  # Usa 'Anónimo' si no se encuentra el nombre en la sesión
     comentario = {'nombre_autor': autor, 'texto': contenido, 'fecha': datetime.now().isoformat()}
 
     # Encuentra el proyecto correspondiente
@@ -1293,6 +1203,144 @@ def agregar_comentario(proyecto_id, tarea_id, contenido):
             {'_id': ObjectId(proyecto_id), 'tareas._id': ObjectId(tarea_id)},
             {'$push': {'tareas.$.comentarios': comentario}}
         )
+
+@app.route('/tareas_user', methods=['GET', 'POST'])
+def ver_tareas_y_actualizar():
+    if 'correo' not in session:
+        flash('Debes iniciar sesión para ver las tareas.')
+        return redirect(url_for('login'))
+    
+    usuario = usuarios_collection.find_one({'correo': session['correo']})
+    
+    if not usuario:
+        flash('Usuario no encontrado.')
+        return redirect(url_for('login'))
+
+    # Determinar si el usuario es administrador, líder o miembro
+    es_admin = usuario.get('role') == 'admin'
+    es_lider = usuario.get('lider') == 'Si'
+    usuario_id = str(usuario['_id'])
+
+    # Convertir los filtros a ObjectId si existen
+    filtro_proyecto = request.args.get('proyecto')
+    filtro_miembro = request.args.get('miembro')
+    
+    if filtro_proyecto:
+        try:
+            filtro_proyecto = ObjectId(filtro_proyecto)
+        except:
+            filtro_proyecto = None
+    
+    if filtro_miembro:
+        try:
+            filtro_miembro = ObjectId(filtro_miembro)
+        except:
+            filtro_miembro = None
+
+    # Construir la query base para proyectos según el rol
+    if es_admin:
+        proyectos_query = {}
+    elif es_lider:
+        proyectos_query = {'lideres._id': ObjectId(usuario_id)}
+    else:
+        proyectos_query = {'miembros._id': ObjectId(usuario_id)}
+
+    # Aplicar filtro de proyecto si existe
+    if filtro_proyecto:
+        proyectos_query['_id'] = filtro_proyecto
+
+    # Obtener proyectos según los filtros
+    proyectos = list(proyectos_collection.find(proyectos_query))
+    
+    # Obtener todos los miembros de los proyectos filtrados
+    miembros_ids = set()
+    for proyecto in proyectos:
+        # Agregar líderes
+        for lider in proyecto.get('lideres', []):
+            if isinstance(lider, dict) and '_id' in lider:
+                miembros_ids.add(str(lider['_id']))
+        
+        # Agregar miembros
+        for miembro in proyecto.get('miembros', []):
+            if isinstance(miembro, dict) and '_id' in miembro:
+                miembros_ids.add(str(miembro['_id']))
+            elif isinstance(miembro, str):
+                miembros_ids.add(miembro)
+
+    # Convertir los IDs de string a ObjectId para la consulta
+    miembros_object_ids = [ObjectId(mid) for mid in miembros_ids if mid]
+    
+    # Obtener la información completa de los miembros
+    miembros = {str(miembro['_id']): miembro['nombre'] for miembro in usuarios_collection.find(
+        {'_id': {'$in': miembros_object_ids}},
+        {'_id': 1, 'nombre': 1}
+    )}
+
+    # Procesar las tareas
+    tareas = []
+    for proyecto in proyectos:
+        for tarea in proyecto.get('tareas', []):
+            # Aplicar filtro de miembro si existe
+            if filtro_miembro and str(tarea.get('miembro_asignado', '')) != str(filtro_miembro):
+                continue
+            
+            # Si no es admin ni líder, mostrar solo tareas asignadas al usuario
+            if not (es_admin or es_lider) and str(tarea.get('miembro_asignado')) != usuario_id:
+                continue
+            
+            # Obtener el nombre del miembro asignado
+            miembro_id = tarea.get('miembro_asignado')
+            miembro_nombre = 'Sin asignar'
+            if miembro_id:
+                miembro = usuarios_collection.find_one({'_id': ObjectId(miembro_id)}, {'nombre': 1})
+                if miembro:
+                    miembro_nombre = miembro.get('nombre', 'Sin asignar')
+            
+            # Enriquecer la tarea con información adicional
+            tarea_procesada = {
+                '_id': tarea.get('_id'),
+                'nombre': tarea.get('nombre'),
+                'descripcion': tarea.get('descripcion'),
+                'estado': tarea.get('estado'),
+                'fechavencimiento': tarea.get('fechavencimiento'),
+                'proyecto_nombre': proyecto.get('nombre'),
+                'proyecto_id': str(proyecto['_id']),
+                'asignado_a': miembro_nombre,  # Aquí usamos el miembro_nombre obtenido
+                'comentarios': tarea.get('comentarios', [])
+            }
+
+            # Procesar comentarios
+            comentarios_procesados = []
+            for comentario in tarea.get('comentarios', []):
+                comentarios_procesados.append({
+                    'texto': comentario.get('texto'),
+                    'fecha': comentario.get('fecha'),
+                    'nombre_autor': comentario.get('nombre_autor')
+                })
+            
+            tarea_procesada['comentarios'] = comentarios_procesados
+            tareas.append(tarea_procesada)
+
+    # Ordenar tareas por fecha de vencimiento
+    tareas.sort(key=lambda x: x.get('fechavencimiento', ''))
+
+    # Procesar miembros para la plantilla
+    miembros_processed = [{'_id': mid, 'nombre': nombre} for mid, nombre in miembros.items()]
+
+    # Procesar proyectos para la plantilla
+    proyectos_processed = [{'_id': str(proyecto['_id']), 'nombre': proyecto['nombre']} for proyecto in proyectos]
+
+    return render_template(
+        'ver_todas_las_tareas.html',
+        tareas=tareas,
+        proyectos=proyectos_processed,
+        miembros=miembros_processed,
+        es_admin=es_admin,
+        es_lider=es_lider,
+        usuario_actual=usuario
+    )
+
+
 @app.route('/validar_codigo/<correo>', methods=['GET', 'POST'])
 def validar_codigo(correo):
     usuario = usuarios_collection.find_one({'correo': correo})
@@ -1633,6 +1681,11 @@ def nuevo_proyecto():
 
     flash('No tienes permisos para realizar esta acción.', 'danger')
     return redirect(url_for('login'))
+
+@app.errorhandler(404)
+def pagina_no_encontrada(e):
+    # Renderiza una página personalizada para errores 404
+    return render_template('404.html'), 404
 
 if __name__ == '__main__':
     app.run(debug=True)

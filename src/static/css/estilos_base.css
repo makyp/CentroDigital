@@ -3,7 +3,7 @@ html {
     height: 100%;
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: #c1ccc4;
+    background-color: #b6b6b6;
 }
 
 /* Estilos para la barra superior */
@@ -174,15 +174,15 @@ label {
 
 /* Colores para las tareas según su estado */
 .kanban-task.pi {
-    background-color: #f5594b86; /* Rojo para "Por iniciar" */
+    background-color: #999999;
 }
 
 .kanban-task.ep {
-    background-color: #d9a40467; /* Amarillo para "En progreso" */
+    background-color: #9eee75;
 }
 
 .kanban-task.c {
-    background-color: #02733356; /* Verde para "Completado" */
+    background-color: #3abd33;
 }
 
 /* Kanban */
@@ -330,6 +330,14 @@ label {
         margin-top: 10px;
     }
 
+    h1 {
+        color: #027333;
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: bold;
+        font-size: 20px;
+    }
+
     .sidebar {
         width: 100%;
         left: -100%;
@@ -337,6 +345,17 @@ label {
         height: 100%;
         z-index: 1001;
     }
+
+    .sidebar-item {
+        display: block;
+        padding: 15px;
+        text-decoration: none;
+        color: #333;
+        border-radius: 10px;
+        transition: background-color 0.3s ease;
+        text-align: center;
+    }
+    
 
     .sidebar.active {
         left: 0;

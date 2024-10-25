@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Todas las Tareas{% endblock %}
+{% block title %}Tareas{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div>
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -21,161 +21,383 @@
     {% endwith %}
 
     <!-- Título de la página -->
-    <h1 class="mb-4 text-center text-success">Tareas y comentarios</h1>
+    <h1>Tareas</h1>
 
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('ver_tareas_y_actualizar') }}">
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="form-group mb-3">
+                            <label for="miembro" class="form-label">Filtrar por proyecto</label>
+                            <select name="proyecto" id="proyecto" class="form-control">
+                                <option value="">Todos los proyectos</option>
+                                {% for proyecto in proyectos %}
+                                <option value="{{ proyecto._id }}" {% if request.args.get('proyecto') == proyecto._id %}selected{% endif %}>
+                                    {{ proyecto.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group mb-3">
+                            <label for="miembro" class="form-label">Filtrar por Miembro</label>
+                            <select name="miembro" id="miembro" class="form-control">
+                                <option value="">Todos los miembros</option>
+                                {% for miembro in miembros %}
+                                <option value="{{ miembro._id }}" {% if request.args.get('miembro') == miembro._id %}selected{% endif %}>
+                                    {{ miembro.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group mb-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-filter"></i> Aplicar Filtros
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Si no hay tareas -->
+    {% if not tareas %}
+    <div class="alert alert-info text-center mt-5" role="alert">
+        <p>{{ "No hay tareas disponibles." }}</p>
+    </div>
+    {% else %}
     <!-- Tablero Kanban -->
     <table class="table table-bordered kanban-table">
         <thead>
             <tr>
-                <th>Por Hacer</th>
-                <th>En Progreso</th>
-                <th>Completada</th>
+                <th class="text-center">Por Hacer</th>
+                <th class="text-center">En Progreso</th>
+                <th class="text-center">Completada</th>
             </tr>
         </thead>
         <tbody>
             <tr class="kanban-column">
                 <!-- Columna "Por Hacer" -->
                 <td class="kanban-list">
-                    {% for tarea in tareas %}
-                        {% if tarea.estado == "Por iniciar" %}
-                            <div class="kanban-task pi mb-3 p-2 border">
-                                <strong>Proyecto:</strong> {{ tarea.proyecto_nombre }}<br>
-                                <strong>Nombre:</strong> {{ tarea.nombre }}<br>
-                                <strong>Descripción:</strong> {{ tarea.descripcion }}<br>
-                                <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
+                    {% for tarea in tareas if tarea.estado == "Por iniciar" %}
+                    <div class="kanban-task pi mb-3 p-2 border">
+                        <strong>Proyecto:</strong> {{ tarea.proyecto_nombre }}<br>
+                        <strong>Nombre:</strong> {{ tarea.nombre }}<br>
+                        <strong>Asignado a:</strong> {{ tarea.asignado_a }}<br>
+                        <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
 
-                                <!-- Botón para mostrar/ocultar comentarios -->
-                                <button class="btn btn-link" data-toggle="collapse" data-target="#comentarios{{ tarea._id }}" aria-expanded="false" aria-controls="comentarios{{ tarea._id }}">
-                                    Ver Comentarios
-                                </button>
+                        {% if session['role'] == "admin" or tarea.asignado_a == session['_id'] %}
+                        <div class="action-buttons ">
+                            <button class="btn btn-sm btn-success mt-2" data-toggle="modal" data-target="#modalEstado{{ tarea._id }}">
+                                Actualizar Estado
+                            </button>
+                            {% endif %}
+    
+                            <button class="btn btn-sm btn-success mt-2" data-toggle="modal" data-target="#modalComentarios{{ tarea._id }}">
+                                Ver Comentarios
+                            </button>
+                        </div>
 
-                                <!-- Comentarios -->
-                                <div class="collapse" id="comentarios{{ tarea._id }}">
-                                    <h6>Comentarios</h6>
-                                    <div class="list-group mb-3">
-                                        {% if tarea.comentarios and tarea.comentarios|length > 0 %}
-                                        {% for comentario in tarea.comentarios %}
-                                        <div class="list-group-item">
-                                            <strong>{{ comentario.nombre_autor }}:</strong> {{ comentario.texto }}
-                                            <small class="text-muted d-block">Publicado el {{ comentario.fecha }}</small>
-                                        </div>
-                                        {% endfor %}
-                                        {% else %}
-                                        <div class="list-group-item">Aún no hay comentarios.</div>
-                                        {% endif %}
+                        <!-- Modal para Actualizar Estado -->
+                        <div class="modal fade" id="modalEstado{{ tarea._id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Actualizar Estado de Tarea</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
                                     </div>
-
-                                    <!-- Formulario para agregar comentario -->
-                                    <form action="{{ url_for('comentar_tarea', proyecto_id=tarea.proyecto_id, tarea_id=tarea._id) }}" method="post">
-                                        <div class="form-group">
-                                            <label for="contenido">Añadir comentario:</label>
-                                            <textarea name="contenido" class="form-control" placeholder="Escribe un comentario" rows="2"></textarea>
-                                        </div>
-                                        <div class="text-center"> <!-- Centro el botón -->
-                                            <button type="submit" class="btn btn-success">Comentar</button>
-                                        </div>
-                                    </form>
+                                    <div class="modal-body">
+                                        <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
+                                            <div class="form-group">
+                                                <label for="estado">Estado:</label>
+                                                <select name="estado" class="form-control" onchange="toggleCommentField(this)">
+                                                    <option value="Por iniciar" {% if tarea.estado=="Por iniciar" %}selected{% endif %}>Por Hacer</option>
+                                                    <option value="En progreso" {% if tarea.estado=="En progreso" %}selected{% endif %}>En Progreso</option>
+                                                    <option value="Completado" {% if tarea.estado=="Completado" %}selected{% endif %}>Completada</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group" id="commentField{{ tarea._id }}" style="display: none;">
+                                                <label for="comentario">Comentario sobre la actividad realizada:</label>
+                                                <textarea id="comentario" name="comentario" class="form-control" placeholder="Ingrese el comentario aquí"></textarea>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                                <button type="submit" class="btn btn-success">Guardar Cambios</button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                        {% endif %}
+                        </div>
+
+                        <!-- Modal para Comentarios -->
+                        <div class="modal fade" id="modalComentarios{{ tarea._id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Comentarios de la Tarea</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="list-group mb-3">
+                                            {% if tarea.comentarios and tarea.comentarios|length > 0 %}
+                                            {% for comentario in tarea.comentarios %}
+                                            <div class="list-group-item">
+                                                <strong>{{ comentario.nombre_autor }}:</strong> {{ comentario.texto }}
+                                                <small class="text-muted d-block">Publicado el {{ comentario.fecha }}</small>
+                                            </div>
+                                            {% endfor %}
+                                            {% else %}
+                                            <div class="list-group-item">Aún no hay comentarios.</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <form action="{{ url_for('comentar_tarea', proyecto_id=tarea.proyecto_id, tarea_id=tarea._id) }}" method="post">
+                                            <div class="form-group">
+                                                <label for="contenido">Nuevo comentario:</label>
+                                                <textarea name="contenido" class="form-control" placeholder="Escribe un comentario" rows="2" required></textarea>
+                                            </div>
+                                            <div class="text-right">
+                                                <button type="submit" class="btn btn-success">Comentar</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
                 </td>
 
                 <!-- Columna "En Progreso" -->
                 <td class="kanban-list">
-                    {% for tarea in tareas %}
-                        {% if tarea.estado == "En progreso" %}
-                            <div class="kanban-task ep mb-3 p-2 border">
-                                <strong>Proyecto:</strong> {{ tarea.proyecto_nombre }}<br>
-                                <strong>Nombre:</strong> {{ tarea.nombre }}<br>
-                                <strong>Descripción:</strong> {{ tarea.descripcion }}<br>
-                                <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
+                    {% for tarea in tareas if tarea.estado == "En progreso" %}
+                    <div class="kanban-task ep mb-3 p-2 border">
+                        <strong>Proyecto:</strong> {{ tarea.proyecto_nombre }}<br>
+                        <strong>Nombre:</strong> {{ tarea.nombre }}<br>
+                        <strong>Asignado a:</strong> {{ tarea.asignado_a }}<br>
+                        <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
 
-                                <!-- Botón para mostrar/ocultar comentarios -->
-                                <button class="btn btn-link" data-toggle="collapse" data-target="#comentarios{{ tarea._id }}" aria-expanded="false" aria-controls="comentarios{{ tarea._id }}">
-                                    Ver Comentarios
-                                </button>
+                        {% if session['role'] == "admin" or tarea.asignado_a == session['_id'] %}
+                        
+                        <div class="action-buttons ">
+                            <button class="btn btn-sm btn-success mt-2" data-toggle="modal" data-target="#modalEstado{{ tarea._id }}">
+                                Actualizar Estado
+                            </button>
+                            {% endif %}
+    
+                            <button class="btn btn-sm btn-success mt-2" data-toggle="modal" data-target="#modalComentarios{{ tarea._id }}">
+                                Ver Comentarios
+                            </button>
 
-                                <!-- Comentarios -->
-                                <div class="collapse" id="comentarios{{ tarea._id }}">
-                                    <h6>Comentarios</h6>
-                                    <div class="list-group mb-3">
-                                        {% if tarea.comentarios and tarea.comentarios|length > 0 %}
-                                        {% for comentario in tarea.comentarios %}
-                                        <div class="list-group-item">
-                                            <strong>{{ comentario.nombre_autor }}:</strong> {{ comentario.texto }}
-                                            <small class="text-muted d-block">Publicado el {{ comentario.fecha }}</small>
-                                        </div>
-                                        {% endfor %}
-                                        {% else %}
-                                        <div class="list-group-item">Aún no hay comentarios.</div>
-                                        {% endif %}
+                        </div>
+
+                        <!-- Modal para Actualizar Estado -->
+                        <div class="modal fade" id="modalEstado{{ tarea._id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Actualizar Estado de Tarea</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
                                     </div>
-
-                                    <!-- Formulario para agregar comentario -->
-                                    <form action="{{ url_for('comentar_tarea', proyecto_id=tarea.proyecto_id, tarea_id=tarea._id) }}" method="post">
-                                        <div class="form-group">
-                                            <label for="contenido">Añadir comentario:</label>
-                                            <textarea name="contenido" class="form-control" placeholder="Escribe un comentario" rows="2"></textarea>
-                                        </div>
-                                        <div class="text-center"> <!-- Centro el botón -->
-                                            <button type="submit" class="btn btn-success">Comentar</button>
-                                        </div>
-                                    </form>
+                                    <div class="modal-body">
+                                        <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
+                                            <div class="form-group">
+                                                <label for="estado">Estado:</label>
+                                                <select name="estado" class="form-control" onchange="toggleCommentField(this)">
+                                                    <option value="Por iniciar" {% if tarea.estado=="Por iniciar" %}selected{% endif %}>Por Hacer</option>
+                                                    <option value="En progreso" {% if tarea.estado=="En progreso" %}selected{% endif %}>En Progreso</option>
+                                                    <option value="Completado" {% if tarea.estado=="Completado" %}selected{% endif %}>Completada</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group" id="commentField{{ tarea._id }}" style="display: none;">
+                                                <label for="comentario">Comentario sobre la actividad realizada:</label>
+                                                <textarea id="comentario" name="comentario" class="form-control" placeholder="Ingrese el comentario aquí"></textarea>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                                <button type="submit" class="btn btn-success">Guardar Cambios</button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                        {% endif %}
+                        </div>
+
+                        <!-- Modal para Comentarios -->
+                        <div class="modal fade" id="modalComentarios{{ tarea._id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Comentarios de la Tarea</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="list-group mb-3">
+                                            {% if tarea.comentarios and tarea.comentarios|length > 0 %}
+                                            {% for comentario in tarea.comentarios %}
+                                            <div class="list-group-item">
+                                                <strong>{{ comentario.nombre_autor }}:</strong> {{ comentario.texto }}
+                                                <small class="text-muted d-block">Publicado el {{ comentario.fecha }}</small>
+                                            </div>
+                                            {% endfor %}
+                                            {% else %}
+                                            <div class="list-group-item">Aún no hay comentarios.</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <form action="{{ url_for('comentar_tarea', proyecto_id=tarea.proyecto_id, tarea_id=tarea._id) }}" method="post">
+                                            <div class="form-group">
+                                                <label for="contenido">Nuevo comentario:</label>
+                                                <textarea name="contenido" class="form-control" placeholder="Escribe un comentario" rows="2" required></textarea>
+                                            </div>
+                                            <div class="text-right">
+                                                <button type="submit" class="btn btn-success">Comentar</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
                 </td>
 
-                <!-- Columna "Completada" -->
                 <td class="kanban-list">
-                    {% for tarea in tareas %}
-                        {% if tarea.estado == "Completado" %}
-                            <div class="kanban-task c mb-3 p-2 border">
-                                <strong>Proyecto:</strong> {{ tarea.proyecto_nombre }}<br>
-                                <strong>Nombre:</strong> {{ tarea.nombre }}<br>
-                                <strong>Descripción:</strong> {{ tarea.descripcion }}<br>
-                                <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
+                    {% for tarea in tareas if tarea.estado == "Completado" %}
+                    <div class="kanban-task c mb-3 p-2 border rounded">
+                        <strong>Proyecto:</strong> {{ tarea.proyecto_nombre }}<br>
+                        <strong>Nombre:</strong> {{ tarea.nombre }}<br>
+                        <strong>Asignado a:</strong> {{ tarea.asignado_a }}<br>
+                        <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
 
-                                <!-- Botón para mostrar/ocultar comentarios -->
-                                <button class="btn btn-link" data-toggle="collapse" data-target="#comentarios{{ tarea._id }}" aria-expanded="false" aria-controls="comentarios{{ tarea._id }}">
-                                    Ver Comentarios
-                                </button>
+                        {% if session['role'] == "admin" or tarea.asignado_a == session['_id'] %}
+                        <div class="action-buttons ">
+                            <button class="btn btn-sm btn-success mt-2" data-toggle="modal" data-target="#modalEstado{{ tarea._id }}">
+                                Actualizar Estado
+                            </button>
+                            {% endif %}
+    
+                            <button class="btn btn-sm btn-success mt-2" data-toggle="modal" data-target="#modalComentarios{{ tarea._id }}">
+                                Ver Comentarios
+                            </button>
 
-                                <!-- Comentarios -->
-                                <div class="collapse" id="comentarios{{ tarea._id }}">
-                                    <h6>Comentarios</h6>
-                                    <div class="list-group mb-3">
-                                        {% if tarea.comentarios and tarea.comentarios|length > 0 %}
-                                        {% for comentario in tarea.comentarios %}
-                                        <div class="list-group-item">
-                                            <strong>{{ comentario.nombre_autor }}:</strong> {{ comentario.texto }}
-                                            <small class="text-muted d-block">Publicado el {{ comentario.fecha }}</small>
-                                        </div>
-                                        {% endfor %}
-                                        {% else %}
-                                        <div class="list-group-item">Aún no hay comentarios.</div>
-                                        {% endif %}
+                        </div>
+
+                        <!-- Modal para Actualizar Estado -->
+                        <div class="modal fade" id="modalEstado{{ tarea._id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Actualizar Estado de Tarea</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
                                     </div>
-
-                                    <!-- Formulario para agregar comentario -->
-                                    <form action="{{ url_for('comentar_tarea', proyecto_id=tarea.proyecto_id, tarea_id=tarea._id) }}" method="post">
-                                        <div class="form-group">
-                                            <label for="contenido">Añadir comentario:</label>
-                                            <textarea name="contenido" class="form-control" placeholder="Escribe un comentario" rows="2"></textarea>
-                                        </div>
-                                        <div class="text-center"> <!-- Centro el botón -->
-                                            <button type="submit" class="btn btn-success">Comentar</button>
-                                        </div>
-                                    </form>
+                                    <div class="modal-body">
+                                        <form action="{{ url_for('cambiar_estado_tarea', id=tarea._id) }}" method="post">
+                                            <div class="form-group">
+                                                <label for="estado">Estado:</label>
+                                                <select name="estado" class="form-control" onchange="toggleCommentField(this)">
+                                                    <option value="Por iniciar" {% if tarea.estado=="Por iniciar" %}selected{% endif %}>Por Hacer</option>
+                                                    <option value="En progreso" {% if tarea.estado=="En progreso" %}selected{% endif %}>En Progreso</option>
+                                                    <option value="Completado" {% if tarea.estado=="Completado" %}selected{% endif %}>Completada</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group" id="commentField{{ tarea._id }}" style="display: none;">
+                                                <label for="comentario">Comentario sobre la actividad realizada:</label>
+                                                <textarea id="comentario" name="comentario" class="form-control" placeholder="Ingrese el comentario aquí"></textarea>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                                <button type="submit" class="btn btn-success">Guardar Cambios</button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                        {% endif %}
+                        </div>
+
+                        <!-- Modal para Comentarios -->
+                        <div class="modal fade" id="modalComentarios{{ tarea._id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Comentarios de la Tarea</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="list-group mb-3">
+                                            {% if tarea.comentarios and tarea.comentarios|length > 0 %}
+                                            {% for comentario in tarea.comentarios %}
+                                            <div class="list-group-item">
+                                                <strong>{{ comentario.nombre_autor }}:</strong> {{ comentario.texto }}
+                                                <small class="text-muted d-block">Publicado el {{ comentario.fecha }}</small>
+                                            </div>
+                                            {% endfor %}
+                                            {% else %}
+                                            <div class="list-group-item">Aún no hay comentarios.</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <form action="{{ url_for('comentar_tarea', proyecto_id=tarea.proyecto_id, tarea_id=tarea._id) }}" method="post">
+                                            <div class="form-group">
+                                                <label for="contenido">Nuevo comentario:</label>
+                                                <textarea name="contenido" class="form-control" placeholder="Escribe un comentario" rows="2" required></textarea>
+                                            </div>
+                                            <div class="text-right">
+                                                <button type="submit" class="btn btn-success">Comentar</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
                 </td>
             </tr>
         </tbody>
     </table>
+    {% endif %}
 </div>
+
+<script>
+    function toggleCommentField(select) {
+    const tareaId = select.closest('.modal').id.replace('modalEstado', '');
+    const commentField = document.getElementById('commentField' + tareaId);
+    commentField.style.display = select.value === 'Completado' ? 'block' : 'none';
+
+        if (select.value === 'Completado') {
+            console.log('Comentario requerido');
+        }
+    }
+</script>
+
 {% endblock %}

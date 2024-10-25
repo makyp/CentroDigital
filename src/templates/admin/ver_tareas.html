@@ -6,7 +6,7 @@ Ver Todas las Tareas
 
 {% block content %}
 <div class="container-fluid">
-    <h2 class="mb-4 text-center">Panel de administración de las tareas</h2>
+    <h1>Administración de las tareas</h1>
     <div class="row">
         <!-- Columna de filtros -->
         <div class="col-md-3">
@@ -18,7 +18,7 @@ Ver Todas las Tareas
                     <form method="GET" action="{{ url_for('ver_todas_las_tareas') }}">
                         <div class="form-group mb-3">
                             <label for="proyecto" class="form-label">Filtrar por Proyecto</label>
-                            <select name="proyecto" id="proyecto" class="form-select form-select-sm"
+                            <select name="proyecto" id="proyecto" class="form-control"
                                 style="width: 100%; max-width: 100%;">
                                 <option value="">Todos los proyectos</option>
                                 {% for proyecto in proyectos %}
@@ -31,7 +31,7 @@ Ver Todas las Tareas
                         </div>
                         <div class="form-group mb-3">
                             <label for="miembro" class="form-label">Filtrar por Miembro</label>
-                            <select name="miembro" id="miembro" class="form-select form-select-sm"
+                            <select name="miembro" id="miembro" class="form-control"
                                 style="width: 100%; max-width: 100%;">
                                 <option value="">Todos los miembros</option>
                                 {% for miembro in miembros %}
