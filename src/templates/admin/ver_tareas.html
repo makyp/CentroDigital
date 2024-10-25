@@ -42,9 +42,11 @@ Administración de las tareas
                                 {% endfor %}
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-success w-100">
-                            <i class="fas fa-filter"></i> Aplicar Filtros
-                        </button>
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-filter"></i> Aplicar Filtros
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -209,4 +211,4 @@ Administración de las tareas
         ajustarColspan();
         window.addEventListener('resize', ajustarColspan);
     </script>
-    {% endblock %}
+{% endblock %}

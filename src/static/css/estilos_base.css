@@ -19,7 +19,7 @@ body {
     padding: 10px 0;
     justify-content: center;
     text-align: center;
-    position: fixed;
+    position: static;
     bottom: -100px; /* Inicialmente oculto */
     width: 100%;
     transition: bottom 0.3s ease;
@@ -187,30 +187,34 @@ label {
 
 /* Estilos para la barra lateral */
 .sidebar {
-    height: calc(100vh - 70px);
+    height: 100vh; /* Ocupa toda la altura disponible */
     width: 180px;
     background-color: #84BF04;
-    padding-top: 20px;
+    padding-top: 10px;
+    padding-bottom: 30px;
     position: fixed;
     top: 70px;
     left: 0;
     border-radius: 0 5px 5px 0;
     transition: all 0.3s ease;
     z-index: 1000;
-    padding-bottom: 100px; 
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 100px;
 }
 
 /* Mejora de enlaces de la barra lateral */
 .sidebar a {
-    padding: 15px;
+    flex: 1; /* Distribución equitativa de los botones */
     text-align: center;
-    display: block;
     color: white;
-    margin: 10px 0;
+    margin: 5px 10px; /* Ajusta los márgenes para separar los botones */
     text-decoration: none;
     background-color: #027333;
     border-radius: 3px;
     transition: background-color 0.3s;
+    padding: 10px;
+    font-size: 14px; /* Tamaño de fuente reducido */
 }
 
 .table-responsive {
@@ -481,11 +485,11 @@ label {
 
     .navbar-custom .btn-top, 
     .action-buttons .btn {
-        font-size: 10px;
+        font-size: 8px;
     }
 
     .table th, .table td {
-        font-size: 12px;
+        font-size: 10px;
     }
 }
 
