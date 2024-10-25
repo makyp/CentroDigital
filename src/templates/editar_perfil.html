@@ -53,6 +53,16 @@ Editar Perfil
                 <label for="encargado">Encargado:</label>
                 <input type="text" id="encargado" name="encargado" value="{{ usuario.encargado }}" class="form-control" required>
             </div>
+
+            <div class="form-group">
+                <label for="direccion">Direccion:</label>
+                <input type="text" id="direccion" name="direccion" value="{{ usuario.direccion }}" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ciudad">Ciudad:</label>
+                <input type="text" id="ciudad" name="ciudad" value="{{ usuario.ciudad }}" class="form-control" required>
+            </div>
         {% endif %}
 
         <div class="text-center">
@@ -88,6 +98,7 @@ Editar Perfil
 
         // Establece el comportamiento del botón de confirmación en el modal
         document.getElementById('confirmEditBtn').onclick = function() {
+            document.getElementById('loading').style.display = "flex"; 
             document.getElementById('editProfileForm').submit(); // Envía el formulario
         };
     }

@@ -6,6 +6,79 @@ html {
     background-color: #b6b6b6;
 }
 
+body {
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+    padding-top: 60px;
+}
+
+.footer {
+    background-color: #027333;
+    color: white;
+    padding: 10px 0;
+    justify-content: center;
+    text-align: center;
+    position: fixed;
+    bottom: -100px; /* Inicialmente oculto */
+    width: 100%;
+    transition: bottom 0.3s ease;
+    z-index: 1000;
+    font-size: 14px;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+}
+
+footer.visible {
+    bottom: 0;
+}
+
+/* Estilos para la ventana emergente de cargando */
+#loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column; /* Colocar el espiral y el texto en columna */
+    align-items: center; /* Centrar horizontalmente */
+    justify-content: center; /* Centrar verticalmente */
+    text-align: center;
+    background: white;
+    width: 300px; /* Ancho de la ventana */
+    height: 300px; /* Altura de la ventana */
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Estilos para el espiral giratorio */
+.spinner {
+    border: 8px solid rgba(0, 0, 0, 0.1);
+    border-top: 8px solid #027333;
+    border-radius: 50%;
+    width: 80px; /* Tamaño del spinner */
+    height: 80px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px; /* Espacio entre el spinner y el texto */
+}
+
+/* Estilos para el texto de cargando *
+
+/* Animación del espiral giratorio */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 /* Estilos para la barra superior */
 .navbar-custom {
     background-color: #027333;
@@ -15,6 +88,10 @@ html {
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
+    position: fixed; /* Fija la barra en la parte superior */
+    top: 0; /* Asegúrate de que esté en la parte superior */
+    width: 100%; /* Ocupará toda la anchura de la ventana */
+    z-index: 1000; /* Asegúrate de que esté encima de otros elementos */
 }
 
 /* Centrar el título en la barra superior */
@@ -120,6 +197,7 @@ label {
     border-radius: 0 5px 5px 0;
     transition: all 0.3s ease;
     z-index: 1000;
+    padding-bottom: 100px; 
 }
 
 /* Mejora de enlaces de la barra lateral */
@@ -168,22 +246,28 @@ label {
 .content {
     margin-left: 220px;
     padding: 20px;
-    height: calc(100vh - 70px);
-    overflow-y: auto;
+    min-height: calc(100vh - 70px);
+    padding-bottom: 100px; /* Espacio para el footer */
+    position: relative;
 }
 
 /* Colores para las tareas según su estado */
+/* Colores y bordes redondeados para las tareas según su estado */
 .kanban-task.pi {
     background-color: #999999;
+    border-radius: 10px; /* Bordes redondeados */
 }
 
 .kanban-task.ep {
-    background-color: #9eee75;
+    background-color: #84bf04;
+    border-radius: 10px; /* Bordes redondeados */
 }
 
 .kanban-task.c {
     background-color: #3abd33;
+    border-radius: 10px; /* Bordes redondeados */
 }
+
 
 /* Kanban */
 .kanban-table {
@@ -310,6 +394,7 @@ label {
 
     .navbar-custom h2 {
         margin-bottom: 10px;
+        font-size: 16 px;
     }
 
     .navbar-custom .nav-buttons {
@@ -329,6 +414,20 @@ label {
         width: 100%;
         margin-top: 10px;
     }
+
+    .footer {
+        padding: 5px 0;
+        font-size: 12px;
+    }
+    
+    .content {
+        margin-bottom: 80px;
+    }
+
+    body{
+        padding-top: 180px;
+    }
+    
 
     h1 {
         color: #027333;

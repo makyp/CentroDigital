@@ -94,12 +94,13 @@ Proyectos
                                                 <ul style="margin-left: 0; padding-left: 0;">
                                                     {% for objetivosEspecificos in proyecto.objetivosEspecificos %}
                                                     <li style="list-style-type: none;">
-                                                        <strong>{{ loop.index }}.</strong> {{ objetivosEspecificos.descripcion }}
+                                                        <strong>{{ loop.index }}.</strong> {{
+                                                        objetivosEspecificos.descripcion }}
                                                     </li>
                                                     {% endfor %}
                                                 </ul>
                                             </td>
-                                        </tr>                                                                                                                  
+                                        </tr>
                                         <tr>
                                             <td class="centered"><strong>Descripción</strong></td>
                                             <td>{{ proyecto.descripcion }}</td>
@@ -116,13 +117,11 @@ Proyectos
                                             <td class="centered"><strong>Miembros</strong></td>
                                             <td>
                                                 {% if proyecto.miembros|length > 0 %}
-                                                    <ul style="margin-left: 20px;">
-                                                        {% for miembro in proyecto.miembros %}
-                                                        <li>{{ miembro.nombre }}</li>
-                                                        {% endfor %}
-                                                    </ul>
+                                                {% for miembro in proyecto.miembros %}
+                                                <li>{{ miembro.nombre }}</li>
+                                                {% endfor %}
                                                 {% else %}
-                                                    Sin asignar
+                                                Sin asignar
                                                 {% endif %}
                                             </td>
                                         </tr>
@@ -130,16 +129,14 @@ Proyectos
                                             <td class="centered"><strong>Líder</strong></td>
                                             <td>
                                                 {% if proyecto.lideres|length > 0 %}
-                                                    <ul style="margin-left: 20px;">
-                                                        {% for lider in proyecto.lideres %}
-                                                        <li>{{ lider.nombre }}</li>
-                                                        {% endfor %}
-                                                    </ul>
+                                                {% for lider in proyecto.lideres %}
+                                                <li>{{ lider.nombre }}</li>
+                                                {% endfor %}
                                                 {% else %}
-                                                    Sin asignar
+                                                Sin asignar
                                                 {% endif %}
                                             </td>
-                                        </tr>                                        
+                                        </tr>
                                     </tbody>
                                 </table>
                             </td>
@@ -169,7 +166,7 @@ Proyectos
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteButton">Eliminar</button>
+                <button type="button" class="btn btn-success" id="confirmDeleteButton">Eliminar</button>
             </div>
         </div>
     </div>
@@ -184,6 +181,9 @@ Proyectos
     }
 
     document.getElementById('confirmDeleteButton').addEventListener('click', function () {
+        // Muestra el div de loading antes de realizar la solicitud
+        document.getElementById('loading').style.display = "flex"; // Muestra el loading
+
         fetch(eliminarUrl, {
             method: 'POST'
         })
@@ -192,7 +192,12 @@ Proyectos
                     window.location.href = response.url; // Redirigir si la respuesta es una redirección
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => console.error('Error:', error))
+            .finally(() => {
+                // Oculta el modal de confirmación y el loading
+                $('#confirmDeleteModal').modal('hide');
+                document.getElementById('loading').style.display = "none"; // Oculta el loading
+            });
     });
 
     // Función para mostrar/ocultar la información adicional
@@ -208,7 +213,7 @@ Proyectos
 
     function ajustarColspan() {
         var filasDetalles = document.querySelectorAll('.detail-row');
-        var pantallaAncha = window.innerWidth >= 768; 
+        var pantallaAncha = window.innerWidth >= 768;
         filasDetalles.forEach(function (fila) {
             fila.setAttribute('colspan', pantallaAncha ? '5' : '4');
         });
@@ -217,6 +222,5 @@ Proyectos
     ajustarColspan();
 
     window.addEventListener('resize', ajustarColspan);
-
 </script>
 {% endblock %}

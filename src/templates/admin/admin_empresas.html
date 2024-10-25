@@ -18,67 +18,74 @@ Administrar Empresas
                     </div>
                 {% endif %}
             {% endwith %}
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead style="background-color: #027333; color: white;">
-                        <tr>
-                            <th>Nombre de la empresa</th>
-                            <th>Teléfono</th>
-                            <th>Encargado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for usuario in usuarios %}
+
+            {% if usuarios|length == 0 %}
+                <div class="alert alert-success" role="alert">
+                    No se ha suscrito ninguna empresa.
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead style="background-color: #027333; color: white;">
                             <tr>
-                                <td>
-                                    <a href="#" class="nombre-usuario" style="color: black;" onclick="toggleInfo('{{ usuario._id }}'); return false;">
-                                        {{ usuario.nombre }}
-                                    </a>
-                                </td>
-                                <td>{{ usuario.telefono }}</td>
-                                <td>{{ usuario.encargado }}</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-success mb-2" data-id="{{ usuario._id }}" onclick="showConfirmModal(this);">Eliminar</button>
-                                        <button class="btn btn-success mb-2" onclick="toggleInfo('{{ usuario._id }}'); return false;">Ver detalles</button>
-                                    </div>                                    
-                                </td>
+                                <th>Nombre de la empresa</th>
+                                <th>Teléfono</th>
+                                <th>Encargado</th>
+                                <th>Acciones</th>
                             </tr>
-                            <tr id="info-{{ usuario._id }}" style="display: none;">
-                                <td colspan="4" style="padding: 15px; background-color: #f9f9f9;">
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <td style="width: 30%;"><strong>Campo</strong></td>
-                                                <td style="width: 70%;">Información</td>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td><strong>NIT:</strong></td>
-                                                <td>{{ usuario.nit }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Correo:</strong></td>
-                                                <td>{{ usuario.correo }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Dirección:</strong></td>
-                                                <td>{{ usuario.direccion }}</td>  
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Ciudad:</strong></td>
-                                                <td>{{ usuario.ciudad }}</td>     
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>            
+                        </thead>
+                        <tbody>
+                            {% for usuario in usuarios %}
+                                <tr>
+                                    <td>
+                                        <a href="#" class="nombre-usuario" style="color: black;" onclick="toggleInfo('{{ usuario._id }}'); return false;">
+                                            {{ usuario.nombre }}
+                                        </a>
+                                    </td>
+                                    <td>{{ usuario.telefono }}</td>
+                                    <td>{{ usuario.encargado }}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-success mb-2" data-id="{{ usuario._id }}" onclick="showConfirmModal(this);">Eliminar</button>
+                                            <button class="btn btn-success mb-2" onclick="toggleInfo('{{ usuario._id }}'); return false;">Ver detalles</button>
+                                        </div>                                    
+                                    </td>
+                                </tr>
+                                <tr id="info-{{ usuario._id }}" style="display: none;">
+                                    <td colspan="4" style="padding: 15px; background-color: #f9f9f9;">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <td style="width: 30%;"><strong>Campo</strong></td>
+                                                    <td style="width: 70%;">Información</td>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>NIT:</strong></td>
+                                                    <td>{{ usuario.nit }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Correo:</strong></td>
+                                                    <td>{{ usuario.correo }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Dirección:</strong></td>
+                                                    <td>{{ usuario.direccion }}</td>  
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Ciudad:</strong></td>
+                                                    <td>{{ usuario.ciudad }}</td>     
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -98,7 +105,7 @@ Administrar Empresas
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger" id="confirmDelete">Eliminar</button>
+                <button type="button" class="btn btn-success" id="confirmDelete">Eliminar</button>
             </div>
         </div>
     </div>
@@ -113,6 +120,9 @@ Administrar Empresas
     }
 
     document.getElementById('confirmDelete').addEventListener('click', async function() {
+        // Muestra el div de loading antes de realizar la solicitud
+        document.getElementById('loading').style.display = "flex"; // Muestra el loading
+
         try {
             const response = await fetch(`/eliminar_empresa/${empresaIdToDelete}`, {
                 method: 'POST',
@@ -132,7 +142,9 @@ Administrar Empresas
         } catch (error) {
             alert('Error al eliminar la empresa: ' + error.message);
         } finally {
+            // Oculta el modal de confirmación y el loading
             $('#confirmDeleteModal').modal('hide');
+            document.getElementById('loading').style.display = "none"; // Oculta el loading
         }
     });
 
@@ -145,4 +157,5 @@ Administrar Empresas
         }
     }
 </script>
+
 {% endblock %}

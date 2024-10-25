@@ -113,6 +113,7 @@ Solicitud de Proyecto
 
         // Establece el comportamiento del botón de confirmación en el modal
         document.getElementById('confirmRequestBtn').onclick = function() {
+            document.getElementById('loading').style.display = "flex"; 
             document.getElementById('projectRequestForm').submit(); // Envía el formulario
         };
     }

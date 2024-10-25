@@ -98,7 +98,7 @@ Asignar Miembros y Líderes a Proyecto
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger" id="confirmDelete">Eliminar</button>
+                <button type="button" class="btn btn-success" id="confirmDelete">Eliminar</button>
             </div>
         </div>
     </div>
@@ -169,6 +169,7 @@ Asignar Miembros y Líderes a Proyecto
         });
 
         document.getElementById('confirmDelete').addEventListener('click', function() {
+            document.getElementById('loading').style.display = "flex"; 
             document.getElementById('formEliminar').submit();
         });
 
@@ -177,7 +178,9 @@ Asignar Miembros y Líderes a Proyecto
         });
 
         document.getElementById('confirmAdd').addEventListener('click', function() {
-            document.getElementById('formAgregar').submit();
+            // Muestra el div de loading antes de enviar el formulario
+            document.getElementById('loading').style.display = "flex"; // Muestra el loading
+            document.getElementById('formAgregar').submit(); // Envía el formulario
         });
 
         // Filtrar miembros disponibles

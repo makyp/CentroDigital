@@ -9,6 +9,8 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="{{ url_for('static', filename='css/estilos_base.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/loading.js') }}"></script>
+
 </head>
 
 <body>
@@ -179,6 +181,18 @@
         {% endblock %}
     </div>
 
+    <footer class="footer">
+        <p>&copy; 2024 Centro Digital de Desarrollo Tecnológico. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Ventana de carga -->
+    <div id="loading" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p style="font-size: 24px; color: #027333; font-weight: bold; text-align: center;">Cargando</p>
+        </div>
+    </div> 
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -187,6 +201,67 @@
         document.getElementById('menu-toggle').addEventListener('click', function () {
             var sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('active');
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const footer = document.querySelector('.footer');
+            let isFooterVisible = false;
+
+            function checkFooterVisibility() {
+                const docHeight = Math.max(
+                    document.body.scrollHeight,
+                    document.body.offsetHeight,
+                    document.documentElement.clientHeight,
+                    document.documentElement.scrollHeight,
+                    document.documentElement.offsetHeight
+                );
+
+                const windowBottom = window.scrollY + window.innerHeight;
+                const contentHeight = window.innerHeight;
+                const hasScroll = docHeight > contentHeight;
+
+                // Si no hay scroll O hemos llegado al final del contenido
+                if (!hasScroll || windowBottom >= docHeight - 50) {
+                    if (!isFooterVisible) {
+                        footer.classList.add('visible');
+                        isFooterVisible = true;
+                    }
+                } else {
+                    if (isFooterVisible) {
+                        footer.classList.remove('visible');
+                        isFooterVisible = false;
+                    }
+                }
+            }
+
+            // Verificar con throttling para mejor rendimiento
+            let ticking = false;
+            window.addEventListener('scroll', function () {
+                if (!ticking) {
+                    window.requestAnimationFrame(function () {
+                        checkFooterVisibility();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            // Verificar inmediatamente al cargar
+            setTimeout(checkFooterVisibility, 100);
+
+            // Verificar cuando cambie el tamaño de la ventana
+            window.addEventListener('resize', checkFooterVisibility);
+
+            // Verificar cuando cambie el contenido
+            const contentContainer = document.querySelector('.content');
+            if (contentContainer) {
+                const observer = new MutationObserver(checkFooterVisibility);
+                observer.observe(contentContainer, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true
+                });
+            }
         });
     </script>
 </body>

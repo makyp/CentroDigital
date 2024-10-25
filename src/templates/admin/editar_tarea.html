@@ -89,7 +89,11 @@ Editar Tarea
 
         // Establece el comportamiento del botón de confirmación en el modal
         document.getElementById('confirmEditBtn').onclick = function() {
-            document.getElementById('editTaskForm').submit(); // Envía el formulario
+            // Muestra el div de loading antes de enviar el formulario
+            document.getElementById('loading').style.display = "flex"; // Muestra el loading
+
+            // Envía el formulario
+            document.getElementById('editTaskForm').submit();
         };
     }
 </script>

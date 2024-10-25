@@ -44,7 +44,8 @@
                             </script>
                             {% endif %}
                             {% endwith %}
-                            <form method="POST" action="{{ url_for('registro_empresa') }}" onsubmit="return validarContraseñas();">
+                            <form method="POST" action="{{ url_for('registro_empresa') }}"
+                                onsubmit="return validarContraseñas();">
                                 <div class="form-group">
                                     <label for="nombre">Nombre empresa:</label>
                                     <input type="text" name="empresa" class="form-control" required>
@@ -82,15 +83,25 @@
                                 </div>
                                 <label for="Confirm_password" class="form-label">Confirmar Contraseña</label>
                                 <div class="input-group">
-                                    <input type="password" id="Confirm_password" class="form-control" name="Confirm_password" required>
-                                    <span class="input-group-text" onclick="togglePassword('Confirm_password', 'eyeIcon2')">
+                                    <input type="password" id="Confirm_password" class="form-control"
+                                        name="Confirm_password" required>
+                                    <span class="input-group-text"
+                                        onclick="togglePassword('Confirm_password', 'eyeIcon2')">
                                         <i id="eyeIcon2" class="fas fa-eye"></i>
                                     </span>
                                 </div>
-                                <div id="passwordHelpBlock" class="form-text" style="color:red;"></div>
+                                <div id="passwordHelpBlock" class="form-text" style="color:rgb(255, 153, 0);"></div>
+
+                                <div class="form-group mt-3">
+                                    <input type="checkbox" id="acepto_terminos" disabled>
+                                    <label for="acepto_terminos">Acepto los <a href="#"
+                                            onclick="mostrarTerminos(event)" style="color: #027333; text-decoration: none;" 
+                                            onmouseover="this.style.color='#D9A404'" 
+                                            onmouseout="this.style.color='#027333'">términos y condiciones</a></label>
+                                </div>
                                 <br>
                                 <button type="submit" class="btn btn-primary">Registrar</button>
-                            </form>                            
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -98,6 +109,82 @@
         </div>
     </section>
 
+    <!-- Modal de términos y condiciones -->
+    <div class="modal" id="modalTerminos" tabindex="-1" style="display:none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Términos y Condiciones de Uso</h5>
+                    <button type="button" class="btn-close" onclick="cerrarModal()"></button>
+                </div>
+                <div class="modal-body" style="max-height: 600px; overflow-y: auto;">
+                    <p>Al acceder y utilizar este sistema web, aceptas cumplir con los siguientes términos y
+                        condiciones. Si no estás de acuerdo con alguna parte de estos términos, te recomendamos no
+                        utilizar el sistema.</p>
+                    <h6>Uso del Servicio</h6>
+                    <p>El sistema web está diseñado para gestionar los procesos del Centro Digital de Desarrollo
+                        Tecnológico de la Universidad de Cundinamarca y solo debe usarse para fines legales y de acuerdo
+                        con las políticas establecidas. El uso indebido del sistema puede conllevar sanciones y la
+                        restricción del acceso.</p>
+                    <h6>Responsabilidad del Usuario</h6>
+                    <p>Al radicar una solicitud, confirmas que tienes los derechos necesarios sobre la información
+                        presentada y que esta no infringe derechos de terceros. Eres responsable de la veracidad y
+                        exactitud de los datos proporcionados.</p>
+                    <h6>Proceso de Solicitud</h6>
+                    <p>Para radicar una solicitud, debes completar el formulario correspondiente con la información
+                        requerida, asegurándote de que todos los datos sean precisos, completos y estén actualizados. El
+                        Centro Digital de Desarrollo Tecnológico se reserva el derecho de verificar la información
+                        suministrada y rechazar solicitudes que no cumplan con los criterios establecidos.</p>
+                    <h6>Registro de Usuario</h6>
+                    <p>Para acceder a ciertas funcionalidades del sistema, es posible que debas registrarte como
+                        usuario. Eres responsable de mantener la confidencialidad de tu contraseña y los datos de tu
+                        cuenta, y de todas las actividades realizadas bajo tu nombre de usuario. Los datos personales
+                        ingresados podrán ser consultados desde el sistema y pueden ser modificados en caso de
+                        requerirse únicamente por el usuario.</p>
+                    <h6>Propiedad Intelectual</h6>
+                    <p>Todos los contenidos, diseños y funcionalidades del sistema web son propiedad del Centro Digital
+                        de Desarrollo Tecnológico de la Universidad de Cundinamarca y están protegidos por leyes de
+                        derechos de autor y marcas registradas. El uso no autorizado de estos contenidos será objeto de
+                        acciones legales.</p>
+                    <h6>Limitación de Responsabilidad</h6>
+                    <p>El Centro Digital de Desarrollo Tecnológico no será responsable por daños directos o indirectos
+                        que resulten del uso del sistema web. El acceso y uso de la plataforma se realiza bajo el propio
+                        riesgo del usuario.</p>
+                    <h6>Confidencialidad y Protección de Datos Personales</h6>
+                    <p>La información que suministres será tratada de manera confidencial y se utilizará exclusivamente
+                        para los fines establecidos en la gestión y evaluación de proyectos. El tratamiento de los datos
+                        personales se realizará conforme a la Ley 1581 de 2012, el Decreto Reglamentario 1377 de 2013, y
+                        las demás disposiciones aplicables en Colombia.</p>
+                    <h6>Política de Tratamiento de Datos Personales</h6>
+                    <p>El Centro Digital de Desarrollo Tecnológico, en cumplimiento de la Ley 1581 de 2012 y el Decreto
+                        1074 de 2015, recolecta, almacena, utiliza y circula información personal de los titulares que
+                        acceden a los servicios. La información se encuentra resguardada en nuestras bases de datos, y
+                        los titulares tienen derecho a solicitar en cualquier momento el acceso, actualización,
+                        rectificación, eliminación o supresión de sus datos personales. Para ejercer estos derechos,
+                        pueden enviar una solicitud a través de los canales dispuestos por el CENDETEC.</p>
+                    <h6>Derechos de los Titulares de la Información</h6>
+                    <ul>
+                        <li>Conocer, actualizar y rectificar su información personal.</li>
+                        <li>Solicitar prueba de la autorización otorgada para el tratamiento de sus datos.</li>
+                        <li>Ser informados sobre el uso que se ha dado a su información.</li>
+                        <li>Presentar quejas ante la Superintendencia de Industria y Comercio si consideran que sus
+                            derechos han sido vulnerados.</li>
+                    </ul>
+                    <h6>Modificaciones a los Términos y Condiciones</h6>
+                    <p>El Centro Digital de Desarrollo Tecnológico se reserva el derecho de modificar estos términos en
+                        cualquier momento. Se informará sobre cambios importantes a través de los medios oficiales, y se
+                        entenderá que continúas aceptando los términos modificados si sigues usando el sistema después
+                        de la notificación.</p>
+                    <p>Al utilizar este sistema web, aceptas expresamente el tratamiento de tus datos personales de
+                        acuerdo con lo aquí estipulado.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="rechazarTerminos()">Rechazar</button>
+                    <button type="button" class="btn btn-success" onclick="aceptarTerminos()">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <footer>
         <div class="contenedor-footer">
             <div class="content-foo">
@@ -164,6 +251,34 @@
 
             passwordHelpBlock.textContent = "";  // Si la contraseña es válida, limpia el mensaje de error
             return true;  // Permite el envío del formulario
+        }
+
+        function mostrarTerminos(event) {
+            event.preventDefault();
+            document.getElementById('modalTerminos').style.display = 'block';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalTerminos').style.display = 'none';
+        }
+
+        function aceptarTerminos() {
+            document.getElementById('acepto_terminos').checked = true;
+            cerrarModal();
+        }
+
+        function rechazarTerminos() {
+            document.getElementById('acepto_terminos').checked = false;
+            cerrarModal();
+        }
+
+        function validarFormulario() {
+            // Validar si el checkbox de términos está marcado
+            if (!document.getElementById('acepto_terminos').checked) {
+                alert("Debes aceptar los términos y condiciones para completar el registro.");
+                return false;
+            }
+            return true;
         }
     </script>
 </body>

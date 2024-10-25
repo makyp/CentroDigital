@@ -10,8 +10,6 @@ Agregar Tarea a Proyecto
     <div class="row">
         <!-- Columna izquierda (30%) - Selección de proyecto -->
         <div class="col-md-4">
-            
-            
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
                     <div class="alert alert-info" role="alert">
@@ -93,10 +91,6 @@ Agregar Tarea a Proyecto
                 </form>
             </div>
 
-            <!-- Mensaje cuando no hay proyecto seleccionado -->
-            <div id="mensajeSeleccion" class="d-flex justify-content-center align-items-center h-100" style="display: none;">
-                <h4 class="text-muted">Seleccione un proyecto para agregar una tarea</h4>
-            </div>
         </div>
     </div>
 </div>
@@ -111,6 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const formTarea = document.getElementById('formTarea');
     const selectedProyectoIdInput = document.getElementById('selected_proyecto_id');
     const noMiembrosP = document.getElementById('noMiembros');
+    const mensajeSeleccion = document.getElementById('mensajeSeleccion');
 
     proyectoSelect.addEventListener('change', function() {
         if (this.value) {
@@ -149,8 +144,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             formularioTarea.style.display = 'block';
+            mensajeSeleccion.style.display = 'none'; // Ocultar mensaje al seleccionar proyecto
         } else {
             formularioTarea.style.display = 'none';
+            mensajeSeleccion.style.display = 'flex'; // Mostrar mensaje al no seleccionar proyecto
         }
     });
 

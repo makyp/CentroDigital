@@ -286,7 +286,7 @@
 
                 <td class="kanban-list">
                     {% for tarea in tareas if tarea.estado == "Completado" %}
-                    <div class="kanban-task c mb-3 p-2 border rounded">
+                    <div class="kanban-task c mb-3 p-2">
                         <strong>Proyecto:</strong> {{ tarea.proyecto_nombre }}<br>
                         <strong>Nombre:</strong> {{ tarea.nombre }}<br>
                         <strong>Asignado a:</strong> {{ tarea.asignado_a }}<br>

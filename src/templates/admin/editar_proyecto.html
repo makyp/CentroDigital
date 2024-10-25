@@ -106,7 +106,9 @@ Editar Proyecto
 <!-- Script para manejar la confirmación -->
 <script>
     document.getElementById('confirmEdit').addEventListener('click', function () {
-        document.getElementById('editForm').submit();
+        // Muestra el div de loading antes de enviar el formulario
+        document.getElementById('loading').style.display = "flex"; // Muestra el loading
+        document.getElementById('editForm').submit(); // Envía el formulario
     });
 
     document.addEventListener('DOMContentLoaded', function () {

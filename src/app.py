@@ -86,10 +86,10 @@ def login():
                 return redirect(url_for('perfil'))
             else:
                 # Agregar mensaje flash de error si la contraseña es incorrecta
-                flash('Correo o contraseña incorrectos.', 'danger')
+                flash('Correo o contraseña incorrectos.', 'success')
         else:
             # Agregar mensaje flash de error si el usuario no existe
-            flash('Correo o contraseña incorrectos.', 'danger')
+            flash('Correo o contraseña incorrectos.', 'success')
     
     # Renderizar la página de inicio de sesión
     return render_template('inicio_sesion/login.html')
@@ -218,7 +218,7 @@ def admin_empresas():
         
         return render_template('admin/admin_empresas.html', usuarios=getusuarios)
     else:
-        flash('No tienes permisos para acceder a esta página.', 'danger')
+        flash('No tienes permisos para acceder a esta página.', 'success')
         return redirect(url_for('login'))
 
 @app.route('/eliminar_empresa/<id>', methods=['POST'])
@@ -350,7 +350,7 @@ def admin_proyectos():
         flash('No tienes permisos para realizar esta acción.')
         return redirect(url_for('login'))
 
-    print(f'Lista de proyectos: {lista_proyectos}')  # Imprime la lista de proyectos
+    ##print(f'Lista de proyectos: {lista_proyectos}')  # Imprime la lista de proyectos
 
     for proyecto in lista_proyectos:
         # Buscar la empresa relacionada usando 'id_empresa'
@@ -778,7 +778,11 @@ def comentar_tarea(proyecto_id, tarea_id):
     if request.method == 'POST':
         contenido = request.form['contenido']
         autor = session['nombre']
-        comentario = {'nombre_autor': autor, 'texto': contenido, 'fecha': datetime.now().isoformat()}
+        comentario = {
+            'nombre_autor': autor,
+            'texto': contenido,
+            'fecha': datetime.now().isoformat()
+        }
 
         # Encuentra el proyecto correspondiente
         proyecto = proyectos_collection.find_one({'_id': ObjectId(proyecto_id)})
@@ -792,11 +796,36 @@ def comentar_tarea(proyecto_id, tarea_id):
                     {'_id': ObjectId(proyecto_id), 'tareas._id': ObjectId(tarea_id)},
                     {'$push': {'tareas.$.comentarios': comentario}}
                 )
-                flash('Comentario agregado exitosamente.')
-                return redirect(url_for('ver_tareas_general'))
+                
+                # Envía correos a todos los miembros del equipo
+                nombre_tarea = tarea_filtrada[0]['nombre']
+                miembros_equipo = proyecto.get('miembros', [])  # Suponiendo que 'miembros' contiene la lista de usuarios del proyecto
+
+                for miembro in miembros_equipo:
+                    msg = Message(
+                        subject=f'Nuevo comentario en la tarea: {nombre_tarea}',
+                        sender='centrodigitaldedesarrollotecno@gmail.com',
+                        recipients=[miembro['correo']]
+                    )
+                    msg.body = f"""
+                    Estimado(a) {miembro['nombre']},
+
+                    {autor} ha comentado en la tarea "{nombre_tarea}":
+
+                    "{contenido}"
+
+                    Si tienes alguna pregunta, no dudes en contactarnos.
+
+                    Saludos,
+                    Tu Equipo
+                    """
+                    mail.send(msg)
+
+                flash('Comentario agregado exitosamente y notificación enviada a los miembros del equipo.')
+                return redirect(url_for('ver_tareas_y_actualizar'))
         
         flash('Error al agregar el comentario.', 'danger')
-    return redirect(url_for('ver_tareas_general'))
+    return redirect(url_for('ver_tareas_y_actualizar'))
 
 @app.route('/tarea/<id>/editar', methods=['GET', 'POST'])
 def editar_tarea(id):
@@ -877,7 +906,7 @@ def editar_tarea(id):
 
                 return redirect(url_for('ver_todas_las_tareas'))
             except Exception as e:
-                flash('Error al actualizar la tarea.', 'danger')
+                flash('Error al actualizar la tarea.', 'success')
                 print(f'Error: {e}')
 
         # Obtener los miembros del proyecto y convertir sus ObjectId a cadenas
@@ -954,7 +983,7 @@ def eliminar_tarea(id):
                     mail.send(msg)
 
         except Exception as e:
-            flash('Error al eliminar la tarea.', 'danger')
+            flash('Error al eliminar la tarea.', 'success')
             print(f'Error: {e}')
 
         return redirect(url_for('ver_todas_las_tareas'))
@@ -996,12 +1025,12 @@ def perfil():
 @app.route('/editar_perfil', methods=['GET', 'POST'])
 def editar_perfil():
     if 'correo' not in session:
-        flash('Debes iniciar sesión para editar tu perfil.', 'danger')
+        flash('Debes iniciar sesión para editar tu perfil.', 'success')
         return redirect(url_for('login'))
 
     usuario = usuarios_collection.find_one({'correo': session['correo']})
     if not usuario:
-        flash('Usuario no encontrado.', 'danger')
+        flash('Usuario no encontrado.', 'success')
         return redirect(url_for('login'))
 
     if request.method == 'POST':
@@ -1032,10 +1061,15 @@ def editar_perfil():
         elif usuario['role'] == 'empresa':
             nit = request.form.get('nit')
             encargado = request.form.get('encargado')
+            ciudad = request.form.get('ciudad')
+            direccion = request.form.get('direccion')
 
             update_data.update({
                 'nit': nit,
-                'encargado': encargado
+                'encargado': encargado,
+                'ciudad': ciudad,
+                'direccion': direccion
+
             })
 
         # Actualizar los datos del usuario en la base de datos
@@ -1411,12 +1445,12 @@ def solicitar_proyecto():
                   "Recibirá una respuesta en un plazo de 15 días hábiles. ¡Gracias por su solicitud!"
         flash(mensaje, 'success')
 
-        # Preparar el correo de confirmación
-        msg = Message(
+        # Preparar el correo de confirmación para el solicitante
+        msg_solicitante = Message(
             subject="Confirmación de Solicitud de Proyecto",
             recipients=[correo_soli]
         )
-        msg.body = f"""
+        msg_solicitante.body = f"""
         Estimado/a {nombre_soli},
 
         Nos complace informarle que su solicitud para el proyecto '{nombre_proyecto}' ha sido recibida con éxito.
@@ -1433,7 +1467,38 @@ def solicitar_proyecto():
         Saludos cordiales,
         Centro Digital de Desarrollo Tecnológico
         """
-        mail.send(msg)
+        mail.send(msg_solicitante)
+
+        # Obtener correos de administradores
+        administradores = usuarios_collection.find({'role': 'admin'}, {'correo': 1})
+        lista_administradores = [admin['correo'] for admin in administradores]
+
+        # Enviar notificación a los administradores
+        if lista_administradores:  # Solo enviar si hay administradores
+            msg_admin = Message(
+                subject=f'Nueva Solicitud de Proyecto: {nombre_proyecto}',
+                recipients=lista_administradores
+            )
+            msg_admin.body = f"""
+            Estimados Administradores,
+
+            La empresa ha radicado una nueva solicitud de proyecto.
+
+            Detalles de la solicitud:
+            - Nombre del proyecto: {nombre_proyecto}
+            - Descripción: {descripcion}
+            - Requerimientos: {requerimientos}
+            - Tiempo estimado: {tiempo_estimado} semanas
+            - Solicitante: {nombre_soli}
+            - Correo del solicitante: {correo_soli}
+            - Teléfono del solicitante: {telefono_soli}
+
+            Favor revisar la solicitud y proceder con los siguientes pasos.
+
+            Saludos,
+            Centro Digital de Desarrollo Tecnológico
+            """
+            mail.send(msg_admin)
 
         return redirect(url_for('ver_solicitudes'))
 
@@ -1484,20 +1549,20 @@ def actualizar_solicitud(solicitud_id):
             # Buscar la solicitud
             solicitud = solicitudes_collection.find_one({'_id': ObjectId(solicitud_id)})
             if not solicitud:
-                flash('Solicitud no encontrada.', 'danger')
+                flash('Solicitud no encontrada.', 'success')
                 return redirect(url_for('ver_todas_solicitudes'))
 
             # Buscar la empresa asociada
             empresa_id = solicitud.get('empresa_id')
             empresa = usuarios_collection.find_one({'_id': ObjectId(empresa_id)})
             if not empresa:
-                flash('Empresa no encontrada.', 'danger')
+                flash('Empresa no encontrada.', 'success')
                 return redirect(url_for('ver_todas_solicitudes'))
 
             # Validar comentario de rechazo si el estado es "Rechazado"
             if nuevo_estado == 'Rechazado':
                 if not comentario_rechazo:
-                    flash('Debe proporcionar un comentario al rechazar la solicitud.', 'danger')
+                    flash('Debe proporcionar un comentario al rechazar la solicitud.', 'success')
                     return redirect(url_for('ver_todas_solicitudes'))
 
                 # Actualizar el estado de la solicitud a "Rechazado" con comentario
@@ -1554,7 +1619,7 @@ def actualizar_solicitud(solicitud_id):
 
         except Exception as e:
             print(f"Error actualizando la solicitud: {e}")
-            flash('Ocurrió un error al actualizar la solicitud.', 'danger')
+            flash('Ocurrió un error al actualizar la solicitud.', 'success')
 
     # Siempre redirigir a la lista de solicitudes después del procesamiento
     return redirect(url_for('ver_todas_solicitudes'))
@@ -1590,12 +1655,12 @@ def nuevo_proyecto():
 
             # Validar que todos los campos requeridos estén presentes
             if not all([nombre, descripcion, fechainicio, fechafinal, objetivo_general, estado]):
-                flash('Todos los campos son obligatorios.', 'danger')
+                flash('Todos los campos son obligatorios.', 'success')
                 return redirect(url_for('nuevo_proyecto'))
 
             # Validar que fechainicio sea anterior a fechafinal
             if fechainicio > fechafinal:
-                flash('La fecha de inicio debe ser anterior a la fecha final.', 'danger')
+                flash('La fecha de inicio debe ser anterior a la fecha final.', 'success')
                 return redirect(url_for('nuevo_proyecto'))
 
             try:
@@ -1604,7 +1669,7 @@ def nuevo_proyecto():
                 usuarios = usuarios_collection.find_one({'_id': ObjectId(empresa_id)})
                 print(ObjectId(solicitud_id))
                 if not solicitud:
-                    flash('Solicitud no encontrada.', 'danger')
+                    flash('Solicitud no encontrada.', 'success')
                     return redirect(url_for('ver_todas_solicitudes'))
                 
                 # Obtener los correos de solicitud y empresa
@@ -1613,7 +1678,7 @@ def nuevo_proyecto():
 
                 # Validar que al menos uno de los correos esté disponible
                 if not correo_solicitante and not correo_empresa:
-                    flash('No hay correos disponibles para enviar la notificación.', 'danger')
+                    flash('No hay correos disponibles para enviar la notificación.', 'success')
                     return redirect(url_for('ver_todas_solicitudes'))
 
                 # Crear la lista de destinatarios, solo con los correos válidos
@@ -1675,11 +1740,11 @@ def nuevo_proyecto():
 
             except Exception as e:
                 print(f"Error aprobando la solicitud: {e}")
-                flash('Ocurrió un error al aprobar la solicitud.', 'danger')
+                flash('Ocurrió un error al aprobar la solicitud.', 'success')
 
             return redirect(url_for('admin_proyectos'))  # Redirigir de vuelta a la lista de proyectos
 
-    flash('No tienes permisos para realizar esta acción.', 'danger')
+    flash('No tienes permisos para realizar esta acción.', 'success')
     return redirect(url_for('login'))
 
 @app.errorhandler(404)
