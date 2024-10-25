@@ -177,7 +177,7 @@ label {
     border-radius: 3px;
     transition: background-color 0.3s;
     order: 3;
-    font-size: 10px; 
+    font-size: 8px; 
 }
 
 #menu-toggle:hover {
@@ -206,6 +206,8 @@ label {
 /* Mejora de enlaces de la barra lateral */
 .sidebar a {
     flex: 1; /* Distribución equitativa de los botones */
+    display: flex;
+    justify-content: center;
     text-align: center;
     color: white;
     margin: 5px 10px; /* Ajusta los márgenes para separar los botones */
