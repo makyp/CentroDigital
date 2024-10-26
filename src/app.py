@@ -51,7 +51,6 @@ def es_lider_usuario():
 def index():
     return render_template('index.html')
 
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -388,7 +387,6 @@ def admin_proyectos():
                 tarea['miembro_asignado'] = "Sin asignar"
 
     return render_template('admin/admin_proyectos.html', proyectos=lista_proyectos)
-
 
 @app.route('/indicadores/<proyecto_id>', methods=['GET'])
 def ver_indicadores(proyecto_id):

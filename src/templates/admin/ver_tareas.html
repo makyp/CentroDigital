@@ -133,7 +133,6 @@ Administración de las tareas
                                         </tr>
                                     </tbody>
                                 </table>
-
                             </td>
                         </tr>
                         {% endfor %}
@@ -164,8 +163,8 @@ Administración de las tareas
             </div>
         </div>
     </div>
-
-    <script>
+</div>
+<script>
         function toggleInfo(id) {
             var infoRow = document.getElementById('info-' + id);
             if (infoRow.style.display === 'none') {
@@ -211,4 +210,5 @@ Administración de las tareas
         ajustarColspan();
         window.addEventListener('resize', ajustarColspan);
     </script>
-{% endblock %}
+
+    {% endblock %}
