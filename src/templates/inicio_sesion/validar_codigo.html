@@ -26,6 +26,17 @@
                     <div class="card bg-glass">
                         <div class="card-body px-4 py-5 px-md-5">
                             <h1 class="h3 mb-3" style="color: black;">Validar Código</h1>
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                            <div class="alert-container">
+                                {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% endwith %}
                             <form method="POST" onsubmit="return validarContraseñas();">
                                 {% if not codigo_valido %}
                                 <label for="codigo" class="form-label">Ingresa el código de validación:</label>
@@ -56,20 +67,14 @@
                                 </div>
                                 <br>
 
-                                <button class="btn btn-primary w-100 py-2" type="submit">Cambiar Contraseña</button>
+                                <button class="btn btn-primary w-100 py-2" type="submit"
+                                    onclick="mostrarCargando()">Cambiar Contraseña</button>
                                 {% endif %}
                             </form>
                             <div id="passwordHelpBlock" class="form-text" style="color:red;"></div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <!-- Ventana de carga -->
-        <div id="loading" style="display: none;">
-            <div class="loading-content">
-                <div class="spinner"></div>
-                <p style="font-size: 24px; color: #027333; font-weight: bold; text-align: center;">Cargando</p>
             </div>
         </div>
     </section>
@@ -111,22 +116,32 @@
             }
         }
 
-        // Validar si la nueva contraseña cumple con los requisitos de seguridad
         function validarContraseñas() {
-            var newPasswordField = document.getElementById("nueva_password");
-            var newPassword = newPasswordField.value;
+            var newPassword = document.getElementById("nueva_password").value;
+            var confirmPassword = document.getElementById("confirmar_password").value;
             var passwordHelpBlock = document.getElementById("passwordHelpBlock");
+
+            // Limpiar mensaje de error anterior
+            passwordHelpBlock.textContent = "";
 
             // Requisitos de la contraseña
             var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[.*\/%$#+-;])[A-Za-z\d.*\/%$#+-;]{8,}$/;
 
+            // Validar que la contraseña cumpla con los requisitos
             if (!regex.test(newPassword)) {
                 passwordHelpBlock.textContent = "La nueva contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y uno de los siguientes caracteres especiales: * . / % $ + # - ;";
-                return false;  // Impide el envío del formulario si la nueva contraseña no es válida
+                return false;
             }
 
-            passwordHelpBlock.textContent = "";  // Si la contraseña es válida, limpia el mensaje de error
-            return true;  // Permite el envío del formulario
+            // Validar que las contraseñas coincidan
+            if (newPassword !== confirmPassword) {
+                passwordHelpBlock.textContent = "Las contraseñas no coinciden.";
+                return false;
+            }
+
+            // Si todo está correcto, mostrar el loading
+            mostrarCargando();
+            return true;
         }
     </script>
 

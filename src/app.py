@@ -333,9 +333,10 @@ def admin_proyectos():
     elif 'correo' in session and session.get('lider') == 'Si':
         lider_id = str(session['_id'])  # Asegúrate de que _id esté en el formato correcto
         print(f'Líder ID en sesión: {lider_id}')  # Verifica el ID del líder
-
-        # Buscar proyectos donde el líder está en la lista de líderes
-        proyectos = proyectos_collection.find({'lideres._id': ObjectId(lider_id)})
+    elif 'correo' in session and session.get('role') == 'miembro':
+        usuario_id = str(session['_id'])
+        # Buscar proyectos donde el líder está en la lista de miembros
+        proyectos = proyectos_collection.find({'miembros._id': ObjectId(usuario_id)})
         lista_proyectos = list(proyectos)  # Convierte a lista aquí
         ##print(f'Proyectos encontrados para el líder {lider_id}: {lista_proyectos}')  # Imprime los proyectos encontrados
     elif 'correo' in session and session.get('role') == 'empresa':
@@ -348,8 +349,6 @@ def admin_proyectos():
     else:
         flash('No tienes permisos para realizar esta acción.')
         return redirect(url_for('login'))
-
-    ##print(f'Lista de proyectos: {lista_proyectos}')  # Imprime la lista de proyectos
 
     for proyecto in lista_proyectos:
         # Buscar la empresa relacionada usando 'id_empresa'
@@ -1377,39 +1376,58 @@ def ver_tareas_y_actualizar():
 def validar_codigo(correo):
     usuario = usuarios_collection.find_one({'correo': correo})
     
+    if not usuario:
+        flash('Usuario no encontrado.', 'error')
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         codigo_ingresado = request.form.get('codigo')
         nueva_password = request.form.get('nueva_password')
         confirmar_password = request.form.get('confirmar_password')
 
-        # Validar el código de recuperación 
-        if not nueva_password and not confirmar_password:
+        # Validar el código de recuperación
+        if codigo_ingresado and not (nueva_password or confirmar_password):
             if usuario.get('codigo_validacion') == codigo_ingresado:
-                flash('Código de validación correcto. Ahora puedes cambiar tu contraseña.')
+                flash('Código de validación correcto. Ahora puedes cambiar tu contraseña.', 'success')
                 return redirect(url_for('validar_codigo', correo=correo) + '?validado=true')
             else:
-                flash('El código de validación es incorrecto.')
+                flash('El código de validación es incorrecto.', 'error')
                 return redirect(url_for('validar_codigo', correo=correo))
 
-        # Validar las contraseñas ingresadas 
+        # Validar las contraseñas ingresadas
         if nueva_password and confirmar_password:
+            # Verificar que las contraseñas coincidan
             if nueva_password != confirmar_password:
-                flash('Las contraseñas no coinciden.')
-                return redirect(url_for('validar_codigo', correo=correo) + '?validado=true')
-            
+                flash('Las contraseñas no coinciden.', 'error')
+                return render_template('inicio_sesion/validar_codigo.html', 
+                                     correo=correo, 
+                                     codigo_valido=True)
 
+            # Validar requisitos de seguridad de la contraseña
+            password_pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[.*\/%$#+-;])[A-Za-z\d.*\/%$#+-;]{8,}$'
+            if not re.match(password_pattern, nueva_password):
+                flash('La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y uno de los siguientes caracteres especiales: * . / % $ + # - ;', 'error')
+                return render_template('inicio_sesion/validar_codigo.html', 
+                                     correo=correo, 
+                                     codigo_valido=True)
+
+            # Si todo está correcto, actualizar la contraseña
             nueva_password_hashed = generate_password_hash(nueva_password)
             usuarios_collection.update_one(
                 {'correo': correo},
-                {'$set': {'password': nueva_password_hashed, 'codigo_validacion': None,'CambioDeContraseña':None}}
+                {'$set': {
+                    'password': nueva_password_hashed,
+                    'codigo_validacion': None,
+                    'CambioDeContraseña': None
+                }}
             )
-            flash('Contraseña actualizada exitosamente.')
+            flash('Contraseña actualizada exitosamente.', 'success')
             return redirect(url_for('login'))
 
-    # Aquí verificamos si el código fue validado y cambiamos la vista en base a esa variable
+    # Verificar si el código fue validado
     codigo_valido = request.args.get('validado') == 'true'
 
-    # Renderizar la plantilla con el estado del código valido
+    # Renderizar la plantilla
     return render_template('inicio_sesion/validar_codigo.html', correo=correo, codigo_valido=codigo_valido)
 
 @app.route('/solicitar_proyecto', methods=['GET', 'POST'])

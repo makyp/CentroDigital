@@ -21,7 +21,7 @@ Proyectos
 
             {% if proyectos|length == 0 %}
             <div class="alert alert-warning" role="alert">
-                No cuentas con ninguna solicitud probada.
+                No cuentas se ha radicado ningun proyecto.
             </div>
             {% else %}
             <div class="table-responsive">
@@ -49,20 +49,23 @@ Proyectos
                             <td class="centered">{{ proyecto.estado }}</td>
                             <td>
                                 <div class="action-buttons" style="flex-direction: column;">
-                                    {% if session.get('role') != 'empresa' %}
+                                    {% if session.get('role') != 'empresa' or session.get('lider') != 'No' %}
                                     <a href="{{ url_for('editar_proyecto', id=proyecto._id) }}"
                                         class="btn btn-success mb-2">
                                         Editar
-                                    </a>
-                                    <a href="#" data-url="{{ url_for('eliminar_proyecto', id=proyecto._id) }}"
-                                        onclick="showDeleteModal(this);" class="btn btn-success mb-2">
-                                        Eliminar
                                     </a>
                                     <a href="{{ url_for('asignar_miembros', id=proyecto._id) }}"
                                         class="btn btn-success mb-2">
                                         Miembros
                                     </a>
                                     {% endif %}
+                                    {% if session.get('role') == 'admin' %}
+                                    <a href="#" data-url="{{ url_for('eliminar_proyecto', id=proyecto._id) }}"
+                                        onclick="showDeleteModal(this);" class="btn btn-success mb-2">
+                                        Eliminar
+                                    </a>
+                                    {% endif %}
+
                                     <a href="{{ url_for('ver_indicadores', proyecto_id=proyecto._id) }}"
                                         class="btn btn-success mb-2">
                                         Métricas

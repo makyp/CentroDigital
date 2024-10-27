@@ -25,6 +25,18 @@
                     <div class="card bg-glass">
                         <div class="card-body px-4 py-5 px-md-5">
                             <h1 class="h3 mb-3" style="color: black;">Recuperar Contraseña</h1>
+                            <!-- Bloque para mostrar mensajes flash -->
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                            <div class="alert-container">
+                                {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% endwith %}
                             <form method="POST" action="/recuperacion">
                                 <label for="exampleFormControlInput1" class="form-label">Correo Electrónico</label>
                                 <input type="email" class="form-control" id="exampleFormControlInput1"
