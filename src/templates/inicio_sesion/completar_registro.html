@@ -39,8 +39,7 @@
                             </div>
                             {% endif %}
                             {% endwith %}
-                            <form method="POST" action="{{ url_for('completar_registro', token=token) }}"
-                                onsubmit="return validarContraseñas();">
+                            <form method="POST" action="{{ url_for('completar_registro', token=token) }}" onsubmit="return validarFormulario() && validarContraseñas();">
                                 <div class="form-group">
                                     <label for="nombre_completo">Nombre Completo:</label>
                                     <input type="text" name="nombre_completo" class="form-control"

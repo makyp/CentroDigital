@@ -44,8 +44,7 @@
                             </script>
                             {% endif %}
                             {% endwith %}
-                            <form method="POST" action="{{ url_for('registro_empresa') }}"
-                                onsubmit="return validarContraseñas();">
+                            <form method="POST" action="{{ url_for('registro_empresa') }}" onsubmit="return validarFormulario() && validarContraseñas();">
                                 <div class="form-group">
                                     <label for="nombre">Nombre empresa:</label>
                                     <input type="text" name="empresa" class="form-control" required>
@@ -64,7 +63,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="telefono">Teléfono de contacto:</label>
-                                    <input type="text" name="telefono" class="form-control" required>
+                                    <input type="number" name="telefono" class="form-control" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="direccion">Dirección:</label>
@@ -94,9 +93,9 @@
 
                                 <div class="form-group mt-3">
                                     <input type="checkbox" id="acepto_terminos" disabled>
-                                    <label for="acepto_terminos">Acepto los <a href="#"
-                                            onclick="mostrarTerminos(event)" style="color: #027333; text-decoration: none;" 
-                                            onmouseover="this.style.color='#D9A404'" 
+                                    <label for="acepto_terminos">Acepto los <a href="#" onclick="mostrarTerminos(event)"
+                                            style="color: #027333; text-decoration: none;"
+                                            onmouseover="this.style.color='#D9A404'"
                                             onmouseout="this.style.color='#027333'">términos y condiciones</a></label>
                                 </div>
                                 <br>
@@ -225,6 +224,15 @@
                 eyeIcon.classList.remove("fa-eye-slash");
                 eyeIcon.classList.add("fa-eye");
             }
+        }
+
+        function validarFormulario() {
+            // Validar si el checkbox de términos está marcado
+            if (!document.getElementById('acepto_terminos').checked) {
+                alert("Debes aceptar los términos y condiciones para completar el registro.");
+                return false;
+            }
+            return true;
         }
 
         // Validar la contraseña según los requisitos
