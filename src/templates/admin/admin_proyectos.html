@@ -49,33 +49,31 @@ Proyectos
                             <td class="centered">{{ proyecto.estado }}</td>
                             <td>
                                 <div class="action-buttons" style="flex-direction: column;">
-                                    {% if session.get('role') != 'empresa' or session.get('lider') != 'No' %}
-                                    <a href="{{ url_for('editar_proyecto', id=proyecto._id) }}"
-                                        class="btn btn-success mb-2">
+                            
+                                    {% if session.get('role') == 'admin' or session.get('lider') == 'Si' %}                                 
+                                    <a href="{{ url_for('editar_proyecto', id=proyecto._id) }}" class="btn btn-success mb-2">
                                         Editar
                                     </a>
-                                    <a href="{{ url_for('asignar_miembros', id=proyecto._id) }}"
-                                        class="btn btn-success mb-2">
+                                    <a href="{{ url_for('asignar_miembros', id=proyecto._id) }}" class="btn btn-success mb-2">
                                         Miembros
                                     </a>
                                     {% endif %}
+                                    
                                     {% if session.get('role') == 'admin' %}
                                     <a href="#" data-url="{{ url_for('eliminar_proyecto', id=proyecto._id) }}"
                                         onclick="showDeleteModal(this);" class="btn btn-success mb-2">
                                         Eliminar
                                     </a>
                                     {% endif %}
-
-                                    <a href="{{ url_for('ver_indicadores', proyecto_id=proyecto._id) }}"
-                                        class="btn btn-success mb-2">
+                            
+                                    <a href="{{ url_for('ver_indicadores', proyecto_id=proyecto._id) }}" class="btn btn-success mb-2">
                                         Métricas
                                     </a>
-                                    <a href="#" onclick="toggleInfo('{{ proyecto._id }}'); return false;"
-                                        class="btn btn-success mb-2">
+                                    <a href="#" onclick="toggleInfo('{{ proyecto._id }}'); return false;" class="btn btn-success mb-2">
                                         Ver detalles
                                     </a>
                                 </div>
-                            </td>
+                            </td>                            
                         </tr>
                         <tr id="info-{{ proyecto._id }}" style="display: none;">
                             <td colspan="5" class="detail-row" style="padding: 15px; background-color: #f9f9f9;">
