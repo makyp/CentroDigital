@@ -1336,7 +1336,8 @@ def ver_tareas_y_actualizar():
                 'fechavencimiento': tarea.get('fechavencimiento'),
                 'proyecto_nombre': proyecto.get('nombre'),
                 'proyecto_id': str(proyecto['_id']),
-                'asignado_a': miembro_nombre,  # Aquí usamos el miembro_nombre obtenido
+                'asignado_a': miembro_nombre,
+                'miembro_id' : miembro_id,
                 'comentarios': tarea.get('comentarios', [])
             }
 

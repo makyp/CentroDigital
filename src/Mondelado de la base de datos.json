@@ -1,0 +1,107 @@
+{
+    "bd_AdminProyectos": {
+        "proyectos": {
+            "_id": {
+                "$oid": ""
+            },
+            "nombre": "",
+            "descripcion": "",
+            "fechainicio": "",
+            "fechafinal": "",
+            "estado": "",
+            "objetivoGeneral": "",
+            "objetivosEspecificos": [
+                {
+                    "id": "",
+                    "descripcion": ""
+                }
+            ],
+            "solicitud_id": {
+                "$oid": ""
+            },
+            "empresa_id": {
+                "$oid": "c"
+            },
+            "miembros": [
+                {
+                    "_id": {
+                        "$oid": ""
+                    }
+                }
+            ],
+            "lideres": [
+                {
+                    "_id": {
+                        "nombre_autor": "",
+                        "texto":"",
+                        "fecha":""
+                    }
+                }
+            ],
+            "tareas": [
+                {
+                    "_id": {
+                        "$oid": ""
+                    },
+                    "nombre": "",
+                    "descripcion": "",
+                    "fechavencimiento": "",
+                    "miembro_asignado": "",
+                    "estado": "",
+                    "objetivo_especifico_id": "",
+                    "comentarios": [
+                        {
+                            "_id": {
+                                "$oid": ""
+                            }
+                            
+                        }
+                    ]
+                }
+            ]
+        },
+        "solicitudes": {
+            "_id": {
+                "$oid": ""
+            },
+            "nombre": "",
+            "descripcion": "",
+            "requerimientos": "",
+            "tiempo_estimado": "",
+            "nombre_soli": "",
+            "correo_soli": "",
+            "telefono_soli": "",
+            "fecha_solicitud": {
+                "$date": {
+                    "$numberLong": ""
+                }
+            },
+            "estado": "",
+            "empresa_id": {
+                "$oid": ""
+            }
+        },
+        "usuarios": {
+            "_id": {
+                "$oid": ""
+            },
+            "nombre": "",
+            "correo": "",
+            "role": "",
+            "nit": "",
+            "encargado": "",
+            "telefono": "",
+            "direccion": "",
+            "ciudad": "",
+            "password": "",
+            "registroCompletado": "",
+            "lider": "",
+            "estudios": "",
+            "experiencia": "",
+            "habilidades": [],
+            "profesion": "",
+            "programa": ""
+        }
+    }
+}
+
