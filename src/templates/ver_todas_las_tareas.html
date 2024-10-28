@@ -96,7 +96,7 @@
                         <strong>Asignado a:</strong> {{ tarea.asignado_a }}<br>
                         <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
 
-                        {% if session['role'] == "admin" or tarea.asignado_a == session['_id'] %}
+                        {% if session['role'] == "admin" or tarea.miembro_id == session['_id'] %}
                         <div class="action-buttons ">
                             <button class="btn btn-sm btn-success mt-2" data-toggle="modal" data-target="#modalEstado{{ tarea._id }}">
                                 Actualizar Estado
@@ -295,7 +295,7 @@
                         <strong>Asignado a:</strong> {{ tarea.asignado_a }}<br>
                         <strong>Fecha Vencimiento:</strong> {{ tarea.fechavencimiento }}<br>
 
-                        {% if session['role'] == "admin" or tarea.asignado_a == session['_id'] %}
+                        {% if session['role'] == "admin" or tarea.miembro_id == session['_id'] %}
                         <div class="action-buttons ">
                             <button class="btn btn-sm btn-success mt-2" data-toggle="modal" data-target="#modalEstado{{ tarea._id }}">
                                 Actualizar Estado

@@ -1315,10 +1315,6 @@ def ver_tareas_y_actualizar():
             if filtro_miembro and str(tarea.get('miembro_asignado', '')) != str(filtro_miembro):
                 continue
             
-            # Si no es admin ni líder, mostrar solo tareas asignadas al usuario
-            if not (es_admin or es_lider) and str(tarea.get('miembro_asignado')) != usuario_id:
-                continue
-            
             # Obtener el nombre del miembro asignado
             miembro_id = tarea.get('miembro_asignado')
             miembro_nombre = 'Sin asignar'
