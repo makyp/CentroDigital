@@ -119,16 +119,7 @@
             </div>
         </a>
         {% if session.get('lider') == 'Si' %}
-        <a href="{{ url_for('admin_proyectos') }}" class="sidebar-item">
-            <div class="row">
-                <div class="col-8 d-flex align-items-center">
-                    <span class="sidebar-text">Administrar Proyectos</span>
-                </div>
-                <div class="col-4 d-flex justify-content-center align-items-center">
-                    <i class="fas fa-project-diagram"></i>
-                </div>
-            </div>
-        </a>
+        
         <a href="{{ url_for('ver_todas_las_tareas') }}" class="sidebar-item">
             <div class="row">
                 <div class="col-8 d-flex align-items-center">

@@ -332,7 +332,8 @@ def admin_proyectos():
         lista_proyectos = list(proyectos)  # Convierte a lista aquí
     elif 'correo' in session and session.get('lider') == 'Si':
         lider_id = str(session['_id'])  # Asegúrate de que _id esté en el formato correcto
-        print(f'Líder ID en sesión: {lider_id}')  # Verifica el ID del líder
+        proyectos = proyectos_collection.find({'lideres._id': ObjectId(lider_id)})
+        lista_proyectos = list(proyectos)  # Convierte a lista aquí
     elif 'correo' in session and session.get('role') == 'miembro':
         usuario_id = str(session['_id'])
         # Buscar proyectos donde el líder está en la lista de miembros
