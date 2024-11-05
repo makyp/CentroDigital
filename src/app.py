@@ -194,6 +194,7 @@ def completar_registro(token):
 
 @app.route('/logout')
 def logout():
+    session.clear()
     session.pop('correo', None)
     session.pop('role', None)
     return redirect(url_for('login'))
