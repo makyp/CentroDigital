@@ -103,7 +103,7 @@ def mock_db(monkeypatch):
             return result
 
         def delete_one(self, query):
-            # Manejar eliminación por ID
+            # Manejar eliminación por ID, aceptando tanto str como ObjectId
             id_str = str(query.get('_id', ''))
             print("delete_one - query:", query)  # Depuración
             if id_str in self.data:
@@ -117,7 +117,7 @@ def mock_db(monkeypatch):
                 def __init__(self):
                     self.deleted_count = 0
             return DeleteResult()
-
+        
         def find(self, query=None):
             # Manejar consultas de búsqueda
             if query is None:
