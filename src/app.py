@@ -1,5 +1,4 @@
 import datetime
-import secrets
 import random
 from itsdangerous import URLSafeTimedSerializer
 import string
@@ -56,35 +55,22 @@ def login():
     if request.method == 'POST':
         correo = request.form['correo']
         password = request.form['password']
-        
-        # Consulta para buscar al usuario en la base de datos
         usuario = usuarios_collection.find_one({'correo': correo})
-        
-        # Verificar si el usuario existe
         if usuario:
-            # Verificar si la contraseña es correcta
             if usuario['password'] and password.strip() and check_password_hash(usuario['password'], password):
-                # Guardar datos de usuario en sesión
                 session['correo'] = usuario['correo']
                 session['role'] = usuario['role']
                 session['nombre'] = usuario['nombre']
                 session['lider'] = usuario.get('lider', False)
                 session['_id'] = str(usuario['_id'])
-                
-                # Si el usuario tiene el rol de 'empresa'
                 if usuario['role'] == 'empresa':
                     session['empresa_id'] = str(usuario['_id'])  # Convertir ObjectId a string
                     return redirect(url_for('perfil'))  # Redirigir al perfil
-
-                # Verificar si el registro está completo para roles distintos de 'empresa'
                 if not usuario.get('registroCompletado', False):
                     flash('Debes completar tu registro antes de iniciar sesión.', 'warning')
                     return redirect(url_for('login')) # Generar token y redirigir
-
-                # Si el registro está completo, redirigir al perfil
                 return redirect(url_for('perfil'))
             else:
-                # Agregar mensaje flash de error si la contraseña es incorrecta
                 flash('Correo o contraseña incorrectos.', 'success')
         else:
             # Agregar mensaje flash de error si el usuario no existe
@@ -112,7 +98,7 @@ def registro():
                         "nombre": nombre,
                         "correo": correo,
                         "role": role,
-                        "password": generate_password_hash(VerificationCode),  # Contraseña temporal generada
+                        "password": generate_password_hash(VerificationCode),  
                         "registroCompletado": False,
                         "lider": "No"  # Por defecto, no es líder
                     }
@@ -194,6 +180,7 @@ def completar_registro(token):
 
 @app.route('/logout')
 def logout():
+    session.clear()
     session.pop('correo', None)
     session.pop('role', None)
     return redirect(url_for('login'))
