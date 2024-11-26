@@ -52,7 +52,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="telefono">Teléfono:</label>
-                                    <input type="text" name="telefono" class="form-control" required maxlength="10">
+                                    <input type="number" name="telefono" class="form-control" required maxlength="10">
                                 </div>
                                 <div class="form-group">
                                     <label for="profesion">Profesión:</label>
@@ -213,7 +213,7 @@
             var passwordHelpBlock = document.getElementById("passwordHelpBlock");
 
             // Requisitos de la contraseña
-            var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[.*\/%$#+-;])[A-Za-z\d.*\/]{8,}$/;
+            var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>~])[A-Za-z\d!@#$%^&*(),.?":{}|<>~]{8,}$/;
 
             if (!regex.test(newPassword)) {
                 passwordHelpBlock.textContent = "La nueva contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números";
