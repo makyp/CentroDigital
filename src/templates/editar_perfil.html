@@ -16,7 +16,7 @@ Editar Perfil
 
         <div class="form-group">
             <label for="telefono">Teléfono:</label>
-            <input type="text" id="telefono" name="telefono" value="{{ usuario.telefono }}" class="form-control" required>
+            <input type="number" id="telefono" name="telefono" value="{{ usuario.telefono }}" class="form-control" required maxlength="10">
         </div>
 
         <!-- Campos adicionales para Miembro o Admin -->
@@ -46,7 +46,7 @@ Editar Perfil
         {% if usuario.role == 'empresa' %}
             <div class="form-group">
                 <label for="nit">NIT:</label>
-                <input type="text" id="nit" name="nit" value="{{ usuario.nit }}" class="form-control" required>
+                <input type="number" id="nit" name="nit" value="{{ usuario.nit }}" class="form-control" required maxlength="9">
             </div>
 
             <div class="form-group">

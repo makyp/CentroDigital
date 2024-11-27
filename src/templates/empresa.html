@@ -47,7 +47,7 @@
                             <form method="POST" action="{{ url_for('registro_empresa') }}" onsubmit="return validarFormulario() && validarContraseñas();">
                                 <div class="form-group">
                                     <label for="nombre">Nombre empresa:</label>
-                                    <input type="text" name="empresa" class="form-control" required>
+                                    <input type="text" name="empresa" class="form-control" required pattern="[a-zA-Z\s]+">
                                 </div>
                                 <div class="form-group">
                                     <label for="correo">Correo:</label>
@@ -55,7 +55,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="NIT">NIT:</label>
-                                    <input type="text" name="NIT" class="form-control" required>
+                                    <input type="number" name="NIT" class="form-control" maxlength="9" required >
                                 </div>
                                 <div class="form-group">
                                     <label for="encargado">Nombre persona encargada:</label>
@@ -63,7 +63,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="telefono">Teléfono de contacto:</label>
-                                    <input type="number" name="telefono" class="form-control" required>
+                                    <input type="number" name="telefono" class="form-control" required  maxlength="10">
                                 </div>
                                 <div class="form-group">
                                     <label for="direccion">Dirección:</label>
@@ -245,7 +245,7 @@
             var confirmPassword = confirmPasswordField.value;
 
             // Requisitos de la contraseña
-            var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[.*\/%$#+-;])[A-Za-z\d.*\/%$#+-;]{8,}$/;
+            var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>~])[A-Za-z\d!@#$%^&*(),.?":{}|<>~]{8,}$/;
 
             if (!regex.test(newPassword)) {
                 passwordHelpBlock.textContent = "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y uno de los siguientes caracteres especiales: * . / % $ + # - ;";
